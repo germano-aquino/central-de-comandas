@@ -1,0 +1,6 @@
+root = true // Delimita a aplicação da configuração ao diretório.
+
+[*] // Aplica em todas as linguagens. Pode ser delimitado com [*.{js,cs}]. No caso Csharp e javascript
+
+indent_style = space
+indent_size = 2
