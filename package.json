@@ -7,6 +7,7 @@
     "dev": "next dev",
     "test": "jest ",
     "test:watch": "jest --watch --verbose",
+    "services:up": "docker compose -f infra/compose.yaml up -d",
     "lint:check": "prettier --check .",
     "lint:write": "prettier --write ."
   },
