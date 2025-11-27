@@ -5,17 +5,22 @@
   "main": "index.js",
   "scripts": {
     "dev": "npm run services:up && next dev",
-    "test": "jest ",
-    "test:watch": "jest --watch --verbose",
+    "test": "jest --runInBand",
+    "test:watch": "jest --runInBand --watch --verbose",
     "services:up": "docker compose -f infra/compose.yaml up -d",
     "services:down": "docker compose -f infra/compose.yaml down",
+    "migrations:create": "node-pg-migrate -m infra/migrations create",
+    "migrations:up": "node-pg-migrate -m infra/migrations --envPath .env.development up",
     "lint:check": "prettier --check .",
     "lint:write": "prettier --write ."
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "dotenv": "^17.2.3",
+    "dotenv-expand": "^12.0.3",
     "next": "^15.5.6",
+    "node-pg-migrate": "^7.9.1",
     "pg": "^8.16.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
