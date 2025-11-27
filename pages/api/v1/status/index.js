@@ -9,9 +9,11 @@ async function status(request, response) {
   const maxConnectionsResult = await database.query("SHOW max_connections;");
   const maxConnections = Number(maxConnectionsResult.rows[0].max_connections);
 
-  const openedConnectionsResult = await database.query(
-    "SELECT * FROM pg_stat_activity WHERE state = 'active';",
-  );
+  const databaseName = process.env.POSTGRES_DB;
+  const openedConnectionsResult = await database.query({
+    text: "SELECT * FROM pg_stat_activity WHERE state = 'active' AND datname=$1;",
+    values: [databaseName],
+  });
   const openedConnections = openedConnectionsResult.rowCount;
 
   const statusBody = {
