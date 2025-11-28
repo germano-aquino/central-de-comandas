@@ -1,0 +1,3 @@
+# valida a mensagem de commit usando o Commitlint
+# $1 representa o caminho para o arquivo temporário que contém a mensagem do commit
+npx commitlint --edit $1
