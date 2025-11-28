@@ -1,0 +1,25 @@
+# Define o nome do fluxo a ser seguido
+name: Automated Tests
+
+# Define qual evento engatilhará o fluxo
+on: pull_request
+
+# Define quais trabalhos serão executados
+jobs:
+  # Define a execução do trabalho Jest
+  jest:
+    # Define um nome para localizar mais facilmente nos logs o trabalho
+    name: Jest Ubuntu
+    runs-on: ubuntu-latest # Define o ambiente em que será executado o trabalho
+    # Define os passos da execução
+    steps:
+      # Existem varias ações disponíveis no marketplace do github
+      - uses: actions/checkout@v4 # Pega a versão mais recente do código no repositório
+      - uses: actions/setup-node@v4 # Seleciona versão específica do node
+        with:
+          node-version: "lts/hydrogen"
+
+      # Executa um comando no ambiente de forma manual
+      - run: npm ci # Instala as dependencias do projeto usando package-lock.json
+
+      - run: npm test # Executa os tests automatizados
