@@ -12,8 +12,8 @@
     "services:wait:database": "node infra/scripts/wait-for-database.js",
     "migrations:create": "node-pg-migrate -m infra/migrations create",
     "migrations:up": "node-pg-migrate -m infra/migrations --envPath .env.development up",
-    "lint:check": "prettier --check .",
-    "lint:write": "prettier --write ."
+    "lint:prettier:check": "prettier --check .",
+    "lint:prettier:write": "prettier --write ."
   },
   "author": "",
   "license": "MIT",
