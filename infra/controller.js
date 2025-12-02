@@ -5,6 +5,7 @@ function onErrorHandler(error, request, response) {
     return response.status(error.statusCode).json(error);
   }
 
+  console.error(error);
   const publicErrorObject = new InternalServerError({ cause: error });
   return response.status(publicErrorObject.statusCode).json(publicErrorObject);
 }
