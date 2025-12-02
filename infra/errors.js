@@ -74,7 +74,7 @@ export class NotFoundError extends Error {
   constructor({ message, cause, action }) {
     super(
       message || "Não foi possível encontrar este recurso no sistema",
-      cause
+      cause,
     );
     this.name = "NotFoundError";
     this.action =

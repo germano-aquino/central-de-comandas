@@ -13,7 +13,7 @@ describe("GET to /api/v1/users/[username]", () => {
     test("With nonexistent username", async () => {
       const nonexistentUsername = "notExist";
       const response = await fetch(
-        `http://localhost:3000/api/v1/users/${nonexistentUsername}`
+        `http://localhost:3000/api/v1/users/${nonexistentUsername}`,
       );
 
       expect(response.status).toBe(404);
@@ -32,7 +32,7 @@ describe("GET to /api/v1/users/[username]", () => {
       const createdUser = await orchestrator.createUser();
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/users/${createdUser.username}`
+        `http://localhost:3000/api/v1/users/${createdUser.username}`,
       );
 
       expect(response.status).toBe(200);
