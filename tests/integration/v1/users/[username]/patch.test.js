@@ -1,3 +1,4 @@
+import password from "models/password";
 import orchestrator from "tests/orchestrator";
 
 import { version as uuidVersion } from "uuid";
@@ -186,10 +187,17 @@ describe("PATCH to /api/v1/users/[username]", () => {
         id: createdUser.id,
         username: createdUser.username,
         email: createdUser.email,
-        password: "newPass1234",
+        password: responseBody.password,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
       });
+
+      const passwordCheck = await password.compare(
+        "newPass1234",
+        responseBody.password,
+      );
+      expect(passwordCheck).toBe(true);
+
       expect(uuidVersion(responseBody.id)).toBe(4);
       expect(Date.parse(responseBody.created_at)).not.toBeNaN();
       expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
@@ -222,10 +230,17 @@ describe("PATCH to /api/v1/users/[username]", () => {
         id: createdUser.id,
         username: "wholeNewUser",
         email: "whole.new.email@example.com",
-        password: "newPass1234",
+        password: responseBody.password,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
       });
+
+      const passwordCheck = await password.compare(
+        "newPass1234",
+        responseBody.password,
+      );
+      expect(passwordCheck).toBe(true);
+
       expect(uuidVersion(responseBody.id)).toBe(4);
       expect(Date.parse(responseBody.created_at)).not.toBeNaN();
       expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
