@@ -1,3 +1,4 @@
+import password from "models/password";
 import orchestrator from "tests/orchestrator";
 
 import { version as uuidVersion } from "uuid";
@@ -10,7 +11,7 @@ beforeAll(async () => {
 
 describe("POST /api/v1/users", () => {
   describe("Anonymous User", () => {
-    test("With used email", async () => {
+    test("With duplicated email", async () => {
       const response1 = await fetch("http://localhost:3000/api/v1/users", {
         method: "POST",
         headers: {
@@ -49,7 +50,7 @@ describe("POST /api/v1/users", () => {
       });
     });
 
-    test("With used username", async () => {
+    test("With duplicated username", async () => {
       const response1 = await fetch("http://localhost:3000/api/v1/users", {
         method: "POST",
         headers: {
@@ -109,10 +110,17 @@ describe("POST /api/v1/users", () => {
         id: responseBody.id,
         username: "correctUser",
         email: "correct.user@example.com",
-        password: "correctPassword",
+        password: responseBody.password,
         updated_at: responseBody.updated_at,
         created_at: responseBody.created_at,
       });
+
+      const passwordCheck = await password.compare(
+        "correctPassword",
+        responseBody.password,
+      );
+      expect(passwordCheck).toBe(true);
+
       expect(uuidVersion(responseBody.id)).toBe(4);
       expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
       expect(Date.parse(responseBody.created_at)).not.toBeNaN();
