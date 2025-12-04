@@ -19,7 +19,7 @@ function onErrorHandler(error, request, response) {
   }
 
   if (error instanceof UnauthorizedError) {
-    error.message = "O email ou a senha estão incorretos.";
+    clearSessionCookie(response);
     return response.status(error.statusCode).json(error);
   }
 
@@ -48,12 +48,31 @@ function setSessionCookie(sessionToken, response) {
   response.setHeader("Set-Cookie", setCookie);
 }
 
+function clearSessionCookie(response) {
+  const setCookie = cookie.serialize("session_id", "invalid", {
+    path: "/",
+    maxAge: -1,
+    secure: process.env.NODE_ENV === "production",
+    httpOnly: true,
+  });
+
+  response.setHeader("Set-Cookie", setCookie);
+}
+
+function clearCacheControl(response) {
+  response.setHeader(
+    "Cache-Control",
+    "no-store, no-cache, max-age=0, must-revalidate",
+  );
+}
+
 const controller = {
   errorHandlers: {
     onError: onErrorHandler,
     onNoMatch: onNoMatchHandler,
   },
   setSessionCookie,
+  clearCacheControl,
 };
 
 export default controller;
