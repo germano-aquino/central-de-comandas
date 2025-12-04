@@ -24,6 +24,7 @@
   "license": "MIT",
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "cookie": "^1.1.1",
     "dotenv": "^17.2.3",
     "dotenv-expand": "^12.0.3",
     "eslint": "^8.57.0",
@@ -51,7 +52,8 @@
     "eslint-plugin-jest": "^28.6.0",
     "husky": "^9.1.7",
     "jest": "^30.2.0",
-    "prettier": "^3.6.2"
+    "prettier": "^3.6.2",
+    "set-cookie-parser": "^2.7.2"
   },
   "config": {
     "commitizen": {
