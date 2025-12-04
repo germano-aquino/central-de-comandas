@@ -11,8 +11,6 @@ router.get(getHandler).patch(patchHandler);
 async function getHandler(request, response) {
   const username = request.query.username;
 
-  console.log("getHandler");
-
   const userObject = await user.findOneByUsername(username);
 
   return response.status(200).json(userObject);
