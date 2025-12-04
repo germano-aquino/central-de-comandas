@@ -1,4 +1,7 @@
+import session from "models/session";
 import orchestrator from "tests/orchestrator";
+import { version as uuidVersion } from "uuid";
+import setCookieParser from "set-cookie-parser";
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -65,6 +68,59 @@ describe("POST /api/v1/sessions", () => {
       });
     });
 
-    test("With valid data", async () => {});
+    test("With valid data", async () => {
+      const userToLogin = await orchestrator.createUser({
+        password: "validPassword",
+      });
+
+      const response = await fetch("http://localhost:3000/api/v1/sessions", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          email: userToLogin.email,
+          password: "validPassword",
+        }),
+      });
+
+      expect(response.status).toBe(201);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toEqual({
+        id: responseBody.id,
+        user_id: userToLogin.id,
+        token: responseBody.token,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        expires_at: responseBody.expires_at,
+      });
+
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(responseBody.user_id).toBe(userToLogin.id);
+
+      const expiresAt = Date.parse(responseBody.expires_at);
+      const createdAt = Date.parse(responseBody.created_at);
+
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(createdAt).not.toBeNaN();
+      expect(expiresAt).not.toBeNaN();
+
+      const expirationTime = expiresAt - createdAt;
+      expect(expirationTime - session.EXPIRATION_IN_MILLISECONDS).toBeLessThan(
+        200,
+      );
+
+      const parsedSetCookie = setCookieParser(response, { map: true });
+
+      expect(parsedSetCookie.session_id).toEqual({
+        name: "session_id",
+        value: responseBody.token,
+        maxAge: session.EXPIRATION_IN_MILLISECONDS / 1000,
+        path: "/",
+        httpOnly: true,
+      });
+    });
   });
 });
