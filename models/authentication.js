@@ -3,11 +3,18 @@ import user from "models/user";
 import { NotFoundError, UnauthorizedError } from "../infra/errors";
 
 async function getAuthenticatedUser(email, password) {
-  const storedUser = await getUserByEmail(email);
+  try {
+    const storedUser = await getUserByEmail(email);
 
-  await validatePassword(password, storedUser.password);
+    await validatePassword(password, storedUser.password);
 
-  return storedUser;
+    return storedUser;
+  } catch (error) {
+    if (error instanceof UnauthorizedError) {
+      error.message = "O email ou a senha estão incorretos.";
+    }
+    throw error;
+  }
 }
 
 async function validatePassword(providedPassword, storedPassword) {
