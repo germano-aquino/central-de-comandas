@@ -122,5 +122,77 @@ describe("POST /api/v1/sessions", () => {
         httpOnly: true,
       });
     });
+
+    test("Create 2 sessions with the same user", async () => {
+      const userToLogin = await orchestrator.createUser({
+        password: "validPassword",
+      });
+
+      const firstResponse = await fetch(
+        "http://localhost:3000/api/v1/sessions",
+        {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            email: userToLogin.email,
+            password: "validPassword",
+          }),
+        },
+      );
+
+      expect(firstResponse.status).toBe(201);
+
+      const secondResponse = await fetch(
+        "http://localhost:3000/api/v1/sessions",
+        {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            email: userToLogin.email,
+            password: "validPassword",
+          }),
+        },
+      );
+
+      const responseBody = await secondResponse.json();
+
+      expect(responseBody).toEqual({
+        id: responseBody.id,
+        user_id: userToLogin.id,
+        token: responseBody.token,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        expires_at: responseBody.expires_at,
+      });
+
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(responseBody.user_id).toBe(userToLogin.id);
+
+      const expiresAt = Date.parse(responseBody.expires_at);
+      const createdAt = Date.parse(responseBody.created_at);
+
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(createdAt).not.toBeNaN();
+      expect(expiresAt).not.toBeNaN();
+
+      const expirationTime = expiresAt - createdAt;
+      expect(expirationTime - session.EXPIRATION_IN_MILLISECONDS).toBeLessThan(
+        200,
+      );
+
+      const parsedSetCookie = setCookieParser(secondResponse, { map: true });
+
+      expect(parsedSetCookie.session_id).toEqual({
+        name: "session_id",
+        value: responseBody.token,
+        maxAge: session.EXPIRATION_IN_MILLISECONDS / 1000,
+        path: "/",
+        httpOnly: true,
+      });
+    });
   });
 });
