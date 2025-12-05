@@ -72,6 +72,7 @@ const controller = {
     onNoMatch: onNoMatchHandler,
   },
   setSessionCookie,
+  clearSessionCookie,
   clearCacheControl,
 };
 
