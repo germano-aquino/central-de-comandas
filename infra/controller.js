@@ -7,13 +7,15 @@ import {
   ValidationError,
   NotFoundError,
   UnauthorizedError,
+  ForbiddenError,
 } from "./errors";
+import user from "models/user";
 
 function onErrorHandler(error, request, response) {
   if (
-    error instanceof MethodNotAllowedError ||
     error instanceof ValidationError ||
-    error instanceof NotFoundError
+    error instanceof NotFoundError ||
+    error instanceof ForbiddenError
   ) {
     return response.status(error.statusCode).json(error);
   }
@@ -66,6 +68,55 @@ function clearCacheControl(response) {
   );
 }
 
+async function injectAnonymousOrUser(request, response, next) {
+  const isUserLogged = "session_id" in request.cookies;
+
+  if (isUserLogged) {
+    await inejectUserObject(request);
+  } else {
+    injectAnonymousUserObject(request);
+  }
+
+  return next();
+}
+
+function injectAnonymousUserObject(request) {
+  const anonymousUserObject = {
+    features: ["read:activation_token", "create:user", "create:session"],
+  };
+
+  request.context = {
+    ...request.context,
+    user: anonymousUserObject,
+  };
+}
+
+async function inejectUserObject(request) {
+  const sessionToken = request.cookies.session_id;
+  const sessionObject = await session.findOneValidByToken(sessionToken);
+  const loggedUser = await user.findOneById(sessionObject.user_id);
+
+  request.context = {
+    ...request.context,
+    user: loggedUser,
+  };
+}
+
+function canRequest(feature) {
+  return function canRequestMiddleware(request, response, next) {
+    const userTryingToRequest = request.context.user;
+
+    if (userTryingToRequest.features.includes(feature)) {
+      return next();
+    }
+
+    throw new ForbiddenError({
+      message: "Você não possui permissão para executer esta ação.",
+      action: `Verifique se seu usuário possui a feature "${feature}".`,
+    });
+  };
+}
+
 const controller = {
   errorHandlers: {
     onError: onErrorHandler,
@@ -74,6 +125,8 @@ const controller = {
   setSessionCookie,
   clearSessionCookie,
   clearCacheControl,
+  injectAnonymousOrUser,
+  canRequest,
 };
 
 export default controller;

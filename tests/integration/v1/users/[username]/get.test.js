@@ -43,6 +43,7 @@ describe("GET to /api/v1/users/[username]", () => {
         id: responseBody.id,
         username: createdUser.username,
         email: createdUser.email,
+        features: ["read:activation_token"],
         password: createdUser.password,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,

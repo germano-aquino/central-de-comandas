@@ -110,6 +110,7 @@ describe("POST /api/v1/users", () => {
         id: responseBody.id,
         username: "correctUser",
         email: "correct.user@example.com",
+        features: ["read:activation_token"],
         password: responseBody.password,
         updated_at: responseBody.updated_at,
         created_at: responseBody.created_at,
