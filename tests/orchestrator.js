@@ -6,36 +6,22 @@ import session from "models/session";
 import user from "models/user";
 
 const emailHttpUrl = `http://${process.env.EMAIL_HTTP_HOST}:${process.env.EMAIL_HTTP_PORT}`;
+const webServerStatusPageUrl = "http://localhost:3000/api/v1/status";
 
 async function waitForAllServices() {
-  await waitForWebServer();
-  await waitForEmailServer();
+  await waitForService(webServerStatusPageUrl);
+  await waitForService(emailHttpUrl);
 
-  async function waitForWebServer() {
-    return retry(fetchStatusPage, {
+  async function waitForService(serviceUrl) {
+    return retry(fetchStatusService, {
       retries: 100,
       maxTimeout: 1000,
     });
 
-    async function fetchStatusPage() {
-      const response = await fetch("http://localhost:3000/api/v1/status");
+    async function fetchStatusService() {
+      const response = await fetch(serviceUrl);
 
-      if (response.status !== 200) {
-        throw new Error();
-      }
-    }
-  }
-
-  async function waitForEmailServer() {
-    return retry(fetchStatusPage, {
-      retries: 100,
-      maxTimeout: 1000,
-    });
-
-    async function fetchStatusPage() {
-      const response = await fetch(emailHttpUrl);
-
-      if (response.status !== 200) {
+      if (response.status != 200) {
         throw new Error();
       }
     }
