@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v4 # Pega a versão mais recente do código no repositório
       - uses: actions/setup-node@v4 # Seleciona versão específica do node
         with:
-          node-version: "lts/hydrogen"
+          node-version: "lts/iron"
 
       # Executa um comando no ambiente de forma manual
       - run: npm ci # Instala as dependencias do projeto usando package-lock.json
