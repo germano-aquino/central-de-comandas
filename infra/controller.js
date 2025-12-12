@@ -10,6 +10,7 @@ import {
   ForbiddenError,
 } from "./errors";
 import user from "models/user";
+import authorization from "models/authorization";
 
 function onErrorHandler(error, request, response) {
   if (
@@ -106,13 +107,13 @@ function canRequest(feature) {
   return function canRequestMiddleware(request, response, next) {
     const userTryingToRequest = request.context.user;
 
-    if (userTryingToRequest.features.includes(feature)) {
+    if (authorization.can(userTryingToRequest, feature)) {
       return next();
     }
 
     throw new ForbiddenError({
-      message: "Você não possui permissão para executer esta ação.",
-      action: `Verifique se seu usuário possui a feature "${feature}".`,
+      message: "O usuário não possui permissão para executar esta ação.",
+      action: `Verifique se o usuário possui a feature "${feature}".`,
     });
   };
 }

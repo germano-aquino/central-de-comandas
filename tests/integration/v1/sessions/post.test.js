@@ -73,6 +73,8 @@ describe("POST /api/v1/sessions", () => {
         password: "validPassword",
       });
 
+      await orchestrator.activateUser(userToLogin);
+
       const response = await fetch("http://localhost:3000/api/v1/sessions", {
         method: "POST",
         headers: {
@@ -127,6 +129,8 @@ describe("POST /api/v1/sessions", () => {
       const userToLogin = await orchestrator.createUser({
         password: "validPassword",
       });
+
+      await orchestrator.activateUser(userToLogin);
 
       const firstResponse = await fetch(
         "http://localhost:3000/api/v1/sessions",
