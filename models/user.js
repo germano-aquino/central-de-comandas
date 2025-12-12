@@ -6,6 +6,7 @@ async function create(userInputValues) {
   await validateUniqueEmail(userInputValues.email);
   await validateUniqueUsername(userInputValues.username);
   await hashPasswordInObject(userInputValues);
+  injectDefaultFeaturesInObject(userInputValues);
 
   const createdUser = await runInsertQuery(userInputValues);
   return createdUser;
@@ -15,9 +16,9 @@ async function create(userInputValues) {
       text: `
         INSERT INTO
           users
-          (username, email, password)
+          (username, email, password, features)
         VALUES
-          ($1, $2, $3)
+          ($1, $2, $3, $4)
         RETURNING
           *
       ;`,
@@ -25,10 +26,15 @@ async function create(userInputValues) {
         userInputValues.username,
         userInputValues.email,
         userInputValues.password,
+        userInputValues.features,
       ],
     });
 
     return results.rows[0];
+  }
+
+  function injectDefaultFeaturesInObject(userInputValues) {
+    userInputValues.features = ["read:activation_token"];
   }
 }
 
@@ -134,6 +140,30 @@ async function hashPasswordInObject(userInputValues) {
   userInputValues.password = hashPassword;
 }
 
+async function setFeaturesByUserId(userId, features) {
+  const updatedUser = await runUpdateQuery(userId, features);
+  return updatedUser;
+
+  async function runUpdateQuery(userId, features) {
+    const results = await database.query({
+      text: `
+        UPDATE
+          users
+        SET
+          features = $2,
+          updated_at = TIMEZONE('utc', NOW())
+        WHERE
+          id = $1
+        RETURNING
+          *
+      ;`,
+      values: [userId, features],
+    });
+
+    return results.rows[0];
+  }
+}
+
 async function findOneByUsername(username) {
   const userFound = await runSelectQuery(username);
 
@@ -228,6 +258,13 @@ async function findOneById(id) {
   }
 }
 
-const user = { create, update, findOneByUsername, findOneByEmail, findOneById };
+const user = {
+  create,
+  update,
+  setFeaturesByUserId,
+  findOneByUsername,
+  findOneByEmail,
+  findOneById,
+};
 
 export default user;
