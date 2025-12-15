@@ -1,8 +1,9 @@
 import database from "infra/database";
 import email from "infra/email";
-import { NotFoundError } from "infra/errors";
+import { ForbiddenError, NotFoundError } from "infra/errors";
 import user from "./user";
 import webserver from "infra/webserver";
+import authorization from "./authorization";
 
 const EXPIRATION_IN_MILLISECONDS = 15 * 60 * 1000; // 15 minutes
 
@@ -71,10 +72,20 @@ async function markTokenAsUsed(activatedToken) {
 }
 
 async function activateUserByUserId(userId) {
-  return await user.setFeaturesByUserId(userId, [
+  const userToBeActivated = await user.findOneById(userId);
+
+  if (!authorization.can(userToBeActivated, "read:activation_token")) {
+    throw new ForbiddenError({
+      message: "Você não pode mais usar tokens de ativação.",
+      action: "Entre em contato com o suporte.",
+    });
+  }
+
+  const activatedUser = await user.setFeaturesByUserId(userId, [
     "read:session",
     "create:session",
   ]);
+  return activatedUser;
 }
 
 async function findOneValidByUserId(userId) {
@@ -101,7 +112,7 @@ async function findOneValidByUserId(userId) {
       throw new NotFoundError({
         message:
           "O token de ativação deste usuário não existe ou está expirado.",
-        action: "Peça para reenviar o email de ativação.",
+        action: "Solicite o reenvio do email de ativação.",
       });
     }
     return results.rows[0];
@@ -132,7 +143,7 @@ async function findOneValidById(tokenId) {
       throw new NotFoundError({
         message:
           "O token de ativação deste usuário não existe ou está expirado.",
-        action: "Peça para reenviar o email de ativação.",
+        action: "Solicite o reenvio do email de ativação.",
       });
     }
     return results.rows[0];
@@ -146,6 +157,7 @@ const activation = {
   markTokenAsUsed,
   findOneValidByUserId,
   findOneValidById,
+  EXPIRATION_IN_MILLISECONDS,
 };
 
 export default activation;

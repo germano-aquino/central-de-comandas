@@ -4,7 +4,7 @@ import controller from "infra/controller";
 import authorization from "models/authorization";
 import { ForbiddenError } from "infra/errors";
 
-const { createRouter } = require("next-connect");
+import { createRouter } from "next-connect";
 
 const router = createRouter();
 
