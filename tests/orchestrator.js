@@ -2,6 +2,7 @@ import { faker } from "@faker-js/faker";
 import retry from "async-retry";
 import database from "infra/database";
 import activation from "models/activation";
+import category from "models/category";
 import migrator from "models/migrator";
 import session from "models/session";
 import user from "models/user";
@@ -76,6 +77,10 @@ async function createSession(unloggedUser) {
   return await session.create(unloggedUser.id);
 }
 
+async function setCategoriesFeatures(unallowedUser) {
+  return await category.setCategoriesFeatures(unallowedUser);
+}
+
 const orchestrator = {
   waitForAllServices,
   clearDatabase,
@@ -85,6 +90,7 @@ const orchestrator = {
   createUser,
   activateUser,
   createSession,
+  setCategoriesFeatures,
 };
 
 export default orchestrator;
