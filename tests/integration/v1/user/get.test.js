@@ -93,8 +93,10 @@ describe("GET to /api/v1/user", () => {
         username: "halfwayExpiredUser",
       });
 
+      const activatedUser = await orchestrator.activateUser(createdUser);
+
       const halfwayExpiredSession =
-        await orchestrator.createSession(createdUser);
+        await orchestrator.createSession(activatedUser);
 
       jest.useRealTimers();
 
@@ -119,10 +121,10 @@ describe("GET to /api/v1/user", () => {
         id: createdUser.id,
         username: createdUser.username,
         email: createdUser.email,
-        features: ["read:activation_token"],
+        features: ["read:session", "create:session"],
         password: createdUser.password,
         created_at: createdUser.created_at.toISOString(),
-        updated_at: createdUser.updated_at.toISOString(),
+        updated_at: activatedUser.updated_at.toISOString(),
       });
 
       //renewedSession assertions
@@ -161,7 +163,9 @@ describe("GET to /api/v1/user", () => {
     test("With valid session", async () => {
       const unloggedUser = await orchestrator.createUser();
 
-      const sessionObject = await orchestrator.createSession(unloggedUser);
+      const activatedUser = await orchestrator.activateUser(unloggedUser);
+
+      const sessionObject = await orchestrator.createSession(activatedUser);
 
       const response = await fetch("http://localhost:3000/api/v1/user", {
         headers: {
@@ -184,10 +188,10 @@ describe("GET to /api/v1/user", () => {
         id: unloggedUser.id,
         username: unloggedUser.username,
         email: unloggedUser.email,
-        features: ["read:activation_token"],
+        features: expect.arrayContaining(["create:session", "read:session"]),
         password: unloggedUser.password,
         created_at: unloggedUser.created_at.toISOString(),
-        updated_at: unloggedUser.updated_at.toISOString(),
+        updated_at: activatedUser.updated_at.toISOString(),
       });
 
       //renewedSession assertions

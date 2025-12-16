@@ -6,7 +6,8 @@ const router = createRouter();
 
 export default router.handler(controller.errorHandlers);
 
-router.patch(patchHandler);
+router.use(controller.injectAnonymousOrUser);
+router.patch(controller.canRequest("read:activation_token"), patchHandler);
 
 async function patchHandler(request, response) {
   const tokenId = request.query.token_id;
