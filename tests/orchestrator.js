@@ -77,6 +77,31 @@ async function createSession(unloggedUser) {
   return await session.create(unloggedUser.id);
 }
 
+async function createCategories(length = 5, categoriesName = []) {
+  let categories = [];
+
+  if (categoriesName.length !== 0) {
+    for (const name of categoriesName) {
+      const category = await createCategory(name);
+      categories.push(category);
+    }
+  } else {
+    for (let i = 0; i < length; i++) {
+      const category = await createCategory();
+      categories.push(category);
+    }
+  }
+
+  return categories;
+}
+
+async function createCategory(categoryName) {
+  const categoryInputValues = {
+    name: categoryName || faker.internet.username().replace(/[.-]/g, ""),
+  };
+  return await category.create(categoryInputValues);
+}
+
 async function setCategoriesFeatures(unallowedUser) {
   return await category.setCategoriesFeatures(unallowedUser);
 }
@@ -90,6 +115,8 @@ const orchestrator = {
   createUser,
   activateUser,
   createSession,
+  createCategory,
+  createCategories,
   setCategoriesFeatures,
 };
 

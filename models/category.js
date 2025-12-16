@@ -49,13 +49,32 @@ async function create(categoryInputValues) {
   }
 }
 
+async function retrieveAllCategories() {
+  const storedCategories = await runSelectQuery();
+  return storedCategories;
+
+  async function runSelectQuery() {
+    const results = await database.query({
+      text: `
+        SELECT
+          *
+        FROM
+          service_categories
+      ;`,
+    });
+
+    return results.rows;
+  }
+}
+
 async function setCategoriesFeatures(forbiddenUser) {
   const allowedUser = user.addFeaturesByUserId(forbiddenUser.id, [
     "create:category",
+    "read:category",
   ]);
   return allowedUser;
 }
 
-const category = { create, setCategoriesFeatures };
+const category = { create, retrieveAllCategories, setCategoriesFeatures };
 
 export default category;
