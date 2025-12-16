@@ -59,30 +59,53 @@ async function update(categoryName, categoryInputValues) {
 
     return results.rows[0];
   }
+}
 
-  async function findOneValidByName(categoryName) {
+async function deleteByName(categoryName) {
+  await findOneValidByName(categoryName);
+  const deletedCategory = await runDeleteQuery(categoryName);
+  return deletedCategory;
+
+  async function runDeleteQuery(categoryName) {
+    console.log(categoryName);
     const results = await database.query({
       text: `
+        DELETE FROM
+          service_categories
+        WHERE
+          LOWER(name) = LOWER($1)
+        RETURNING
+          *
+      ;`,
+      values: [categoryName],
+    });
+
+    return results.rows[0];
+  }
+}
+
+async function findOneValidByName(categoryName) {
+  const results = await database.query({
+    text: `
         SELECT
           *
         FROM
           service_categories
         WHERE
-          name = $1
+          LOWER(name) = LOWER($1)
         LIMIT
           1
       ;`,
-      values: [categoryName],
-    });
+    values: [categoryName],
+  });
 
-    if (results.rowCount === 0) {
-      throw new NotFoundError({
-        message: "Esta categoria não existe.",
-        action: "Verifique o nome da categoria e tente novamente.",
-      });
-    }
-    return results.rows[0];
+  if (results.rowCount === 0) {
+    throw new NotFoundError({
+      message: "Esta categoria não existe.",
+      action: "Verifique o nome da categoria e tente novamente.",
+    });
   }
+  return results.rows[0];
 }
 
 async function validateUniqueName(categoryName) {
@@ -131,6 +154,7 @@ async function setCategoriesFeatures(forbiddenUser) {
     "create:category",
     "read:category",
     "edit:category",
+    "delete:category",
   ]);
   return allowedUser;
 }
@@ -138,6 +162,8 @@ async function setCategoriesFeatures(forbiddenUser) {
 const category = {
   create,
   update,
+  deleteByName,
+  findOneValidByName,
   retrieveAllCategories,
   setCategoriesFeatures,
 };
