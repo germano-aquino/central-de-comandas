@@ -1,6 +1,6 @@
 import database from "infra/database";
 import user from "./user";
-import { ValidationError } from "infra/errors";
+import { NotFoundError, ValidationError } from "infra/errors";
 
 async function create(categoryInputValues) {
   await validateUniqueName(categoryInputValues.name);
@@ -24,10 +24,70 @@ async function create(categoryInputValues) {
 
     return results.rows[0];
   }
+}
 
-  async function validateUniqueName(categoryName) {
+async function update(categoryName, categoryInputValues) {
+  await findOneValidByName(categoryName);
+  if (
+    "name" in categoryInputValues &&
+    categoryName.toLowerCase() !== categoryInputValues.name.toLowerCase()
+  ) {
+    await validateUniqueName(categoryInputValues);
+  }
+
+  const updatedCategory = await runUpdateQuery(
+    categoryName,
+    categoryInputValues.name,
+  );
+  return updatedCategory;
+
+  async function runUpdateQuery(oldName, newName) {
     const results = await database.query({
       text: `
+        UPDATE
+          service_categories
+        SET
+          name = $2,
+          updated_at = TIMEZONE('utc', NOW())
+        WHERE
+          name = $1
+        RETURNING
+          *
+      ;`,
+      values: [oldName, newName],
+    });
+
+    return results.rows[0];
+  }
+
+  async function findOneValidByName(categoryName) {
+    const results = await database.query({
+      text: `
+        SELECT
+          *
+        FROM
+          service_categories
+        WHERE
+          name = $1
+        LIMIT
+          1
+      ;`,
+      values: [categoryName],
+    });
+
+    if (results.rowCount === 0) {
+      throw new NotFoundError({
+        message: "Esta categoria não existe.",
+        action: "Verifique o nome da categoria e tente novamente.",
+      });
+    }
+    return results.rows[0];
+  }
+}
+
+async function validateUniqueName(categoryName) {
+  const results = await database.query({
+    text: `
         SELECT
           name
         FROM
@@ -37,15 +97,14 @@ async function create(categoryInputValues) {
         LIMIT
           1
       ;`,
-      values: [categoryName],
-    });
+    values: [categoryName],
+  });
 
-    if (results.rowCount > 0) {
-      throw new ValidationError({
-        message: "Esta categoria já existe.",
-        action: "Escolha um novo nome para a categoria e tente novamente.",
-      });
-    }
+  if (results.rowCount > 0) {
+    throw new ValidationError({
+      message: "Esta categoria já existe.",
+      action: "Escolha um novo nome para a categoria e tente novamente.",
+    });
   }
 }
 
@@ -71,10 +130,16 @@ async function setCategoriesFeatures(forbiddenUser) {
   const allowedUser = user.addFeaturesByUserId(forbiddenUser.id, [
     "create:category",
     "read:category",
+    "edit:category",
   ]);
   return allowedUser;
 }
 
-const category = { create, retrieveAllCategories, setCategoriesFeatures };
+const category = {
+  create,
+  update,
+  retrieveAllCategories,
+  setCategoriesFeatures,
+};
 
 export default category;
