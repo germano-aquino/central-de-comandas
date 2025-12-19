@@ -61,6 +61,28 @@ async function update(categoryName, categoryInputValues) {
   }
 }
 
+async function deleteManyByIdArray(categoryIds) {
+  const deletedCategories = await runDeleteQuery(categoryIds);
+
+  return deletedCategories;
+
+  async function runDeleteQuery(categoryIds) {
+    const results = await database.query({
+      text: `
+        DELETE FROM
+          service_categories
+        WHERE
+          id = ANY($1)
+        RETURNING
+          *
+      ;`,
+      values: [categoryIds],
+    });
+
+    return results.rows;
+  }
+}
+
 async function deleteByName(categoryName) {
   await findOneValidByName(categoryName);
   const deletedCategory = await runDeleteQuery(categoryName);
@@ -163,6 +185,7 @@ const category = {
   create,
   update,
   deleteByName,
+  deleteManyByIdArray,
   findOneValidByName,
   retrieveAllCategories,
   setCategoriesFeatures,
