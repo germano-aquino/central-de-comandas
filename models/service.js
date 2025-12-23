@@ -4,12 +4,7 @@ import category from "./category";
 import { NotFoundError, ValidationError } from "infra/errors";
 
 async function create(serviceInputValues) {
-  if ("category_id" in serviceInputValues) {
-    await validateCategoryExistense(serviceInputValues.category_id);
-  } else {
-    serviceInputValues.category_id = null;
-  }
-  await validateUniqueName(serviceInputValues.name);
+  await validateInputValues(serviceInputValues);
 
   const createdService = await runInsertQuery(serviceInputValues);
   return createdService;
@@ -35,9 +30,18 @@ async function create(serviceInputValues) {
     return results.rows[0];
   }
 
-  async function validateCategoryExistense(categoryId) {
+  async function validateInputValues(serviceInputValues) {
     try {
-      await category.findOneValidById(categoryId);
+      if (
+        "category_id" in serviceInputValues &&
+        serviceInputValues.category_id !== null
+      ) {
+        await category.findOneValidById(serviceInputValues.category_id);
+      } else {
+        serviceInputValues.category_id = null;
+      }
+
+      await validateUniqueName(serviceInputValues.name);
     } catch (error) {
       if (error instanceof NotFoundError) {
         throw new ValidationError({
@@ -73,6 +77,22 @@ async function create(serviceInputValues) {
   }
 }
 
+async function retrieveAll() {
+  const storedServices = await runSelectQuery();
+  return storedServices;
+
+  async function runSelectQuery() {
+    const results = await database.query(`
+      SELECT
+        *
+      FROM
+        services
+      ;`);
+
+    return results.rows;
+  }
+}
+
 async function addServicesFeatures(forbiddenUser) {
   const allowedUser = user.addFeaturesByUserId(forbiddenUser.id, [
     "create:service",
@@ -83,6 +103,6 @@ async function addServicesFeatures(forbiddenUser) {
   return allowedUser;
 }
 
-const service = { create, addServicesFeatures };
+const service = { create, retrieveAll, addServicesFeatures };
 
 export default service;

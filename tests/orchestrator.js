@@ -107,6 +107,37 @@ async function setCategoriesFeatures(unallowedUser) {
   return await category.setCategoriesFeatures(unallowedUser);
 }
 
+async function createServices(length = 5, servicesInputValues = []) {
+  let services = [];
+
+  if (servicesInputValues.length !== 0) {
+    for (const service of servicesInputValues) {
+      const newService = await createService(
+        service?.name,
+        service?.price,
+        service?.category_id,
+      );
+      services.push(newService);
+    }
+  } else {
+    for (let i = 0; i < length; i++) {
+      const newService = await createService();
+      services.push(newService);
+    }
+  }
+
+  return services;
+}
+
+async function createService(serviceName, servicePrice, categoryId) {
+  const categoryInputValues = {
+    name: serviceName || faker.internet.username().replace(/[.-]/g, ""),
+    price: servicePrice || faker.number.int({ min: 99, max: 9999 }),
+    category_id: categoryId || null,
+  };
+  return await service.create(categoryInputValues);
+}
+
 async function addServicesFeatures(unallowedUser) {
   return await service.addServicesFeatures(unallowedUser);
 }
@@ -123,6 +154,8 @@ const orchestrator = {
   createCategory,
   createCategories,
   setCategoriesFeatures,
+  createService,
+  createServices,
   addServicesFeatures,
 };
 
