@@ -54,10 +54,78 @@ async function create(serviceInputValues) {
       throw error;
     }
   }
+}
 
-  async function validateUniqueName(serviceName) {
+async function update(serviceName, serviceInputValues) {
+  const newServiceValues = await getValidNewServiceValues(
+    serviceName,
+    serviceInputValues,
+  );
+
+  const updatedService = runUpdateQuery(serviceName, newServiceValues);
+  return updatedService;
+
+  async function getValidNewServiceValues(currentName, serviceInputValues) {
+    const currentService = await findOneValidByName(serviceName);
+
+    try {
+      if ("name" in serviceInputValues) {
+        if (
+          currentName.toLowerCase() !== serviceInputValues.name.toLowerCase()
+        ) {
+          await validateUniqueName(serviceInputValues.name);
+        }
+      }
+
+      if ("category_id" in serviceInputValues) {
+        await category.findOneValidById(serviceInputValues.category_id);
+      }
+
+      const newServiceValues = { ...currentService, ...serviceInputValues };
+      return newServiceValues;
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw new ValidationError({
+          message: error.message,
+          action: error.action,
+          cause: error,
+        });
+      }
+
+      throw error;
+    }
+  }
+
+  async function runUpdateQuery(currentName, newServiceValues) {
     const results = await database.query({
       text: `
+        UPDATE
+          services
+        SET
+          name = $2,
+          price = $3,
+          category_id = $4,
+          updated_at = TIMEZONE('utc', NOW())
+        WHERE
+          LOWER(name) = LOWER($1)
+        RETURNING
+          *
+      ;`,
+      values: [
+        currentName,
+        newServiceValues.name,
+        newServiceValues.price,
+        newServiceValues.category_id,
+      ],
+    });
+
+    return results.rows[0];
+  }
+}
+
+async function validateUniqueName(serviceName) {
+  const results = await database.query({
+    text: `
         SELECT
           *
         FROM
@@ -65,15 +133,14 @@ async function create(serviceInputValues) {
         WHERE
           LOWER(name) = LOWER($1)
       ;`,
-      values: [serviceName],
-    });
+    values: [serviceName],
+  });
 
-    if (results.rowCount > 0) {
-      throw new ValidationError({
-        message: "Já existe um serviço com esse nome.",
-        action: "Escolha um novo nome para o serviço e tente novamente.",
-      });
-    }
+  if (results.rowCount > 0) {
+    throw new ValidationError({
+      message: "Já existe um serviço com esse nome.",
+      action: "Escolha um novo nome para o serviço e tente novamente.",
+    });
   }
 }
 
@@ -112,6 +179,13 @@ async function findOneValidByName(serviceName) {
       values: [serviceName],
     });
 
+    if (results.rowCount === 0) {
+      throw new NotFoundError({
+        message: "Este serviço não existe.",
+        action: "Verifique o nome do serviço e tente novamente.",
+      });
+    }
+
     return results.rows[0];
   }
 }
@@ -128,6 +202,7 @@ async function addServicesFeatures(forbiddenUser) {
 
 const service = {
   create,
+  update,
   retrieveAll,
   findOneValidByName,
   addServicesFeatures,
