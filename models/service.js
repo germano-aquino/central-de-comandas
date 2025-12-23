@@ -93,6 +93,29 @@ async function retrieveAll() {
   }
 }
 
+async function findOneValidByName(serviceName) {
+  const serviceFound = await runSelectQuery(serviceName);
+  return serviceFound;
+
+  async function runSelectQuery(serviceName) {
+    const results = await database.query({
+      text: `
+        SELECT
+          *
+        FROM
+          services
+        WHERE
+          LOWER(name) = LOWER($1)
+        LIMIT
+          1
+      ;`,
+      values: [serviceName],
+    });
+
+    return results.rows[0];
+  }
+}
+
 async function addServicesFeatures(forbiddenUser) {
   const allowedUser = user.addFeaturesByUserId(forbiddenUser.id, [
     "create:service",
@@ -103,6 +126,11 @@ async function addServicesFeatures(forbiddenUser) {
   return allowedUser;
 }
 
-const service = { create, retrieveAll, addServicesFeatures };
+const service = {
+  create,
+  retrieveAll,
+  findOneValidByName,
+  addServicesFeatures,
+};
 
 export default service;
