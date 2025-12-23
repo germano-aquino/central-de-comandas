@@ -4,6 +4,7 @@ import database from "infra/database";
 import activation from "models/activation";
 import category from "models/category";
 import migrator from "models/migrator";
+import service from "models/service";
 import session from "models/session";
 import user from "models/user";
 
@@ -106,6 +107,10 @@ async function setCategoriesFeatures(unallowedUser) {
   return await category.setCategoriesFeatures(unallowedUser);
 }
 
+async function addServicesFeatures(unallowedUser) {
+  return await service.addServicesFeatures(unallowedUser);
+}
+
 const orchestrator = {
   waitForAllServices,
   clearDatabase,
@@ -118,6 +123,7 @@ const orchestrator = {
   createCategory,
   createCategories,
   setCategoriesFeatures,
+  addServicesFeatures,
 };
 
 export default orchestrator;
