@@ -164,6 +164,30 @@ async function setFeaturesByUserId(userId, features) {
   }
 }
 
+async function addFeaturesByUserId(userId, features) {
+  const updatedUser = await runUpdateQuery(userId, features);
+  return updatedUser;
+
+  async function runUpdateQuery(userId, features) {
+    const results = await database.query({
+      text: `
+        UPDATE
+          users
+        SET
+          features = ARRAY_CAT(features, $2),
+          updated_at = TIMEZONE('utc', NOW())
+        WHERE
+          id = $1
+        RETURNING
+          *
+      ;`,
+      values: [userId, features],
+    });
+
+    return results.rows[0];
+  }
+}
+
 async function findOneByUsername(username) {
   const userFound = await runSelectQuery(username);
 
@@ -262,6 +286,7 @@ const user = {
   create,
   update,
   setFeaturesByUserId,
+  addFeaturesByUserId,
   findOneByUsername,
   findOneByEmail,
   findOneById,
