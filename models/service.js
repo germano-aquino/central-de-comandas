@@ -44,11 +44,7 @@ async function create(serviceInputValues) {
       await validateUniqueName(serviceInputValues.name);
     } catch (error) {
       if (error instanceof NotFoundError) {
-        throw new ValidationError({
-          message: error.message,
-          action: error.action,
-          cause: error,
-        });
+        throw new ValidationError(error);
       }
 
       throw error;
@@ -70,9 +66,8 @@ async function update(serviceName, serviceInputValues) {
 
     try {
       if ("name" in serviceInputValues) {
-        if (
-          currentName.toLowerCase() !== serviceInputValues.name.toLowerCase()
-        ) {
+        const inputServiceName = serviceInputValues.name;
+        if (currentName.toLowerCase() !== inputServiceName.toLowerCase()) {
           await validateUniqueName(serviceInputValues.name);
         }
       }
@@ -85,11 +80,7 @@ async function update(serviceName, serviceInputValues) {
       return newServiceValues;
     } catch (error) {
       if (error instanceof NotFoundError) {
-        throw new ValidationError({
-          message: error.message,
-          action: error.action,
-          cause: error,
-        });
+        throw new ValidationError(error);
       }
 
       throw error;
@@ -120,6 +111,60 @@ async function update(serviceName, serviceInputValues) {
     });
 
     return results.rows[0];
+  }
+}
+
+async function updateManyByIdArray(serviceInputValues) {
+  await validateInputValues(serviceInputValues);
+
+  const updatedServices = await runUpdateQuery(serviceInputValues);
+
+  return updatedServices;
+
+  async function validateInputValues(serviceInputValues) {
+    try {
+      if ("name" in serviceInputValues) {
+        throw new ValidationError({
+          message:
+            "Não é possível editar o nome de múltiplos serviços com uma única requisição.",
+          action: "Retire a propriedade nome da requisição e tente novamente.",
+        });
+      }
+
+      if ("category_id" in serviceInputValues) {
+        await category.findOneValidById(serviceInputValues.category_id);
+      }
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw new ValidationError(error);
+      }
+
+      throw error;
+    }
+  }
+
+  async function runUpdateQuery(serviceInputValues) {
+    const serviceIds = serviceInputValues?.service_ids || [];
+    const price = serviceInputValues?.price || null;
+    const categoryId = serviceInputValues?.category_id || null;
+
+    const results = await database.query({
+      text: `
+        UPDATE
+          services
+        SET
+          price = COALESCE($2, price),
+          category_id = COALESCE($3, category_id),
+          updated_at = TIMEZONE('utc', NOW())
+        WHERE
+          id = ANY($1)
+        RETURNING
+          *
+      ;`,
+      values: [serviceIds, price, categoryId],
+    });
+
+    return results.rows;
   }
 }
 
@@ -203,6 +248,7 @@ async function addServicesFeatures(forbiddenUser) {
 const service = {
   create,
   update,
+  updateManyByIdArray,
   retrieveAll,
   findOneValidByName,
   addServicesFeatures,
