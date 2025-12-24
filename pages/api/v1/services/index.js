@@ -10,6 +10,7 @@ router.use(controller.injectAnonymousOrUser);
 router.post(controller.canRequest("create:service"), postHandler);
 router.get(controller.canRequest("read:service"), getHandler);
 router.patch(controller.canRequest("edit:service"), patchHandler);
+router.delete(controller.canRequest("delete:service"), deleteHandler);
 
 async function postHandler(request, response) {
   const serviceInputValues = await request.body;
@@ -31,4 +32,14 @@ async function patchHandler(request, response) {
   const updatedServices = await service.updateManyByIdArray(serviceInputValues);
 
   return response.status(200).json(updatedServices);
+}
+
+async function deleteHandler(request, response) {
+  const serviceInputValues = await request.body;
+
+  const deletedServices = await service.deleteManyByIdArray(
+    serviceInputValues.service_ids,
+  );
+
+  return response.status(200).json(deletedServices);
 }

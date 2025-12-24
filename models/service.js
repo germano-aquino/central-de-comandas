@@ -189,6 +189,28 @@ async function validateUniqueName(serviceName) {
   }
 }
 
+async function deleteManyByIdArray(serviceIds) {
+  const deletedServices = await runDeleteQuery(serviceIds);
+
+  return deletedServices;
+
+  async function runDeleteQuery(serviceIds) {
+    const results = await database.query({
+      text: `
+        DELETE FROM
+          services
+        WHERE
+          id = ANY($1)
+        RETURNING
+          *
+      ;`,
+      values: [serviceIds],
+    });
+
+    return results.rows;
+  }
+}
+
 async function retrieveAll() {
   const storedServices = await runSelectQuery();
   return storedServices;
@@ -249,6 +271,7 @@ const service = {
   create,
   update,
   updateManyByIdArray,
+  deleteManyByIdArray,
   retrieveAll,
   findOneValidByName,
   addServicesFeatures,
