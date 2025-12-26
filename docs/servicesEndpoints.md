@@ -13,6 +13,8 @@
 
 ### POST /api/v1/services
 
+Cração de um serviço.
+
 - Usuário logado
 - Feature `create:service`
 - Corpo da requisição:
@@ -31,6 +33,8 @@
 
 ### GET /api/v1/services
 
+Lista todos os serviços cadastrados.
+
 - Usuário logado
 - Feature: `read:service`
 - Retorno:
@@ -45,6 +49,8 @@
 
 ### GET /api/v1/services/[service_name]
 
+Listagem do serviço cujo campo `name` seja igual ao `service_name`.
+
 - Usuário logado
 - Feature: `read:service`
 - Retorno:
@@ -55,9 +61,27 @@
   - created_at: Data de Criação
   - updated_at: Date de Atualização
 
+### GET /api/v1/services/[category_name]
+
+Listagem de todos os serviços cujo o `category_id` corresponda à categoria com `name` igual ao `category_name`
+
+- Usuário logado
+- Feature: `read:service`
+- Retorno:
+  - Lista de serviços por categoria: [
+    - id: Id do serviço
+    - name: Nome do serviço
+    - category_id: Id da categoria || null
+    - price: Valor do serviço em centavos
+    - created_at: Data de Criação
+    - updated_at: Date de Atualização
+      ]
+
 ## Edição de Serviços
 
 ### PATCH /api/v1/services/[service_name]
+
+Edição do serviço cujo o campo `name` seja igual ao `service_name`.
 
 - Usuário logado
 - Feature: `edit:service`
@@ -73,9 +97,32 @@
   - created_at: Data de Criação
   - updated_at: Date de Atualização
 
+  ### PATCH /api/v1/services/
+
+Edição dos múltiplos serviços listados no `service_ids`.
+
+- Usuário logado
+- Feature: `edit:service`
+- Corpo da requisição:
+  - service_ids: Array de Id's de serviços [service_id, ...]
+  - name: Depilação virilha (opcional)
+  - categoryId: Id da categoria (opcional)
+  - price: Valor do serviço em centavos (opcional)
+- Retorno:
+  - Lista de serviços editados: [
+    - id: Id do serviço
+    - name: Nome do serviço
+    - category_id: Id da categoria || null
+    - price: Valor do serviço em centavos
+    - created_at: Data de Criação
+    - updated_at: Date de Atualização
+      ]
+
 ## Deleção de Serviços
 
 ### DELETE /api/v1/services/[service_name]
+
+Deleção do serviço cujo o campo `name` seja igual ao `service_name`.
 
 - Usuário logado
 - Feature: `delete:service`
@@ -89,14 +136,18 @@
 
 ### DELETE /api/v1/services/
 
+Deleção dos múltiplos serviços listados no `service_ids`.
+
 - Usuário logado
 - Feature: `delete:service`
 - Corpo da Requisição:
-  - Lista de Id's de serviços [service_id, ...]
+  - service_ids: Array de Id's de serviços [service_id, ...]
 - Retorno:
-  - id: Id do serviço
-  - name: Nome do serviço
-  - category_id: Id da categoria || null
-  - price: Valor do serviço em centavos
-  - created_at: Data de Criação
-  - updated_at: Date de Atualização
+  - Lista de serviços deletados: [
+    - id: Id do serviço
+    - name: Nome do serviço
+    - category_id: Id da categoria || null
+    - price: Valor do serviço em centavos
+    - created_at: Data de Criação
+    - updated_at: Date de Atualização
+      ]
