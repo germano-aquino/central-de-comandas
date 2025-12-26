@@ -107,25 +107,17 @@ async function setCategoriesFeatures(unallowedUser) {
   return await category.setCategoriesFeatures(unallowedUser);
 }
 
-async function createServices(length = 5, servicesInputValues = []) {
+async function createServices(length = 5, serviceDefaultValues = {}) {
   let services = [];
 
-  if (servicesInputValues.length !== 0) {
-    for (const service of servicesInputValues) {
-      const newService = await createService(
-        service?.name,
-        service?.price,
-        service?.category_id,
-      );
-      services.push(newService);
-    }
-  } else {
-    for (let i = 0; i < length; i++) {
-      const newService = await createService();
-      services.push(newService);
-    }
+  for (let i = 0; i < length; i++) {
+    const newService = await createService(
+      serviceDefaultValues?.name,
+      serviceDefaultValues?.price,
+      serviceDefaultValues?.category_id,
+    );
+    services.push(newService);
   }
-
   return services;
 }
 

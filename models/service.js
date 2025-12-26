@@ -31,24 +31,16 @@ async function create(serviceInputValues) {
   }
 
   async function validateInputValues(serviceInputValues) {
-    try {
-      if (
-        "category_id" in serviceInputValues &&
-        serviceInputValues.category_id !== null
-      ) {
-        await category.findOneValidById(serviceInputValues.category_id);
-      } else {
-        serviceInputValues.category_id = null;
-      }
-
-      await validateUniqueName(serviceInputValues.name);
-    } catch (error) {
-      if (error instanceof NotFoundError) {
-        throw new ValidationError(error);
-      }
-
-      throw error;
+    if (
+      "category_id" in serviceInputValues &&
+      serviceInputValues.category_id !== null
+    ) {
+      await findCategoryValidById(serviceInputValues.category_id);
+    } else {
+      serviceInputValues.category_id = null;
     }
+
+    await validateUniqueName(serviceInputValues.name);
   }
 }
 
@@ -64,27 +56,19 @@ async function update(serviceName, serviceInputValues) {
   async function getValidNewServiceValues(currentName, serviceInputValues) {
     const currentService = await findOneValidByName(serviceName);
 
-    try {
-      if ("name" in serviceInputValues) {
-        const inputServiceName = serviceInputValues.name;
-        if (currentName.toLowerCase() !== inputServiceName.toLowerCase()) {
-          await validateUniqueName(serviceInputValues.name);
-        }
+    if ("name" in serviceInputValues) {
+      const inputServiceName = serviceInputValues.name;
+      if (currentName.toLowerCase() !== inputServiceName.toLowerCase()) {
+        await validateUniqueName(serviceInputValues.name);
       }
-
-      if ("category_id" in serviceInputValues) {
-        await category.findOneValidById(serviceInputValues.category_id);
-      }
-
-      const newServiceValues = { ...currentService, ...serviceInputValues };
-      return newServiceValues;
-    } catch (error) {
-      if (error instanceof NotFoundError) {
-        throw new ValidationError(error);
-      }
-
-      throw error;
     }
+
+    if ("category_id" in serviceInputValues) {
+      await findCategoryValidById(serviceInputValues.category_id);
+    }
+
+    const newServiceValues = { ...currentService, ...serviceInputValues };
+    return newServiceValues;
   }
 
   async function runUpdateQuery(currentName, newServiceValues) {
@@ -122,24 +106,16 @@ async function updateManyByIdArray(serviceInputValues) {
   return updatedServices;
 
   async function validateInputValues(serviceInputValues) {
-    try {
-      if ("name" in serviceInputValues) {
-        throw new ValidationError({
-          message:
-            "Não é possível editar o nome de múltiplos serviços com uma única requisição.",
-          action: "Retire a propriedade nome da requisição e tente novamente.",
-        });
-      }
+    if ("name" in serviceInputValues) {
+      throw new ValidationError({
+        message:
+          "Não é possível editar o nome de múltiplos serviços com uma única requisição.",
+        action: "Retire a propriedade nome da requisição e tente novamente.",
+      });
+    }
 
-      if ("category_id" in serviceInputValues) {
-        await category.findOneValidById(serviceInputValues.category_id);
-      }
-    } catch (error) {
-      if (error instanceof NotFoundError) {
-        throw new ValidationError(error);
-      }
-
-      throw error;
+    if ("category_id" in serviceInputValues) {
+      await findCategoryValidById(serviceInputValues.category_id);
     }
   }
 
@@ -234,19 +210,53 @@ async function deleteManyByIdArray(serviceIds) {
   }
 }
 
-async function retrieveAll() {
-  const storedServices = await runSelectQuery();
+async function retrieveAll(categoryName) {
+  const storedServices = await runSelectQuery(categoryName);
+
   return storedServices;
 
-  async function runSelectQuery() {
-    const results = await database.query(`
-      SELECT
-        *
-      FROM
-        services
-      ;`);
+  async function runSelectQuery(categoryName) {
+    let query = "SELECT * FROM services WHERE TRUE";
+    let values = [];
+
+    if (categoryName) {
+      const categoryId = await getCategoryIdByName(categoryName);
+      values.push(categoryId);
+      query += ` AND category_id = $${values.length}`;
+    }
+
+    const results = await database.query({
+      text: query,
+      values,
+    });
 
     return results.rows;
+  }
+
+  async function getCategoryIdByName(categoryName) {
+    try {
+      const selectedCategory = await category.findOneValidByName(categoryName);
+
+      return selectedCategory.id;
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw new ValidationError(error);
+      }
+
+      throw error;
+    }
+  }
+}
+
+async function findCategoryValidById(categoryId) {
+  try {
+    return await category.findOneValidById(categoryId);
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw new ValidationError(error);
+    }
+
+    throw error;
   }
 }
 

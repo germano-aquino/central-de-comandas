@@ -21,7 +21,9 @@ async function postHandler(request, response) {
 }
 
 async function getHandler(request, response) {
-  const storedServices = await service.retrieveAll();
+  const categoryName = request.query?.category_name;
+
+  const storedServices = await service.retrieveAll(categoryName);
 
   return response.status(200).json(storedServices);
 }
