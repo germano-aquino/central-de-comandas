@@ -4,6 +4,7 @@ import database from "infra/database";
 import activation from "models/activation";
 import category from "models/category";
 import migrator from "models/migrator";
+import service from "models/service";
 import session from "models/session";
 import user from "models/user";
 
@@ -106,6 +107,33 @@ async function setCategoriesFeatures(unallowedUser) {
   return await category.setCategoriesFeatures(unallowedUser);
 }
 
+async function createServices(length = 5, serviceDefaultValues = {}) {
+  let services = [];
+
+  for (let i = 0; i < length; i++) {
+    const newService = await createService(
+      serviceDefaultValues?.name,
+      serviceDefaultValues?.price,
+      serviceDefaultValues?.category_id,
+    );
+    services.push(newService);
+  }
+  return services;
+}
+
+async function createService(serviceName, servicePrice, categoryId) {
+  const categoryInputValues = {
+    name: serviceName || faker.internet.username().replace(/[.-]/g, ""),
+    price: servicePrice || faker.number.int({ min: 99, max: 9999 }),
+    category_id: categoryId || null,
+  };
+  return await service.create(categoryInputValues);
+}
+
+async function addServicesFeatures(unallowedUser) {
+  return await service.addServicesFeatures(unallowedUser);
+}
+
 const orchestrator = {
   waitForAllServices,
   clearDatabase,
@@ -118,6 +146,9 @@ const orchestrator = {
   createCategory,
   createCategories,
   setCategoriesFeatures,
+  createService,
+  createServices,
+  addServicesFeatures,
 };
 
 export default orchestrator;

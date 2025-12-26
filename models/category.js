@@ -130,6 +130,30 @@ async function findOneValidByName(categoryName) {
   return results.rows[0];
 }
 
+async function findOneValidById(categoryId) {
+  const results = await database.query({
+    text: `
+        SELECT
+          *
+        FROM
+          service_categories
+        WHERE
+          id = $1
+        LIMIT
+          1
+      ;`,
+    values: [categoryId],
+  });
+
+  if (results.rowCount === 0) {
+    throw new NotFoundError({
+      message: "Esta categoria não existe.",
+      action: "Verifique o id da categoria e tente novamente.",
+    });
+  }
+  return results.rows[0];
+}
+
 async function validateUniqueName(categoryName) {
   const results = await database.query({
     text: `
@@ -187,6 +211,7 @@ const category = {
   deleteByName,
   deleteManyByIdArray,
   findOneValidByName,
+  findOneValidById,
   retrieveAllCategories,
   setCategoriesFeatures,
 };
