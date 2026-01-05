@@ -44,7 +44,7 @@ describe("DELETE /api/v1/categories", () => {
     test("With permission and valid data", async () => {
       const inactiveUser = await orchestrator.createUser();
       const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.setCategoriesFeatures(activatedUser);
+      await orchestrator.addCategoriesFeatures(activatedUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
       let categories = await orchestrator.createCategories(7);
@@ -86,7 +86,7 @@ describe("DELETE /api/v1/categories", () => {
     test("With permission and nonexistent category ids", async () => {
       const inactiveUser = await orchestrator.createUser();
       const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.setCategoriesFeatures(activatedUser);
+      await orchestrator.addCategoriesFeatures(activatedUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
       const response = await fetch(`http://localhost:3000/api/v1/categories`, {

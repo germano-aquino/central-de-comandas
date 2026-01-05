@@ -3,6 +3,7 @@ import retry from "async-retry";
 import database from "infra/database";
 import activation from "models/activation";
 import category from "models/category";
+import formSection from "models/formSection";
 import migrator from "models/migrator";
 import service from "models/service";
 import session from "models/session";
@@ -103,8 +104,8 @@ async function createCategory(categoryName) {
   return await category.create(categoryInputValues);
 }
 
-async function setCategoriesFeatures(unallowedUser) {
-  return await category.setCategoriesFeatures(unallowedUser);
+async function addCategoriesFeatures(unallowedUser) {
+  return await category.addCategoriesFeatures(unallowedUser);
 }
 
 async function createServices(length = 5, serviceDefaultValues = {}) {
@@ -122,16 +123,45 @@ async function createServices(length = 5, serviceDefaultValues = {}) {
 }
 
 async function createService(serviceName, servicePrice, categoryId) {
-  const categoryInputValues = {
+  const serviceInputValues = {
     name: serviceName || faker.internet.username().replace(/[.-]/g, ""),
     price: servicePrice || faker.number.int({ min: 99, max: 9999 }),
     category_id: categoryId || null,
   };
-  return await service.create(categoryInputValues);
+  return await service.create(serviceInputValues);
 }
 
 async function addServicesFeatures(unallowedUser) {
   return await service.addServicesFeatures(unallowedUser);
+}
+
+async function createFormSections(length = 5, formSectionsName = []) {
+  let formSections = [];
+
+  if (formSectionsName.length !== 0) {
+    for (const name of formSectionsName) {
+      const formSectionObject = await createFormSection(name);
+      formSections.push(formSectionObject);
+    }
+  } else {
+    for (let i = 0; i < length; i++) {
+      const formSectionObject = await createFormSection();
+      formSections.push(formSectionObject);
+    }
+  }
+
+  return formSections;
+}
+
+async function createFormSection(formSectionName) {
+  const categoryInputValues = {
+    name: formSectionName || faker.internet.username().replace(/[.-]/g, ""),
+  };
+  return await formSection.create(categoryInputValues);
+}
+
+async function addFormSectionsFeatures(unallowedUser) {
+  return await formSection.addFormSectionsFeatures(unallowedUser);
 }
 
 const orchestrator = {
@@ -145,10 +175,13 @@ const orchestrator = {
   createSession,
   createCategory,
   createCategories,
-  setCategoriesFeatures,
+  addCategoriesFeatures,
   createService,
   createServices,
   addServicesFeatures,
+  createFormSection,
+  createFormSections,
+  addFormSectionsFeatures,
 };
 
 export default orchestrator;
