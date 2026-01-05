@@ -103,8 +103,8 @@ async function createCategory(categoryName) {
   return await category.create(categoryInputValues);
 }
 
-async function setCategoriesFeatures(unallowedUser) {
-  return await category.setCategoriesFeatures(unallowedUser);
+async function addCategoriesFeatures(unallowedUser) {
+  return await category.addCategoriesFeatures(unallowedUser);
 }
 
 async function createServices(length = 5, serviceDefaultValues = {}) {
@@ -122,12 +122,12 @@ async function createServices(length = 5, serviceDefaultValues = {}) {
 }
 
 async function createService(serviceName, servicePrice, categoryId) {
-  const categoryInputValues = {
+  const serviceInputValues = {
     name: serviceName || faker.internet.username().replace(/[.-]/g, ""),
     price: servicePrice || faker.number.int({ min: 99, max: 9999 }),
     category_id: categoryId || null,
   };
-  return await service.create(categoryInputValues);
+  return await service.create(serviceInputValues);
 }
 
 async function addServicesFeatures(unallowedUser) {
@@ -145,7 +145,7 @@ const orchestrator = {
   createSession,
   createCategory,
   createCategories,
-  setCategoriesFeatures,
+  addCategoriesFeatures,
   createService,
   createServices,
   addServicesFeatures,

@@ -151,8 +151,8 @@ describe("PATCH /api/v1/services", () => {
 
       expect(responseBody).toEqual({
         name: "ValidationError",
-        message: "Esta categoria não existe.",
-        action: "Verifique o id da categoria e tente novamente.",
+        message: "Esta seção não existe.",
+        action: "Verifique o id da seção e tente novamente.",
         status_code: 400,
       });
     });

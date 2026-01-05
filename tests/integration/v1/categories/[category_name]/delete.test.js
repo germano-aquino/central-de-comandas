@@ -42,7 +42,7 @@ describe("DELETE /api/v1/categories/[category_name]", () => {
     test("With permission and valid data", async () => {
       const inactiveUser = await orchestrator.createUser();
       const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.setCategoriesFeatures(activatedUser);
+      await orchestrator.addCategoriesFeatures(activatedUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
       const categoryToBeDeleted = await orchestrator.createCategory();
@@ -78,7 +78,7 @@ describe("DELETE /api/v1/categories/[category_name]", () => {
     test("With permission and with different case", async () => {
       const inactiveUser = await orchestrator.createUser();
       const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.setCategoriesFeatures(activatedUser);
+      await orchestrator.addCategoriesFeatures(activatedUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
       const categoryToBeDeleted =
@@ -115,7 +115,7 @@ describe("DELETE /api/v1/categories/[category_name]", () => {
     test("With permission and nonexistent category name", async () => {
       const inactiveUser = await orchestrator.createUser();
       const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.setCategoriesFeatures(activatedUser);
+      await orchestrator.addCategoriesFeatures(activatedUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
       const response = await fetch(
@@ -134,8 +134,8 @@ describe("DELETE /api/v1/categories/[category_name]", () => {
 
       expect(responseBody).toEqual({
         name: "NotFoundError",
-        message: "Esta categoria não existe.",
-        action: "Verifique o nome da categoria e tente novamente.",
+        message: "Esta seção não existe.",
+        action: "Verifique o nome da seção e tente novamente.",
         status_code: 404,
       });
     });
