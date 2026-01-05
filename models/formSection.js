@@ -43,7 +43,7 @@ async function retrieveAll() {
   return storedCategories;
 }
 
-async function addFormSectionsFeatures(forbiddenUser) {
+async function addFeatures(forbiddenUser) {
   const allowedUser = await user.addFeaturesByUserId(forbiddenUser.id, [
     "create:form_section",
     "read:form_section",
@@ -61,7 +61,7 @@ const formSection = {
   findOneValidByName,
   findOneValidById,
   retrieveAll,
-  addFormSectionsFeatures,
+  addFeatures,
 };
 
 export default formSection;

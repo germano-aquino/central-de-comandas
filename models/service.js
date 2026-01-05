@@ -290,7 +290,7 @@ async function findOneValidByName(serviceName) {
   }
 }
 
-async function addServicesFeatures(forbiddenUser) {
+async function addFeatures(forbiddenUser) {
   const allowedUser = user.addFeaturesByUserId(forbiddenUser.id, [
     "create:service",
     "read:service",
@@ -308,7 +308,7 @@ const service = {
   deleteManyByIdArray,
   retrieveAll,
   findOneValidByName,
-  addServicesFeatures,
+  addFeatures,
 };
 
 export default service;
