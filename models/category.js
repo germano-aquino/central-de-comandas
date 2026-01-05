@@ -46,7 +46,7 @@ async function retrieveAll() {
   return storedCategories;
 }
 
-async function addCategoriesFeatures(forbiddenUser) {
+async function addFeatures(forbiddenUser) {
   const allowedUser = user.addFeaturesByUserId(forbiddenUser.id, [
     "create:category",
     "read:category",
@@ -64,7 +64,7 @@ const category = {
   findOneValidByName,
   findOneValidById,
   retrieveAll,
-  addCategoriesFeatures,
+  addFeatures,
 };
 
 export default category;

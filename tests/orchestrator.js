@@ -80,10 +80,6 @@ async function createSession(unloggedUser) {
   return await session.create(unloggedUser.id);
 }
 
-async function addCategoriesFeatures(unallowedUser) {
-  return await category.addCategoriesFeatures(unallowedUser);
-}
-
 async function createServices(length = 5, serviceDefaultValues = {}) {
   let services = [];
 
@@ -108,7 +104,15 @@ async function createService(serviceName, servicePrice, categoryId) {
 }
 
 async function addServicesFeatures(unallowedUser) {
-  return await service.addServicesFeatures(unallowedUser);
+  return await service.addFeatures(unallowedUser);
+}
+
+async function addCategoriesFeatures(unallowedUser) {
+  return await category.addFeatures(unallowedUser);
+}
+
+async function addFormSectionsFeatures(unallowedUser) {
+  return await formSection.addFeatures(unallowedUser);
 }
 
 async function createSections(
@@ -140,10 +144,6 @@ async function createSection(sectionName, sectionType = "service") {
   return await section.create(categoryInputValues, sectionType);
 }
 
-async function addFormSectionsFeatures(unallowedUser) {
-  return await formSection.addFormSectionsFeatures(unallowedUser);
-}
-
 const orchestrator = {
   waitForAllServices,
   clearDatabase,
@@ -153,10 +153,10 @@ const orchestrator = {
   createUser,
   activateUser,
   createSession,
-  addCategoriesFeatures,
   createService,
   createServices,
   addServicesFeatures,
+  addCategoriesFeatures,
   addFormSectionsFeatures,
   createSections,
   createSection,
