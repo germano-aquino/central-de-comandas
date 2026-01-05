@@ -15,7 +15,7 @@ describe("PATCH /api/v1/categories/[category_name]", () => {
       const activatedUser = await orchestrator.activateUser(inactiveUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
-      const category = await orchestrator.createCategory("OldName");
+      const category = await orchestrator.createSection("OldName");
 
       const response = await fetch(
         `http://localhost:3000/api/v1/categories/${category.name}`,
@@ -49,7 +49,7 @@ describe("PATCH /api/v1/categories/[category_name]", () => {
       await orchestrator.addCategoriesFeatures(activatedUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
-      const category = await orchestrator.createCategory();
+      const category = await orchestrator.createSection();
 
       const response = await fetch(
         `http://localhost:3000/api/v1/categories/${category.name}`,
@@ -84,7 +84,7 @@ describe("PATCH /api/v1/categories/[category_name]", () => {
       await orchestrator.addCategoriesFeatures(activatedUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
-      const category = await orchestrator.createCategory("mismatchcase");
+      const category = await orchestrator.createSection("mismatchcase");
 
       const response = await fetch(
         `http://localhost:3000/api/v1/categories/${category.name}`,
@@ -151,7 +151,7 @@ describe("PATCH /api/v1/categories/[category_name]", () => {
 
   describe("Anonymous user", () => {
     test("With valid data", async () => {
-      const category = await orchestrator.createCategory();
+      const category = await orchestrator.createSection();
 
       const response = await fetch(
         `http://localhost:3000/api/v1/categories/${category.name}`,

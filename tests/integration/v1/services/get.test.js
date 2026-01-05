@@ -65,7 +65,7 @@ describe("GET /api/v1/services", () => {
       await orchestrator.addServicesFeatures(activatedUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
-      const categories = await orchestrator.createCategories(3);
+      const categories = await orchestrator.createSections(3);
 
       let selectedServices = await orchestrator.createServices(7, {
         category_id: categories[0].id,

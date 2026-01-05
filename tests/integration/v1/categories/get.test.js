@@ -37,7 +37,7 @@ describe("GET /api/v1/categories", () => {
       await orchestrator.addCategoriesFeatures(activatedUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
-      let categories = await orchestrator.createCategories(7);
+      let categories = await orchestrator.createSections(7);
       categories = categories.map((category) => {
         return {
           ...category,

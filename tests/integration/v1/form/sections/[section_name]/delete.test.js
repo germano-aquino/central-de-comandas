@@ -15,7 +15,7 @@ describe("DELETE /api/v1/form/sections/[section_name]", () => {
       const activatedUser = await orchestrator.activateUser(inactiveUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
-      const formSection = await orchestrator.createFormSection("OldName");
+      const formSection = await orchestrator.createSection("OldName", "form");
 
       const response = await fetch(
         `http://localhost:3000/api/v1/form/sections/${formSection.name}`,
@@ -46,7 +46,10 @@ describe("DELETE /api/v1/form/sections/[section_name]", () => {
       await orchestrator.addFormSectionsFeatures(activatedUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
-      const sectionToBeDeleted = await orchestrator.createFormSection();
+      const sectionToBeDeleted = await orchestrator.createSection(
+        undefined,
+        "form",
+      );
 
       const response = await fetch(
         `http://localhost:3000/api/v1/form/sections/${sectionToBeDeleted.name}`,
@@ -82,8 +85,10 @@ describe("DELETE /api/v1/form/sections/[section_name]", () => {
       await orchestrator.addFormSectionsFeatures(activatedUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
-      const sectionToBeDeleted =
-        await orchestrator.createFormSection("mismatchcase");
+      const sectionToBeDeleted = await orchestrator.createSection(
+        "mismatchcase",
+        "form",
+      );
 
       const response = await fetch(
         `http://localhost:3000/api/v1/form/sections/MismatchCase`,
@@ -144,7 +149,7 @@ describe("DELETE /api/v1/form/sections/[section_name]", () => {
 
   describe("Anonymous user", () => {
     test("With valid data", async () => {
-      const category = await orchestrator.createFormSection();
+      const category = await orchestrator.createSection(undefined, "form");
 
       const response = await fetch(
         `http://localhost:3000/api/v1/form/sections/${category.name}`,

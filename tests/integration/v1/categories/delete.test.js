@@ -15,7 +15,7 @@ describe("DELETE /api/v1/categories", () => {
       const activatedUser = await orchestrator.activateUser(inactiveUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
-      let categories = await orchestrator.createCategories(7);
+      let categories = await orchestrator.createSections(7);
       const categoryIds = categories.map((category) => category.id);
 
       const response = await fetch("http://localhost:3000/api/v1/categories", {
@@ -47,7 +47,7 @@ describe("DELETE /api/v1/categories", () => {
       await orchestrator.addCategoriesFeatures(activatedUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
-      let categories = await orchestrator.createCategories(7);
+      let categories = await orchestrator.createSections(7);
       categories = categories.map((category) => {
         return {
           ...category,
@@ -115,7 +115,7 @@ describe("DELETE /api/v1/categories", () => {
 
   describe("Anonymous user", () => {
     test("With valid data", async () => {
-      const categories = await orchestrator.createCategories(7);
+      const categories = await orchestrator.createSections(7);
       const categoryIds = categories.map((category) => category.id);
 
       const response = await fetch("http://localhost:3000/api/v1/categories", {

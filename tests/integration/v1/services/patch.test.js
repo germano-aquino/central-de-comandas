@@ -87,7 +87,7 @@ describe("PATCH /api/v1/services", () => {
       await orchestrator.addServicesFeatures(activatedUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
-      const serviceCategory = await orchestrator.createCategory("Brow Design");
+      const serviceCategory = await orchestrator.createSection("Brow Design");
 
       const services = await orchestrator.createServices(3);
       const serviceIds = services.map((service) => service.id);
