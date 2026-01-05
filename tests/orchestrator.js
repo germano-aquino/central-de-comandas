@@ -5,6 +5,7 @@ import activation from "models/activation";
 import category from "models/category";
 import formSection from "models/formSection";
 import migrator from "models/migrator";
+import section from "models/section";
 import service from "models/service";
 import session from "models/session";
 import user from "models/user";
@@ -79,31 +80,6 @@ async function createSession(unloggedUser) {
   return await session.create(unloggedUser.id);
 }
 
-async function createCategories(length = 5, categoriesName = []) {
-  let categories = [];
-
-  if (categoriesName.length !== 0) {
-    for (const name of categoriesName) {
-      const category = await createCategory(name);
-      categories.push(category);
-    }
-  } else {
-    for (let i = 0; i < length; i++) {
-      const category = await createCategory();
-      categories.push(category);
-    }
-  }
-
-  return categories;
-}
-
-async function createCategory(categoryName) {
-  const categoryInputValues = {
-    name: categoryName || faker.internet.username().replace(/[.-]/g, ""),
-  };
-  return await category.create(categoryInputValues);
-}
-
 async function addCategoriesFeatures(unallowedUser) {
   return await category.addCategoriesFeatures(unallowedUser);
 }
@@ -135,29 +111,33 @@ async function addServicesFeatures(unallowedUser) {
   return await service.addServicesFeatures(unallowedUser);
 }
 
-async function createFormSections(length = 5, formSectionsName = []) {
-  let formSections = [];
+async function createSections(
+  length = 5,
+  sectionType = "service",
+  sectionsName = [],
+) {
+  let sections = [];
 
-  if (formSectionsName.length !== 0) {
-    for (const name of formSectionsName) {
-      const formSectionObject = await createFormSection(name);
-      formSections.push(formSectionObject);
+  if (sectionsName.length !== 0) {
+    for (const name of sectionsName) {
+      const sectionObject = await createSection(name, sectionType);
+      sections.push(sectionObject);
     }
   } else {
     for (let i = 0; i < length; i++) {
-      const formSectionObject = await createFormSection();
-      formSections.push(formSectionObject);
+      const sectionObject = await createSection(undefined, sectionType);
+      sections.push(sectionObject);
     }
   }
 
-  return formSections;
+  return sections;
 }
 
-async function createFormSection(formSectionName) {
+async function createSection(sectionName, sectionType = "service") {
   const categoryInputValues = {
-    name: formSectionName || faker.internet.username().replace(/[.-]/g, ""),
+    name: sectionName || faker.internet.username().replace(/[.-]/g, ""),
   };
-  return await formSection.create(categoryInputValues);
+  return await section.create(categoryInputValues, sectionType);
 }
 
 async function addFormSectionsFeatures(unallowedUser) {
@@ -173,15 +153,13 @@ const orchestrator = {
   createUser,
   activateUser,
   createSession,
-  createCategory,
-  createCategories,
   addCategoriesFeatures,
   createService,
   createServices,
   addServicesFeatures,
-  createFormSection,
-  createFormSections,
   addFormSectionsFeatures,
+  createSections,
+  createSection,
 };
 
 export default orchestrator;

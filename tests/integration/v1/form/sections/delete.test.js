@@ -15,7 +15,7 @@ describe("DELETE /api/v1/form/sections", () => {
       const activatedUser = await orchestrator.activateUser(inactiveUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
-      let formSections = await orchestrator.createFormSections(7);
+      let formSections = await orchestrator.createSections(7, "form");
       const formSectionIds = formSections.map((formSection) => formSection.id);
 
       const response = await fetch(
@@ -51,7 +51,7 @@ describe("DELETE /api/v1/form/sections", () => {
       await orchestrator.addFormSectionsFeatures(activatedUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
-      let formSections = await orchestrator.createFormSections(7);
+      let formSections = await orchestrator.createSections(7, "form");
       formSections = formSections.map((formSection) => {
         return {
           ...formSection,
@@ -125,7 +125,7 @@ describe("DELETE /api/v1/form/sections", () => {
 
   describe("Anonymous user", () => {
     test("With valid data", async () => {
-      const formSections = await orchestrator.createFormSections(7);
+      const formSections = await orchestrator.createSections(7, "form");
       const formSectionIds = formSections.map((category) => category.id);
 
       const response = await fetch(

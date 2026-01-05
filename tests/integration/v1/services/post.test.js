@@ -75,7 +75,7 @@ describe("POST /api/v1/services", () => {
       const userSession = await orchestrator.createSession(activatedUser);
 
       const serviceCategory =
-        await orchestrator.createCategory("Brazilian Waxing");
+        await orchestrator.createSection("Brazilian Waxing");
 
       const response = await fetch("http://localhost:3000/api/v1/services", {
         method: "POST",

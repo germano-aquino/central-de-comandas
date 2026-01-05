@@ -40,7 +40,7 @@ describe("GET /api/v1/form/sections", () => {
       await orchestrator.addFormSectionsFeatures(activatedUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
-      let formSections = await orchestrator.createFormSections(7);
+      let formSections = await orchestrator.createSections(7, "form");
       formSections = formSections.map((section) => {
         return {
           ...section,
