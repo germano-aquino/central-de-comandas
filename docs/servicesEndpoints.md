@@ -1,153 +1,127 @@
-# Endpoints para serviços
+# Endpoints para Pergunta
 
-## Tabela Services
+## Tabela Questions
 
-- id: Id do serviço
-- name: Nome do serviço
-- price: Valor do serviço em centavos
-- category_id: Id da categoria a qual o serviço pertence
+- id: Id da Pergunta
+- statement: Pergunta
+- type: Tipo de Pergunta ["multiple-choice", "essay-questions", "both"]
+- options: [varchar()]
+- option_marked: varchar() - optional
+- answer: varchar() - optional
+- section_id: Id da seção que a pergunta pertence - optional
 - created_at: Data de criação
 - updated_at: Data da última atualização
 
-## Criação de serviços
+## Criação de Perguntas
 
-### POST /api/v1/services
-
-Cração de um serviço.
+### POST /api/v1/questions
 
 - Usuário logado
-- Feature `create:service`
+- Feature `create:question`
 - Corpo da requisição:
-  - name: Depilação virilha
-  - categoryId: Id da categoria (opicional)
-  - price: Valor do serviço em centavos
+  - statement: Pergunta por extenso
+  - type: ["multiple-choice", "essay-questions", "both"]
+  - options: [Sim, Não]
+  - option_marked: Sim
+  - answer: Resposta discrusiva
+  - section_id: uuid da section pai da pergunta
 - Retorno:
-  - id: Id do serviço
-  - name: Nome do serviço
-  - category_id: Id da categoria || null
-  - price: Valor do serviço em centavos
+  - id: Id da Pergunta
+  - statement: Pergunta por extenso
+  - type: ["multiple-choice", "essay-questions", "both"]
+  - options: [Sim, Não]
+  - option_marked: Sim
+  - answer: Resposta discrusiva
+  - section_id: uuid da section pai da pergunta
   - created_at: Data de Criação
   - updated_at: Date de Atualização
 
-## Listagem de Serviços
+## Listagem de Perguntas
 
-### GET /api/v1/services
+### GET /api/v1/questions
 
-Lista todos os serviços cadastrados.
+Lista todas as Perguntas cadastradas.
 
 - Usuário logado
-- Feature: `read:service`
+- Feature: `read:question`
 - Retorno:
-  - Lista de serviços [
-    - id: Id do serviço
-    - name: Nome do serviço
-    - category_id: Id da categoria
-    - price: Valor do serviço em centavos
+  - Lista de Perguntas [
+    - id: Id da Pergunta
+    - statement: Pergunta por extenso
+    - type: ["multiple-choice", "essay-questions", "both"]
+    - options: [Sim, Não]
+    - option_marked: Sim
+    - answer: Resposta discrusiva
+    - section_id: uuid da section pai da pergunta
     - created_at: Data de Criação
     - updated_at: Date de Atualização
       ]
 
-### GET /api/v1/services/[service_name]
+### GET /api/v1/questions?section_name=
 
-Listagem do serviço cujo campo `name` seja igual ao `service_name`.
-
-- Usuário logado
-- Feature: `read:service`
-- Retorno:
-  - id: Id do serviço
-  - name: Nome do serviço
-  - category_id: Id da categoria || null
-  - price: Valor do serviço em centavos
-  - created_at: Data de Criação
-  - updated_at: Date de Atualização
-
-### GET /api/v1/services/[category_name]
-
-Listagem de todos os serviços cujo o `category_id` corresponda à categoria com `name` igual ao `category_name`
+Lista todas as Perguntas cadastradas.
 
 - Usuário logado
-- Feature: `read:service`
+- Feature: `read:question`
 - Retorno:
-  - Lista de serviços por categoria: [
-    - id: Id do serviço
-    - name: Nome do serviço
-    - category_id: Id da categoria || null
-    - price: Valor do serviço em centavos
+  - Lista de Perguntas Pertencentes a uma seção determinada: [
+    - id: Id da Pergunta
+    - statement: Pergunta por extenso
+    - type: ["multiple-choice", "essay-questions", "both"]
+    - options: [Sim, Não]
+    - option_marked: Sim
+    - answer: Resposta discrusiva
+    - section_id: uuid da section pai da pergunta
     - created_at: Data de Criação
     - updated_at: Date de Atualização
       ]
 
-## Edição de Serviços
+## Edição de Perguntas
 
-### PATCH /api/v1/services/[service_name]
+### PATCH /api/v1/questions
 
-Edição do serviço cujo o campo `name` seja igual ao `service_name`.
+Edição da Pergunta pelo `id` da pergunta no corpo da requisição.
 
 - Usuário logado
-- Feature: `edit:service`
+- Feature: `edit:question`
 - Corpo da requisição:
-  - name: Depilação virilha (opcional)
-  - categoryId: Id da categoria (opcional)
-  - price: Valor do serviço em centavos (opcional)
+  - id: Id da Pergunta
+  - statement: Pergunta por extenso
+  - type: ["multiple-choice", "essay-questions", "both"]
+  - options: [Sim, Não]
+  - option_marked: Sim
+  - answer: Resposta discrusiva
+  - section_id: uuid da section pai da pergunta
 - Retorno:
-  - id: Id do serviço
-  - name: Nome do serviço
-  - category_id: Id da categoria || null
-  - price: Valor do serviço em centavos
+  - id: Id da Pergunta
+  - statement: Pergunta por extenso
+  - type: ["multiple-choice", "essay-questions", "both"]
+  - options: [Sim, Não]
+  - option_marked: Sim
+  - answer: Resposta discrusiva
+  - section_id: uuid da section pai da pergunta
   - created_at: Data de Criação
   - updated_at: Date de Atualização
 
-  ### PATCH /api/v1/services/
+## Deleção de Perguntas
 
-Edição dos múltiplos serviços listados no `service_ids`.
+### DELETE /api/v1/questions/
 
-- Usuário logado
-- Feature: `edit:service`
-- Corpo da requisição:
-  - service_ids: Array de Id's de serviços [service_id, ...]
-  - name: Depilação virilha (opcional)
-  - categoryId: Id da categoria (opcional)
-  - price: Valor do serviço em centavos (opcional)
-- Retorno:
-  - Lista de serviços editados: [
-    - id: Id do serviço
-    - name: Nome do serviço
-    - category_id: Id da categoria || null
-    - price: Valor do serviço em centavos
-    - created_at: Data de Criação
-    - updated_at: Date de Atualização
-      ]
-
-## Deleção de Serviços
-
-### DELETE /api/v1/services/[service_name]
-
-Deleção do serviço cujo o campo `name` seja igual ao `service_name`.
+Deleção de múltiplas Perguntas definidas pelo `section_ids`
 
 - Usuário logado
-- Feature: `delete:service`
-- Retorno:
-  - id: Id do serviço
-  - name: Nome do serviço
-  - category_id: Id da categoria || null
-  - price: Valor do serviço em centavos
-  - created_at: Data de Criação
-  - updated_at: Date de Atualização
-
-### DELETE /api/v1/services/
-
-Deleção dos múltiplos serviços listados no `service_ids`.
-
-- Usuário logado
-- Feature: `delete:service`
+- Feature: `delete:question`
 - Corpo da Requisição:
-  - service_ids: Array de Id's de serviços [service_id, ...]
+  - section_ids: Lista de Id's de Perguntas [question_id, ...]
 - Retorno:
-  - Lista de serviços deletados: [
-    - id: Id do serviço
-    - name: Nome do serviço
-    - category_id: Id da categoria || null
-    - price: Valor do serviço em centavos
+  - Lista de Perguntas Deletadas [
+    - id: Id da Pergunta
+    - statement: Pergunta por extenso
+    - type: ["multiple-choice", "essay-questions", "both"]
+    - options: [Sim, Não]
+    - option_marked: Sim
+    - answer: Resposta discrusiva
+    - section_id: uuid da section pai da pergunta
     - created_at: Data de Criação
     - updated_at: Date de Atualização
       ]
