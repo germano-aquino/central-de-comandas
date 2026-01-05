@@ -1,6 +1,6 @@
+import { NotFoundError } from "infra/errors";
+import category from "models/category";
 import orchestrator from "tests/orchestrator";
-
-import { version as uuidVersion } from "uuid";
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -8,23 +8,26 @@ beforeAll(async () => {
   await orchestrator.runPendingMigrations();
 });
 
-describe("POST /api/v1/form/sections", () => {
+describe("DELETE /api/v1/form/sections", () => {
   describe("Default user", () => {
-    test("With valid data and without permission", async () => {
+    test("Without permission", async () => {
       const inactiveUser = await orchestrator.createUser();
       const activatedUser = await orchestrator.activateUser(inactiveUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
+      let formSections = await orchestrator.createFormSections(7);
+      const formSectionIds = formSections.map((formSection) => formSection.id);
+
       const response = await fetch(
         "http://localhost:3000/api/v1/form/sections",
         {
-          method: "POST",
+          method: "DELETE",
           headers: {
             Cookie: `session_id=${userSession.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
-            name: "NewFormSection",
+            form_section_ids: formSectionIds,
           }),
         },
       );
@@ -37,7 +40,7 @@ describe("POST /api/v1/form/sections", () => {
         name: "ForbiddenError",
         message: "O usuário não possui permissão para executar esta ação.",
         action:
-          'Verifique se o usuário possui a feature "create:form_section".',
+          'Verifique se o usuário possui a feature "delete:form_section".',
         status_code: 403,
       });
     });
@@ -48,74 +51,92 @@ describe("POST /api/v1/form/sections", () => {
       await orchestrator.addFormSectionsFeatures(activatedUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
+      let formSections = await orchestrator.createFormSections(7);
+      formSections = formSections.map((formSection) => {
+        return {
+          ...formSection,
+          created_at: formSection.created_at.toISOString(),
+          updated_at: formSection.updated_at.toISOString(),
+        };
+      });
+      const formSectionIds = formSections.map((formSection) => formSection.id);
+
       const response = await fetch(
         "http://localhost:3000/api/v1/form/sections",
         {
-          method: "POST",
+          method: "DELETE",
           headers: {
             Cookie: `session_id=${userSession.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
-            name: "NewFormSection",
+            form_section_ids: formSectionIds,
           }),
         },
       );
 
-      expect(response.status).toBe(201);
+      expect(response.status).toBe(200);
 
       const responseBody = await response.json();
 
-      expect(responseBody.name).toBe("NewFormSection");
-      expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
-      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody).toEqual(formSections);
+
+      //Verify that category doesn't exist on database
+
+      formSections.map(async (deletedSection) => {
+        await expect(
+          category.findOneValidByName(deletedSection.name),
+        ).rejects.toThrow(NotFoundError);
+      });
     });
 
-    test("With permission and duplicated form section name", async () => {
+    test("With permission and nonexistent category ids", async () => {
       const inactiveUser = await orchestrator.createUser();
       const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addCategoriesFeatures(activatedUser);
+      await orchestrator.addFormSectionsFeatures(activatedUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
       const response = await fetch(
-        "http://localhost:3000/api/v1/form/sections",
+        `http://localhost:3000/api/v1/form/sections`,
         {
-          method: "POST",
+          method: "DELETE",
           headers: {
             Cookie: `session_id=${userSession.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
-            name: "newformsection",
+            form_section_ids: [
+              "cbd746a2-6090-4e1d-9f92-873fca25514d",
+              "d110e555-ebf2-4acc-ad72-63739372f537",
+              "8882cc13-74c3-4170-9420-04077d68c7df",
+              "1e806612-ddac-4241-8ae7-cdbabd306b3c",
+            ],
           }),
         },
       );
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(200);
 
       const responseBody = await response.json();
 
-      expect(responseBody).toEqual({
-        name: "ValidationError",
-        message: "Este nome já está sendo utilizado.",
-        action: "Escolha um novo nome e tente novamente.",
-        status_code: 400,
-      });
+      expect(responseBody).toEqual([]);
     });
   });
 
   describe("Anonymous user", () => {
     test("With valid data", async () => {
+      const formSections = await orchestrator.createFormSections(7);
+      const formSectionIds = formSections.map((category) => category.id);
+
       const response = await fetch(
         "http://localhost:3000/api/v1/form/sections",
         {
-          method: "POST",
+          method: "DELETE",
           headers: {
             "content-type": "application/json",
           },
           body: JSON.stringify({
-            name: "NewFormSection",
+            form_section_ids: formSectionIds,
           }),
         },
       );
@@ -128,7 +149,7 @@ describe("POST /api/v1/form/sections", () => {
         name: "ForbiddenError",
         message: "O usuário não possui permissão para executar esta ação.",
         action:
-          'Verifique se o usuário possui a feature "create:form_section".',
+          'Verifique se o usuário possui a feature "delete:form_section".',
         status_code: 403,
       });
     });

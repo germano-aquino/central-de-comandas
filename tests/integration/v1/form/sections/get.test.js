@@ -29,7 +29,7 @@ describe("GET /api/v1/form/sections", () => {
       expect(responseBody).toEqual({
         name: "ForbiddenError",
         message: "O usuário não possui permissão para executar esta ação.",
-        action: 'Verifique se o usuário possui a feature "read:form_sections".',
+        action: 'Verifique se o usuário possui a feature "read:form_section".',
         status_code: 403,
       });
     });
@@ -40,7 +40,7 @@ describe("GET /api/v1/form/sections", () => {
       await orchestrator.addFormSectionsFeatures(activatedUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
-      let formSections = await orchestrator.createCategories(7);
+      let formSections = await orchestrator.createFormSections(7);
       formSections = formSections.map((section) => {
         return {
           ...section,
@@ -79,7 +79,7 @@ describe("GET /api/v1/form/sections", () => {
       expect(responseBody).toEqual({
         name: "ForbiddenError",
         message: "O usuário não possui permissão para executar esta ação.",
-        action: 'Verifique se o usuário possui a feature "read:form_sections".',
+        action: 'Verifique se o usuário possui a feature "read:form_section".',
         status_code: 403,
       });
     });
