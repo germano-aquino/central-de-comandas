@@ -4,9 +4,10 @@
 
 - id: Id da Pergunta
 - statement: Pergunta
-- type: Tipo de Resposta ["MultipleOptions", "Description", "Both"]
+- type: Tipo de Resposta ["multiple-options", "discursive", "both"]
 - options: [varchar()]
-- description: varchar()
+- option_marked: varchar()
+- answer: varchar()
 - section_id: Id da seção que a pergunta pertence
 - created_at: Data de criação
 - updated_at: Data da última atualização
@@ -19,16 +20,18 @@
 - Feature `create:question`
 - Corpo da requisição:
   - statement: Pergunta por extenso
-  - type: [Multiple Options, Description, Both]
-  - options: [Yes, No]
-  - description: Resposta descritiva
+  - type: ["multiple-options", "discursive", "both"]
+  - options: [Sim, Não]
+  - option_marked: Sim
+  - answer: Resposta descritiva
   - section_id: uuid da section pai da pergunta
 - Retorno:
   - id: Id da Pergunta
   - statement: Pergunta por extenso
-  - type: [Multiple Options, Description, Both]
-  - options: [Yes, No]
-  - description: Resposta descritiva
+  - type: ["multiple-options", "discursive", "both"]
+  - options: [Sim, Não]
+  - option_marked: Sim
+  - answer: Resposta descritiva
   - section_id: uuid da section pai da pergunta
   - created_at: Data de Criação
   - updated_at: Date de Atualização
@@ -45,9 +48,10 @@ Lista todas as Perguntas cadastradas.
   - Lista de Perguntas [
     - id: Id da Pergunta
     - statement: Pergunta por extenso
-    - type: [Multiple Options, Description, Both]
-    - options: [Yes, No]
-    - description: Resposta descritiva
+    - type: ["multiple-options", "discursive", "both"]
+    - options: [Sim, Não]
+    - option_marked: Sim
+    - answer: Resposta descritiva
     - section_id: uuid da section pai da pergunta
     - created_at: Data de Criação
     - updated_at: Date de Atualização
@@ -63,9 +67,10 @@ Lista todas as Perguntas cadastradas.
   - Lista de Perguntas Pertencentes a uma seção determinada: [
     - id: Id da Pergunta
     - statement: Pergunta por extenso
-    - type: [Multiple Options, Description, Both]
-    - options: [Yes, No]
-    - description: Resposta descritiva
+    - type: ["multiple-options", "discursive", "both"]
+    - options: [Sim, Não]
+    - option_marked: Sim
+    - answer: Resposta descritiva
     - section_id: uuid da section pai da pergunta
     - created_at: Data de Criação
     - updated_at: Date de Atualização
@@ -82,16 +87,18 @@ Edição da Pergunta pelo `id` da pergunta no corpo da requisição.
 - Corpo da requisição:
   - id: Id da Pergunta
   - statement: Pergunta por extenso
-  - type: [Multiple Options, Description, Both]
-  - options: [Yes, No]
-  - description: Resposta descritiva
+  - type: ["multiple-options", "discursive", "both"]
+  - options: [Sim, Não]
+  - option_marked: Sim
+  - answer: Resposta descritiva
   - section_id: uuid da section pai da pergunta
 - Retorno:
   - id: Id da Pergunta
   - statement: Pergunta por extenso
-  - type: [Multiple Options, Description, Both]
-  - options: [Yes, No]
-  - description: Resposta descritiva
+  - type: ["multiple-options", "discursive", "both"]
+  - options: [Sim, Não]
+  - option_marked: Sim
+  - answer: Resposta descritiva
   - section_id: uuid da section pai da pergunta
   - created_at: Data de Criação
   - updated_at: Date de Atualização
@@ -107,9 +114,10 @@ Deleção da Pergunta pelo `id` da pergunta no corpo da requisição.
 - Retorno:
   - id: Id da Pergunta
   - statement: Pergunta por extenso
-  - type: [Multiple Options, Description, Both]
-  - options: [Yes, No]
-  - description: Resposta descritiva
+  - type: ["multiple-options", "discursive", "both"]
+  - options: [Sim, Não]
+  - option_marked: Sim
+  - answer: Resposta descritiva
   - section_id: uuid da section pai da pergunta
   - created_at: Data de Criação
   - updated_at: Date de Atualização
@@ -126,9 +134,10 @@ Deleção de múltiplas Perguntas definidas pelo `section_ids`
   - Lista de Perguntas Deletadas [
     - id: Id da Pergunta
     - statement: Pergunta por extenso
-    - type: [Multiple Options, Description, Both]
-    - options: [Yes, No]
-    - description: Resposta descritiva
+    - type: ["multiple-options", "discursive", "both"]
+    - options: [Sim, Não]
+    - option_marked: Sim
+    - answer: Resposta descritiva
     - section_id: uuid da section pai da pergunta
     - created_at: Data de Criação
     - updated_at: Date de Atualização
