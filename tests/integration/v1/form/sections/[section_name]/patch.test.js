@@ -1,6 +1,6 @@
-import { NotFoundError } from "infra/errors";
-import category from "models/category";
 import orchestrator from "tests/orchestrator";
+
+import { version as uuidVersion } from "uuid";
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -8,22 +8,26 @@ beforeAll(async () => {
   await orchestrator.runPendingMigrations();
 });
 
-describe("DELETE /api/v1/categories/[category_name]", () => {
+describe("PATCH /api/v1/form/sections/[section_name]", () => {
   describe("Default user", () => {
     test("With valid data and without permission", async () => {
       const inactiveUser = await orchestrator.createUser();
       const activatedUser = await orchestrator.activateUser(inactiveUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
-      const category = await orchestrator.createSection("OldName");
+      const formSection = await orchestrator.createSection("OldName", "form");
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/categories/${category.name}`,
+        `http://localhost:3000/api/v1/form/sections/${formSection.name}`,
         {
-          method: "DELETE",
+          method: "PATCH",
           headers: {
             Cookie: `session_id=${userSession.token}`,
+            "content-type": "application/json",
           },
+          body: JSON.stringify({
+            name: "NewName",
+          }),
         },
       );
 
@@ -34,7 +38,7 @@ describe("DELETE /api/v1/categories/[category_name]", () => {
       expect(responseBody).toEqual({
         name: "ForbiddenError",
         message: "O usuário não possui permissão para executar esta ação.",
-        action: 'Verifique se o usuário possui a feature "delete:category".',
+        action: 'Verifique se o usuário possui a feature "edit:form_section".',
         status_code: 403,
       });
     });
@@ -42,18 +46,22 @@ describe("DELETE /api/v1/categories/[category_name]", () => {
     test("With permission and valid data", async () => {
       const inactiveUser = await orchestrator.createUser();
       const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addCategoriesFeatures(activatedUser);
+      await orchestrator.addFormSectionsFeatures(activatedUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
-      const categoryToBeDeleted = await orchestrator.createSection();
+      const formSection = await orchestrator.createSection(undefined, "form");
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/categories/${categoryToBeDeleted.name}`,
+        `http://localhost:3000/api/v1/form/sections/${formSection.name}`,
         {
-          method: "DELETE",
+          method: "PATCH",
           headers: {
             Cookie: `session_id=${userSession.token}`,
+            "content-type": "application/json",
           },
+          body: JSON.stringify({
+            name: "Update Name",
+          }),
         },
       );
 
@@ -61,36 +69,37 @@ describe("DELETE /api/v1/categories/[category_name]", () => {
 
       const responseBody = await response.json();
 
-      expect(responseBody).toEqual({
-        id: categoryToBeDeleted.id,
-        name: categoryToBeDeleted.name,
-        created_at: categoryToBeDeleted.created_at.toISOString(),
-        updated_at: categoryToBeDeleted.updated_at.toISOString(),
-      });
-
-      //Verify that category doesn't exist on database
-
-      await expect(
-        category.findOneValidByName(categoryToBeDeleted.name),
-      ).rejects.toThrow(NotFoundError);
+      expect(responseBody.name).toBe("Update Name");
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.created_at)).toBeLessThan(
+        Date.parse(responseBody.updated_at),
+      );
     });
 
     test("With permission and with different case", async () => {
       const inactiveUser = await orchestrator.createUser();
       const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addCategoriesFeatures(activatedUser);
+      await orchestrator.addFormSectionsFeatures(activatedUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
-      const categoryToBeDeleted =
-        await orchestrator.createSection("mismatchcase");
+      const formSection = await orchestrator.createSection(
+        "mismatchcase",
+        "form",
+      );
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/categories/MismatchCase`,
+        `http://localhost:3000/api/v1/form/sections/${formSection.name}`,
         {
-          method: "DELETE",
+          method: "PATCH",
           headers: {
             Cookie: `session_id=${userSession.token}`,
+            "content-type": "application/json",
           },
+          body: JSON.stringify({
+            name: "misMatchCase",
+          }),
         },
       );
 
@@ -99,32 +108,34 @@ describe("DELETE /api/v1/categories/[category_name]", () => {
       const responseBody = await response.json();
 
       expect(responseBody).toEqual({
-        id: categoryToBeDeleted.id,
-        name: "mismatchcase",
-        created_at: categoryToBeDeleted.created_at.toISOString(),
-        updated_at: categoryToBeDeleted.updated_at.toISOString(),
+        id: formSection.id,
+        name: "misMatchCase",
+        created_at: formSection.created_at.toISOString(),
+        updated_at: responseBody.updated_at,
       });
 
-      //Verify that category doesn't exist on database
-
-      await expect(
-        category.findOneValidByName(categoryToBeDeleted.name),
-      ).rejects.toThrow(NotFoundError);
+      expect(Date.parse(responseBody.created_at)).toBeLessThan(
+        Date.parse(responseBody.updated_at),
+      );
     });
 
-    test("With permission and nonexistent category name", async () => {
+    test("With permission and nonexistent form section name", async () => {
       const inactiveUser = await orchestrator.createUser();
       const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addCategoriesFeatures(activatedUser);
+      await orchestrator.addFormSectionsFeatures(activatedUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/categories/NonexistentCategory`,
+        `http://localhost:3000/api/v1/form/sections/NonexistentFormSection`,
         {
-          method: "DELETE",
+          method: "PATCH",
           headers: {
             Cookie: `session_id=${userSession.token}`,
+            "content-type": "application/json",
           },
+          body: JSON.stringify({
+            name: "Update Name",
+          }),
         },
       );
 
@@ -143,12 +154,18 @@ describe("DELETE /api/v1/categories/[category_name]", () => {
 
   describe("Anonymous user", () => {
     test("With valid data", async () => {
-      const category = await orchestrator.createSection();
+      const formSection = await orchestrator.createSection(undefined, "form");
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/categories/${category.name}`,
+        `http://localhost:3000/api/v1/form/sections/${formSection.name}`,
         {
-          method: "DELETE",
+          method: "PATCH",
+          headers: {
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            name: "othername",
+          }),
         },
       );
 
@@ -159,7 +176,7 @@ describe("DELETE /api/v1/categories/[category_name]", () => {
       expect(responseBody).toEqual({
         name: "ForbiddenError",
         message: "O usuário não possui permissão para executar esta ação.",
-        action: 'Verifique se o usuário possui a feature "delete:category".',
+        action: 'Verifique se o usuário possui a feature "edit:form_section".',
         status_code: 403,
       });
     });

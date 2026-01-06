@@ -41,7 +41,7 @@ describe("POST /api/v1/categories", () => {
     test("With permission and valid data", async () => {
       const inactiveUser = await orchestrator.createUser();
       const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.setCategoriesFeatures(activatedUser);
+      await orchestrator.addCategoriesFeatures(activatedUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
       const response = await fetch("http://localhost:3000/api/v1/categories", {
@@ -68,7 +68,7 @@ describe("POST /api/v1/categories", () => {
     test("With permission and duplicated category name", async () => {
       const inactiveUser = await orchestrator.createUser();
       const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.setCategoriesFeatures(activatedUser);
+      await orchestrator.addCategoriesFeatures(activatedUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
       const response = await fetch("http://localhost:3000/api/v1/categories", {
@@ -88,8 +88,8 @@ describe("POST /api/v1/categories", () => {
 
       expect(responseBody).toEqual({
         name: "ValidationError",
-        message: "Esta categoria já existe.",
-        action: "Escolha um novo nome para a categoria e tente novamente.",
+        message: "Este nome já está sendo utilizado.",
+        action: "Escolha um novo nome e tente novamente.",
         status_code: 400,
       });
     });

@@ -75,7 +75,7 @@ describe("POST /api/v1/services", () => {
       const userSession = await orchestrator.createSession(activatedUser);
 
       const serviceCategory =
-        await orchestrator.createCategory("Brazilian Waxing");
+        await orchestrator.createSection("Brazilian Waxing");
 
       const response = await fetch("http://localhost:3000/api/v1/services", {
         method: "POST",
@@ -127,8 +127,8 @@ describe("POST /api/v1/services", () => {
 
       expect(responseBody).toEqual({
         name: "ValidationError",
-        message: "Esta categoria não existe.",
-        action: "Verifique o id da categoria e tente novamente.",
+        message: "Esta seção não existe.",
+        action: "Verifique o id da seção e tente novamente.",
         status_code: 400,
       });
     });
