@@ -3,7 +3,9 @@ import retry from "async-retry";
 import database from "infra/database";
 import activation from "models/activation";
 import category from "models/category";
+import formSection from "models/formSection";
 import migrator from "models/migrator";
+import section from "models/section";
 import service from "models/service";
 import session from "models/session";
 import user from "models/user";
@@ -78,35 +80,6 @@ async function createSession(unloggedUser) {
   return await session.create(unloggedUser.id);
 }
 
-async function createCategories(length = 5, categoriesName = []) {
-  let categories = [];
-
-  if (categoriesName.length !== 0) {
-    for (const name of categoriesName) {
-      const category = await createCategory(name);
-      categories.push(category);
-    }
-  } else {
-    for (let i = 0; i < length; i++) {
-      const category = await createCategory();
-      categories.push(category);
-    }
-  }
-
-  return categories;
-}
-
-async function createCategory(categoryName) {
-  const categoryInputValues = {
-    name: categoryName || faker.internet.username().replace(/[.-]/g, ""),
-  };
-  return await category.create(categoryInputValues);
-}
-
-async function setCategoriesFeatures(unallowedUser) {
-  return await category.setCategoriesFeatures(unallowedUser);
-}
-
 async function createServices(length = 5, serviceDefaultValues = {}) {
   let services = [];
 
@@ -122,16 +95,53 @@ async function createServices(length = 5, serviceDefaultValues = {}) {
 }
 
 async function createService(serviceName, servicePrice, categoryId) {
-  const categoryInputValues = {
+  const serviceInputValues = {
     name: serviceName || faker.internet.username().replace(/[.-]/g, ""),
     price: servicePrice || faker.number.int({ min: 99, max: 9999 }),
     category_id: categoryId || null,
   };
-  return await service.create(categoryInputValues);
+  return await service.create(serviceInputValues);
 }
 
 async function addServicesFeatures(unallowedUser) {
-  return await service.addServicesFeatures(unallowedUser);
+  return await service.addFeatures(unallowedUser);
+}
+
+async function addCategoriesFeatures(unallowedUser) {
+  return await category.addFeatures(unallowedUser);
+}
+
+async function addFormSectionsFeatures(unallowedUser) {
+  return await formSection.addFeatures(unallowedUser);
+}
+
+async function createSections(
+  length = 5,
+  sectionType = "service",
+  sectionsName = [],
+) {
+  let sections = [];
+
+  if (sectionsName.length !== 0) {
+    for (const name of sectionsName) {
+      const sectionObject = await createSection(name, sectionType);
+      sections.push(sectionObject);
+    }
+  } else {
+    for (let i = 0; i < length; i++) {
+      const sectionObject = await createSection(undefined, sectionType);
+      sections.push(sectionObject);
+    }
+  }
+
+  return sections;
+}
+
+async function createSection(sectionName, sectionType = "service") {
+  const categoryInputValues = {
+    name: sectionName || faker.internet.username().replace(/[.-]/g, ""),
+  };
+  return await section.create(categoryInputValues, sectionType);
 }
 
 const orchestrator = {
@@ -143,12 +153,13 @@ const orchestrator = {
   createUser,
   activateUser,
   createSession,
-  createCategory,
-  createCategories,
-  setCategoriesFeatures,
   createService,
   createServices,
   addServicesFeatures,
+  addCategoriesFeatures,
+  addFormSectionsFeatures,
+  createSections,
+  createSection,
 };
 
 export default orchestrator;

@@ -15,7 +15,7 @@ describe("DELETE /api/v1/services", () => {
       const activatedUser = await orchestrator.activateUser(inactiveUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
-      let services = await orchestrator.createCategories(7);
+      let services = await orchestrator.createSections(7);
       const serviceIds = services.map((service) => service.id);
 
       const response = await fetch("http://localhost:3000/api/v1/services", {
@@ -115,7 +115,7 @@ describe("DELETE /api/v1/services", () => {
 
   describe("Anonymous user", () => {
     test("With valid data", async () => {
-      const services = await orchestrator.createCategories(7);
+      const services = await orchestrator.createSections(7);
       const serviceIds = services.map((service) => service.id);
 
       const response = await fetch("http://localhost:3000/api/v1/services", {

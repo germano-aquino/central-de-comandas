@@ -20,7 +20,7 @@ async function postHandler(request, response) {
 }
 
 async function getHandler(request, response) {
-  const storedCategories = await category.retrieveAllCategories();
+  const storedCategories = await category.retrieveAll();
 
   return response.status(200).json(storedCategories);
 }

@@ -8,25 +8,23 @@ beforeAll(async () => {
   await orchestrator.runPendingMigrations();
 });
 
-describe("PATCH /api/v1/categories/[category_name]", () => {
+describe("POST /api/v1/form/sections", () => {
   describe("Default user", () => {
     test("With valid data and without permission", async () => {
       const inactiveUser = await orchestrator.createUser();
       const activatedUser = await orchestrator.activateUser(inactiveUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
-      const category = await orchestrator.createSection("OldName");
-
       const response = await fetch(
-        `http://localhost:3000/api/v1/categories/${category.name}`,
+        "http://localhost:3000/api/v1/form/sections",
         {
-          method: "PATCH",
+          method: "POST",
           headers: {
             Cookie: `session_id=${userSession.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
-            name: "NewName",
+            name: "NewFormSection",
           }),
         },
       );
@@ -38,7 +36,8 @@ describe("PATCH /api/v1/categories/[category_name]", () => {
       expect(responseBody).toEqual({
         name: "ForbiddenError",
         message: "O usuário não possui permissão para executar esta ação.",
-        action: 'Verifique se o usuário possui a feature "edit:category".',
+        action:
+          'Verifique se o usuário possui a feature "create:form_section".',
         status_code: 403,
       });
     });
@@ -46,122 +45,77 @@ describe("PATCH /api/v1/categories/[category_name]", () => {
     test("With permission and valid data", async () => {
       const inactiveUser = await orchestrator.createUser();
       const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addCategoriesFeatures(activatedUser);
+      await orchestrator.addFormSectionsFeatures(activatedUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
-      const category = await orchestrator.createSection();
-
       const response = await fetch(
-        `http://localhost:3000/api/v1/categories/${category.name}`,
+        "http://localhost:3000/api/v1/form/sections",
         {
-          method: "PATCH",
+          method: "POST",
           headers: {
             Cookie: `session_id=${userSession.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
-            name: "Update Name",
+            name: "NewFormSection",
           }),
         },
       );
 
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(201);
 
       const responseBody = await response.json();
 
-      expect(responseBody.name).toBe("Update Name");
+      expect(responseBody.name).toBe("NewFormSection");
       expect(uuidVersion(responseBody.id)).toBe(4);
       expect(Date.parse(responseBody.created_at)).not.toBeNaN();
       expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
-      expect(Date.parse(responseBody.created_at)).toBeLessThan(
-        Date.parse(responseBody.updated_at),
-      );
     });
 
-    test("With permission and with different case", async () => {
+    test("With permission and duplicated form section name", async () => {
       const inactiveUser = await orchestrator.createUser();
       const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addCategoriesFeatures(activatedUser);
+      await orchestrator.addFormSectionsFeatures(activatedUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
-      const category = await orchestrator.createSection("mismatchcase");
-
       const response = await fetch(
-        `http://localhost:3000/api/v1/categories/${category.name}`,
+        "http://localhost:3000/api/v1/form/sections",
         {
-          method: "PATCH",
+          method: "POST",
           headers: {
             Cookie: `session_id=${userSession.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
-            name: "misMatchCase",
+            name: "newformsection",
           }),
         },
       );
 
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(400);
 
       const responseBody = await response.json();
 
       expect(responseBody).toEqual({
-        id: category.id,
-        name: "misMatchCase",
-        created_at: category.created_at.toISOString(),
-        updated_at: responseBody.updated_at,
-      });
-
-      expect(Date.parse(responseBody.created_at)).toBeLessThan(
-        Date.parse(responseBody.updated_at),
-      );
-    });
-
-    test("With permission and nonexistent category name", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addCategoriesFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
-
-      const response = await fetch(
-        `http://localhost:3000/api/v1/categories/NonexistentCategory`,
-        {
-          method: "PATCH",
-          headers: {
-            Cookie: `session_id=${userSession.token}`,
-            "content-type": "application/json",
-          },
-          body: JSON.stringify({
-            name: "Update Name",
-          }),
-        },
-      );
-
-      expect(response.status).toBe(404);
-
-      const responseBody = await response.json();
-
-      expect(responseBody).toEqual({
-        name: "NotFoundError",
-        message: "Esta seção não existe.",
-        action: "Verifique o nome da seção e tente novamente.",
-        status_code: 404,
+        name: "ValidationError",
+        message: "Este nome já está sendo utilizado.",
+        action: "Escolha um novo nome e tente novamente.",
+        status_code: 400,
       });
     });
   });
 
   describe("Anonymous user", () => {
     test("With valid data", async () => {
-      const category = await orchestrator.createSection();
-
       const response = await fetch(
-        `http://localhost:3000/api/v1/categories/${category.name}`,
+        "http://localhost:3000/api/v1/form/sections",
         {
-          method: "PATCH",
+          method: "POST",
           headers: {
             "content-type": "application/json",
           },
           body: JSON.stringify({
-            name: "othername",
+            name: "NewFormSection",
           }),
         },
       );
@@ -173,7 +127,8 @@ describe("PATCH /api/v1/categories/[category_name]", () => {
       expect(responseBody).toEqual({
         name: "ForbiddenError",
         message: "O usuário não possui permissão para executar esta ação.",
-        action: 'Verifique se o usuário possui a feature "edit:category".',
+        action:
+          'Verifique se o usuário possui a feature "create:form_section".',
         status_code: 403,
       });
     });

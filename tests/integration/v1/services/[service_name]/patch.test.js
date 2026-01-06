@@ -121,7 +121,7 @@ describe("PATCH /api/v1/services/[service_name]", () => {
       await orchestrator.addServicesFeatures(activatedUser);
       const userSession = await orchestrator.createSession(activatedUser);
 
-      const [category1, category2] = await orchestrator.createCategories(2);
+      const [category1, category2] = await orchestrator.createSections(2);
       const service = await orchestrator.createService(
         undefined,
         undefined,
@@ -164,7 +164,7 @@ describe("PATCH /api/v1/services/[service_name]", () => {
       const userSession = await orchestrator.createSession(activatedUser);
 
       const service = await orchestrator.createService();
-      const category = await orchestrator.createCategory();
+      const category = await orchestrator.createSection();
 
       const response = await fetch(
         `http://localhost:3000/api/v1/services/${service.name}`,

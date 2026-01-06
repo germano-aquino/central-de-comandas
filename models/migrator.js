@@ -2,11 +2,11 @@ import database from "infra/database";
 import { ServiceError } from "infra/errors";
 
 import migrationRunner from "node-pg-migrate";
-import { resolve } from "node:path";
+import { join } from "node:path";
 
 const migrationsConfig = {
   dryRun: true,
-  dir: resolve("infra", "migrations"),
+  dir: join(process.cwd(), "infra", "migrations"),
   direction: "up",
   verbose: false,
   log: () => {},
