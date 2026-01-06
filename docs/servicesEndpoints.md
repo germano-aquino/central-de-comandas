@@ -107,23 +107,6 @@ Edição da Pergunta pelo `id` da pergunta no corpo da requisição.
 
 ### DELETE /api/v1/questions/
 
-Deleção da Pergunta pelo `id` da pergunta no corpo da requisição.
-
-- Usuário logado
-- Feature: `delete:question`
-- Retorno:
-  - id: Id da Pergunta
-  - statement: Pergunta por extenso
-  - type: ["multiple-choice", "essay-questions", "both"]
-  - options: [Sim, Não]
-  - option_marked: Sim
-  - answer: Resposta discrusiva
-  - section_id: uuid da section pai da pergunta
-  - created_at: Data de Criação
-  - updated_at: Date de Atualização
-
-### DELETE /api/v1/questions/
-
 Deleção de múltiplas Perguntas definidas pelo `section_ids`
 
 - Usuário logado
