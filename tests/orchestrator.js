@@ -149,6 +149,32 @@ async function createSection(sectionName, sectionType = "service") {
   return await section.create(sectionInputValues, sectionType);
 }
 
+async function createQuestions(length = 5, questionDefaultValues = {}) {
+  let questions = [];
+
+  for (let i = 0; i < length; i++) {
+    const newQuestion = await createQuestion(
+      undefined,
+      questionDefaultValues?.type,
+      questionDefaultValues?.options,
+      questionDefaultValues?.sectionId,
+    );
+    questions.push(newQuestion);
+  }
+  return questions;
+}
+
+async function createQuestion(statement, type, options, sectionId) {
+  const questionInputValues = {
+    statement: statement || faker.lorem.sentence({ min: 3, max: 10 }),
+    type: type || "multiple-choice",
+    options: options || ["Sim", "Não"],
+    section_id: sectionId || null,
+  };
+
+  return await question.create(questionInputValues);
+}
+
 const orchestrator = {
   waitForAllServices,
   clearDatabase,
@@ -163,6 +189,8 @@ const orchestrator = {
   addServicesFeatures,
   addCategoriesFeatures,
   addQuestionsFeatures,
+  createQuestion,
+  createQuestions,
   addFormSectionsFeatures,
   createSections,
   createSection,

@@ -64,20 +64,6 @@ async function create(questionInputValues) {
     }
   }
 
-  function getValidType(inputValues) {
-    const questionTypes = ["multiple-choice", "discursive", "both"];
-
-    if (!("type" in inputValues) || !questionTypes.includes(inputValues.type)) {
-      throw new ValidationError({
-        message: "Tipo da pergunta inválido.",
-        action:
-          "Verifique se a propriedade type é algum dos seguintes valores: 'multiple-choice', 'discursive', 'both'.",
-      });
-    }
-
-    return inputValues.type;
-  }
-
   function getValidOptions(inputValues) {
     const requiredOptionTypes = ["multiple-choice", "both"];
 
@@ -114,23 +100,6 @@ async function create(questionInputValues) {
     return null;
   }
 
-  async function getValidSectionId(inputValues) {
-    try {
-      if ("section_id" in inputValues) {
-        await formSection.findOneValidById(inputValues.section_id);
-        return inputValues.section_id;
-      }
-
-      return null;
-    } catch (error) {
-      if (error instanceof NotFoundError) {
-        throw new ValidationError(error);
-      }
-
-      throw error;
-    }
-  }
-
   async function runInsertQuestion(questionObject) {
     const results = await database.query({
       text: `
@@ -156,6 +125,82 @@ async function create(questionInputValues) {
   }
 }
 
+async function retrieveAll(queryParams) {
+  const storedQuestions = runSelectQuery(queryParams);
+
+  return storedQuestions;
+
+  async function runSelectQuery(queryParams) {
+    let values = [];
+    let query = "SELECT * FROM questions WHERE TRUE";
+
+    if ("form_section_name" in queryParams) {
+      const formSectionId = await getValidSectionId({
+        section_name: queryParams.form_section_name,
+      });
+      values.push(formSectionId);
+      query += ` AND section_id = $${values.length}`;
+    }
+
+    if ("no_form_section" in queryParams) {
+      query += ` AND section_id IS NULL`;
+    }
+
+    if ("question_type" in queryParams) {
+      const type = getValidType({ type: queryParams.question_type });
+      values.push(type);
+      query += ` AND type = $${values.length}`;
+    }
+
+    query += ";";
+
+    const results = await database.query({
+      text: query,
+      values,
+    });
+
+    return results.rows;
+  }
+}
+
+async function getValidSectionId(inputValues) {
+  try {
+    if ("section_id" in inputValues && inputValues.section_id) {
+      await formSection.findOneValidById(inputValues.section_id);
+      return inputValues.section_id;
+    }
+
+    if ("section_name" in inputValues && inputValues.section_name) {
+      const section = await formSection.findOneValidByName(
+        inputValues.section_name,
+      );
+      return section.id;
+    }
+
+    return null;
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw new ValidationError(error);
+    }
+
+    throw error;
+  }
+}
+
+function getValidType(inputValues) {
+  const questionTypes = ["multiple-choice", "discursive", "both"];
+
+  if (!("type" in inputValues) || !questionTypes.includes(inputValues.type)) {
+    throw new ValidationError({
+      message: "Tipo da pergunta inválido.",
+      action:
+        "Verifique se a propriedade type é algum dos seguintes valores: 'multiple-choice', 'discursive', 'both'.",
+    });
+  }
+
+  return inputValues.type;
+}
+
 async function addFeatures(forbiddenUser) {
   const allowedUser = user.addFeaturesByUserId(forbiddenUser.id, [
     "create:question",
@@ -167,6 +212,6 @@ async function addFeatures(forbiddenUser) {
   return allowedUser;
 }
 
-const question = { create, addFeatures };
+const question = { create, retrieveAll, addFeatures };
 
 export default question;
