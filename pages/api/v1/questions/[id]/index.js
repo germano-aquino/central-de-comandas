@@ -8,6 +8,7 @@ export default router.handler(controller.errorHandlers);
 
 router.use(controller.injectAnonymousOrUser);
 router.patch(controller.canRequest("edit:question"), patchHandler);
+router.delete(controller.canRequest("delete:question"), deleteHandler);
 
 async function patchHandler(request, response) {
   const questionInputValues = await request.body;
@@ -19,4 +20,12 @@ async function patchHandler(request, response) {
   );
 
   return response.status(200).json(updatedQuestion);
+}
+
+async function deleteHandler(request, response) {
+  const questionId = request.query.id;
+
+  const deletedQuestion = await question.deleteOneById(questionId);
+
+  return response.status(200).json(deletedQuestion);
 }

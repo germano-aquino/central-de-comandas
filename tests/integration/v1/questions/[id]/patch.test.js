@@ -65,15 +65,15 @@ describe("PATCH /api/v1/questions/[id]", () => {
         },
       );
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(404);
 
       const responseBody = await response.json();
 
       expect(responseBody).toEqual({
-        name: "ValidationError",
+        name: "NotFoundError",
         message: "Pergunta não existe.",
         action: "Verifique se o id da pergunta está correto e tente novamente.",
-        status_code: 400,
+        status_code: 404,
       });
     });
 

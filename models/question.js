@@ -134,30 +134,6 @@ async function update(questionInputValues, queryParams) {
     return validObject;
   }
 
-  async function findOneValidById(id) {
-    const results = await database.query({
-      text: `
-        SELECT
-          *
-        FROM
-          questions
-        WHERE
-          id = $1
-        LIMIT
-          1
-      ;`,
-      values: [id],
-    });
-
-    if (results.rowCount === 0) {
-      throw new ValidationError({
-        message: "Pergunta não existe.",
-        action: "Verifique se o id da pergunta está correto e tente novamente.",
-      });
-    }
-    return results.rows[0];
-  }
-
   async function getValidStatement(inputValues) {
     if ("statement" in inputValues && inputValues.statement) {
       await validateUniqueStatement(inputValues.statement);
@@ -387,6 +363,29 @@ async function updateByArrayId(questionInputValues) {
   }
 }
 
+async function deleteOneById(questionId) {
+  await findOneValidById(questionId);
+
+  const questionDeleted = await runDeleteQuery(questionId);
+  return questionDeleted;
+
+  async function runDeleteQuery(questionId) {
+    const results = await database.query({
+      text: `
+        DELETE FROM
+          questions
+        WHERE
+          id = $1
+        RETURNING
+          *
+      ;`,
+      values: [questionId],
+    });
+
+    return results.rows[0];
+  }
+}
+
 async function getValidSectionId(inputValues) {
   try {
     if ("section_id" in inputValues && inputValues.section_id) {
@@ -446,6 +445,30 @@ async function validateUniqueStatement(statement) {
   }
 }
 
+async function findOneValidById(id) {
+  const results = await database.query({
+    text: `
+        SELECT
+          *
+        FROM
+          questions
+        WHERE
+          id = $1
+        LIMIT
+          1
+      ;`,
+    values: [id],
+  });
+
+  if (results.rowCount === 0) {
+    throw new NotFoundError({
+      message: "Pergunta não existe.",
+      action: "Verifique se o id da pergunta está correto e tente novamente.",
+    });
+  }
+  return results.rows[0];
+}
+
 async function addFeatures(forbiddenUser) {
   const allowedUser = user.addFeaturesByUserId(forbiddenUser.id, [
     "create:question",
@@ -457,6 +480,14 @@ async function addFeatures(forbiddenUser) {
   return allowedUser;
 }
 
-const question = { create, update, retrieveAll, updateByArrayId, addFeatures };
+const question = {
+  create,
+  update,
+  retrieveAll,
+  updateByArrayId,
+  deleteOneById,
+  addFeatures,
+  findOneValidById,
+};
 
 export default question;
