@@ -225,6 +225,8 @@ async function retrieveAll(categoryName) {
       query += ` AND category_id = $${values.length}`;
     }
 
+    query += ";";
+
     const results = await database.query({
       text: query,
       values,

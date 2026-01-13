@@ -10,6 +10,7 @@ async function query(queryObject) {
 
     return result;
   } catch (error) {
+    console.log(error);
     const serviceErrorObject = new ServiceError({
       message: "Erro na conexão com o Banco ou com a Query.",
       cause: error,

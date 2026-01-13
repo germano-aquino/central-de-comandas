@@ -5,6 +5,7 @@ import activation from "models/activation";
 import category from "models/category";
 import formSection from "models/formSection";
 import migrator from "models/migrator";
+import question from "models/question";
 import section from "models/section";
 import service from "models/service";
 import session from "models/session";
@@ -111,6 +112,10 @@ async function addCategoriesFeatures(unallowedUser) {
   return await category.addFeatures(unallowedUser);
 }
 
+async function addQuestionsFeatures(unallowedUser) {
+  return await question.addFeatures(unallowedUser);
+}
+
 async function addFormSectionsFeatures(unallowedUser) {
   return await formSection.addFeatures(unallowedUser);
 }
@@ -138,10 +143,44 @@ async function createSections(
 }
 
 async function createSection(sectionName, sectionType = "service") {
-  const categoryInputValues = {
+  const sectionInputValues = {
     name: sectionName || faker.internet.username().replace(/[.-]/g, ""),
   };
-  return await section.create(categoryInputValues, sectionType);
+  return await section.create(sectionInputValues, sectionType);
+}
+
+async function createQuestions(length = 5, questionDefaultValues = {}) {
+  let questions = [];
+
+  for (let i = 0; i < length; i++) {
+    const newQuestion = await createQuestion(
+      undefined,
+      questionDefaultValues?.type,
+      questionDefaultValues?.options,
+      questionDefaultValues?.sectionId,
+      questionDefaultValues?.optionMarked,
+    );
+    questions.push(newQuestion);
+  }
+  return questions;
+}
+
+async function createQuestion(
+  statement,
+  type,
+  options,
+  sectionId,
+  optionMarked,
+) {
+  const questionInputValues = {
+    statement: statement || faker.lorem.sentence({ min: 3, max: 10 }),
+    type: type || "multiple-choice",
+    options: options || ["Sim", "Não"],
+    section_id: sectionId || null,
+    option_marked: optionMarked || null,
+  };
+
+  return await question.create(questionInputValues);
 }
 
 const orchestrator = {
@@ -157,6 +196,9 @@ const orchestrator = {
   createServices,
   addServicesFeatures,
   addCategoriesFeatures,
+  addQuestionsFeatures,
+  createQuestion,
+  createQuestions,
   addFormSectionsFeatures,
   createSections,
   createSection,

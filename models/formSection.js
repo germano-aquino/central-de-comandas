@@ -1,46 +1,52 @@
 import user from "./user";
 import section from "./section";
 
-async function create(categoryInputValues) {
-  const newCategory = await section.create(categoryInputValues, "form");
-  return newCategory;
+async function create(formSectionInputValues) {
+  const newFormSection = await section.create(formSectionInputValues, "form");
+  return newFormSection;
 }
 
-async function update(categoryName, categoryInputValues) {
-  const updatedCategory = await section.update(
-    categoryName,
-    categoryInputValues,
+async function update(formSectionName, formSectionInputValues) {
+  const updatedFormSection = await section.update(
+    formSectionName,
+    formSectionInputValues,
     "form",
   );
-  return updatedCategory;
+  return updatedFormSection;
 }
 
-async function deleteManyByIdArray(categoryIds) {
-  const deletedCategories = await section.deleteManyByIdArray(
-    categoryIds,
+async function deleteManyByIdArray(formSectionIds) {
+  const deletedFormSection = await section.deleteManyByIdArray(
+    formSectionIds,
     "form",
   );
-  return deletedCategories;
+  return deletedFormSection;
 }
 
-async function deleteByName(categoryName) {
-  const deletedCategory = await section.deleteByName(categoryName, "form");
+async function deleteByName(formSectionName) {
+  const deletedCategory = await section.deleteByName(formSectionName, "form");
   return deletedCategory;
 }
 
-async function findOneValidByName(categoryName) {
-  const validCategory = await section.findOneValidByName(categoryName, "form");
-  return validCategory;
+async function findOneValidByName(formSectionName) {
+  const validFormSection = await section.findOneValidByName(
+    formSectionName,
+    "form",
+  );
+  return validFormSection;
 }
 
-async function findOneValidById(categoryId) {
-  const validCategory = await section.findOneValidById(categoryId, "form");
-  return validCategory;
+async function findOneValidById(formSectionId) {
+  const validFormSection = await section.findOneValidById(
+    formSectionId,
+    "form",
+  );
+  return validFormSection;
 }
 
 async function retrieveAll() {
-  const storedCategories = await section.retrieveAll("form");
-  return storedCategories;
+  const storedFormSections = await section.retrieveAll("form");
+  return storedFormSections;
 }
 
 async function addFeatures(forbiddenUser) {
