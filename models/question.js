@@ -3,6 +3,9 @@ import user from "./user";
 import database from "infra/database";
 import formSection from "./formSection";
 
+const REQUIRED_OPTIONS_TYPES = ["multiple-choice", "both"];
+const TYPES = ["multiple-choice", "discursive", "both"];
+
 async function create(questionInputValues) {
   const validQuestionObject = await getValidValues(questionInputValues);
 
@@ -42,9 +45,7 @@ async function create(questionInputValues) {
   }
 
   function getValidOptions(inputValues) {
-    const requiredOptionTypes = ["multiple-choice", "both"];
-
-    if (requiredOptionTypes.includes(inputValues.type)) {
+    if (REQUIRED_OPTIONS_TYPES.includes(inputValues.type)) {
       if (
         !("options" in inputValues) ||
         !inputValues.options ||
@@ -166,9 +167,8 @@ async function update(questionInputValues, queryParams) {
   }
 
   function getValidType(inputValues) {
-    const questionTypes = ["multiple-choice", "discursive", "both"];
     if ("type" in inputValues) {
-      if (!questionTypes.includes(inputValues.type)) {
+      if (!TYPES.includes(inputValues.type)) {
         throw new ValidationError({
           message: "Tipo da pergunta inválido.",
           action:
@@ -181,14 +181,12 @@ async function update(questionInputValues, queryParams) {
   }
 
   function getValidOptions(inputValues, storedQuestion) {
-    const requiredOptionsTypes = ["multiple-choice", "both"];
-
     const type = inputValues?.type ? inputValues.type : storedQuestion.type;
     const optionMarked = inputValues?.option_marked
       ? inputValues.option_marked
       : storedQuestion.option_marked;
 
-    if (requiredOptionsTypes.includes(type)) {
+    if (REQUIRED_OPTIONS_TYPES.includes(type)) {
       if ("options" in inputValues) {
         if (!inputValues.options || inputValues.options.length < 2) {
           throw new ValidationError({
@@ -224,13 +222,12 @@ async function update(questionInputValues, queryParams) {
   }
 
   function getValidOptionMarked(inputValues, storedQuestion) {
-    const requiredOptionsTypes = ["multiple-choice", "both"];
     const type = inputValues?.type ? inputValues.type : storedQuestion.type;
     const options = inputValues?.options
       ? inputValues.options
       : storedQuestion.options;
 
-    if (requiredOptionsTypes.includes(type)) {
+    if (REQUIRED_OPTIONS_TYPES.includes(type)) {
       if ("option_marked" in inputValues) {
         if (!options.includes(inputValues.option_marked)) {
           throw new ValidationError({
@@ -415,9 +412,7 @@ async function getValidSectionId(inputValues) {
 }
 
 function getValidType(inputValues) {
-  const questionTypes = ["multiple-choice", "discursive", "both"];
-
-  if (!("type" in inputValues) || !questionTypes.includes(inputValues.type)) {
+  if (!("type" in inputValues) || !TYPES.includes(inputValues.type)) {
     throw new ValidationError({
       message: "Tipo da pergunta inválido.",
       action:
