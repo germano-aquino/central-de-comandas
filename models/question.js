@@ -294,7 +294,7 @@ async function retrieveAll(queryParams) {
   }
 }
 
-async function updateByArrayId(questionInputValues) {
+async function updateByIdArray(questionInputValues) {
   const validQuestionObject = await getValidValues(questionInputValues);
 
   const updatedQuestions = await runUpdateQuery(validQuestionObject);
@@ -383,6 +383,36 @@ async function deleteOneById(questionId) {
     });
 
     return results.rows[0];
+  }
+}
+
+async function deleteManyByIdArray(questionInputValues) {
+  const questionIds = getValidQuestionIds(questionInputValues);
+
+  const deletedQuestions = await runDeleteQuery(questionIds);
+  return deletedQuestions;
+
+  function getValidQuestionIds(inputValues) {
+    if ("question_ids" in inputValues) {
+      return inputValues.question_ids;
+    }
+    return [];
+  }
+
+  async function runDeleteQuery(questionIds) {
+    const results = await database.query({
+      text: `
+        DELETE FROM
+          questions
+        WHERE
+          id = ANY($1)
+        RETURNING
+          *
+      ;`,
+      values: [questionIds],
+    });
+
+    return results.rows;
   }
 }
 
@@ -484,8 +514,9 @@ const question = {
   create,
   update,
   retrieveAll,
-  updateByArrayId,
+  updateByIdArray,
   deleteOneById,
+  deleteManyByIdArray,
   addFeatures,
   findOneValidById,
 };
