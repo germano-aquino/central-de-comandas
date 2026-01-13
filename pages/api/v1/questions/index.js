@@ -31,8 +31,12 @@ async function getHandler(request, response) {
 
 async function patchHandler(request, response) {
   const questionInputValues = await request.body;
+  const queryParams = request.query;
 
-  const updatedQuestions = await question.updateByIdArray(questionInputValues);
+  const updatedQuestions = await question.updateManyByIdArray(
+    questionInputValues,
+    queryParams,
+  );
 
   return response.status(200).json(updatedQuestions);
 }
