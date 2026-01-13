@@ -6,7 +6,7 @@ beforeAll(async () => {
   await orchestrator.runPendingMigrations();
 });
 
-describe("PATCH /api/v1/questions/[question_id]", () => {
+describe("PATCH /api/v1/questions/[id]", () => {
   describe("Default user", () => {
     test("With valid data", async () => {
       const inactiveUser = await orchestrator.createUser();
@@ -43,6 +43,40 @@ describe("PATCH /api/v1/questions/[question_id]", () => {
   });
 
   describe("Allowed user", () => {
+    test("With nonexistent question id", async () => {
+      const inactiveUser = await orchestrator.createUser();
+      const activatedUser = await orchestrator.activateUser(inactiveUser);
+      await orchestrator.addQuestionsFeatures(activatedUser);
+      const userSession = await orchestrator.createSession(activatedUser);
+
+      const nonexistentId = "264b4eff-b94f-4efc-82f9-508a961723ed";
+
+      const response = await fetch(
+        `http://localhost:3000/api/v1/questions/${nonexistentId}`,
+        {
+          method: "PATCH",
+          headers: {
+            Cookie: `session_id=${userSession.token}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            statement: "Changing to a already in use statement.",
+          }),
+        },
+      );
+
+      expect(response.status).toBe(400);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toEqual({
+        name: "ValidationError",
+        message: "Pergunta não existe.",
+        action: "Verifique se o id da pergunta está correto e tente novamente.",
+        status_code: 400,
+      });
+    });
+
     test("With new statement", async () => {
       const inactiveUser = await orchestrator.createUser();
       const activatedUser = await orchestrator.activateUser(inactiveUser);
