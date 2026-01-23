@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Label } from "./ui/label";
+import Link from "next/link";
 
 export function OrderSummary({
   order,
@@ -24,7 +25,6 @@ export function OrderSummary({
   paymentMethod,
   onPaymentMethodChange,
   onClear,
-  onNext,
 }) {
   const total = order.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -115,10 +115,9 @@ export function OrderSummary({
             </Button>
             <Button
               className="bg-pink-600 hover:bg-pink-700 gap-2"
-              onClick={onNext}
               disabled={!clientName || order.length === 0 || !paymentMethod}
             >
-              Próximo
+              <Link href="/questionario">Próximo</Link>
             </Button>
           </div>
         </CardFooter>
