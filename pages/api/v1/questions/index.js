@@ -11,6 +11,7 @@ router.use(controller.injectAnonymousOrUser);
 router.post(controller.canRequest("create:question"), postHandler);
 router.get(controller.canRequest("read:question"), getHandler);
 router.patch(controller.canRequest("edit:question"), patchHandler);
+router.delete(controller.canRequest("delete:question"), deleteHandler);
 
 async function postHandler(request, response) {
   const questionInputValues = await request.body;
@@ -30,8 +31,21 @@ async function getHandler(request, response) {
 
 async function patchHandler(request, response) {
   const questionInputValues = await request.body;
+  const queryParams = request.query;
 
-  const updatedQuestions = await question.updateByArrayId(questionInputValues);
+  const updatedQuestions = await question.updateManyByIdArray(
+    questionInputValues,
+    queryParams,
+  );
 
   return response.status(200).json(updatedQuestions);
+}
+
+async function deleteHandler(request, response) {
+  const questionInputValues = await request.body;
+
+  const deletedQuestions =
+    await question.deleteManyByIdArray(questionInputValues);
+
+  return response.status(200).json(deletedQuestions);
 }

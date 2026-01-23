@@ -115,7 +115,7 @@ async function update(questionInputValues, queryParams) {
   async function getValidValues(inputValues, queryParams) {
     let validObject = {};
 
-    const questionId = queryParams.question_id;
+    const questionId = queryParams.id;
     validObject.removeSection = queryParams?.remove_form_section != undefined;
 
     const storedQuestion = await findOneValidById(questionId);
@@ -132,30 +132,6 @@ async function update(questionInputValues, queryParams) {
     validObject.sectionId = await getValidSectionId(inputValues);
 
     return validObject;
-  }
-
-  async function findOneValidById(id) {
-    const results = await database.query({
-      text: `
-        SELECT
-          *
-        FROM
-          questions
-        WHERE
-          id = $1
-        LIMIT
-          1
-      ;`,
-      values: [id],
-    });
-
-    if (results.rowCount === 0) {
-      throw new ValidationError({
-        message: "Pergunta não existe.",
-        action: "Verifique se o id da pergunta está correto e tente novamente.",
-      });
-    }
-    return results.rows[0];
   }
 
   async function getValidStatement(inputValues) {
@@ -318,22 +294,25 @@ async function retrieveAll(queryParams) {
   }
 }
 
-async function updateByArrayId(questionInputValues) {
-  const validQuestionObject = await getValidValues(questionInputValues);
+async function updateManyByIdArray(questionInputValues, queryParams) {
+  if (inputIsInvalid(questionInputValues)) {
+    return [];
+  }
+  let updatedQuestions = [];
 
-  const updatedQuestions = await runUpdateQuery(validQuestionObject);
+  for (const id of questionInputValues.question_ids) {
+    const updatedQuestion = await update(questionInputValues, {
+      id,
+      remove_form_section: queryParams?.remove_form_section,
+    });
+    updatedQuestions.push(updatedQuestion);
+  }
+
   return updatedQuestions;
 
-  async function getValidValues(inputValues) {
-    let validValues;
-
-    if (inputValues?.question_ids || !inputValues.question_ids.length) {
-      validValues.questionIds = undefined;
-      return validValues;
-    }
+  function inputIsInvalid(inputValues) {
     validateStatement(inputValues);
-    validValues.type = getValidType(inputValues);
-    validValues.options = await getValidOptions(inputValues);
+    return !(inputValues?.question_ids && inputValues.question_ids.length);
   }
 
   function validateStatement(inputValues) {
@@ -346,41 +325,55 @@ async function updateByArrayId(questionInputValues) {
       });
     }
   }
+}
 
-  async function getValidOptions(inputValues) {
-    if ("type" in inputValues && inputValues.type === "discursive") {
-      return null;
+async function deleteOneById(questionId) {
+  await findOneValidById(questionId);
+
+  const questionDeleted = await runDeleteQuery(questionId);
+  return questionDeleted;
+
+  async function runDeleteQuery(questionId) {
+    const results = await database.query({
+      text: `
+        DELETE FROM
+          questions
+        WHERE
+          id = $1
+        RETURNING
+          *
+      ;`,
+      values: [questionId],
+    });
+
+    return results.rows[0];
+  }
+}
+
+async function deleteManyByIdArray(questionInputValues) {
+  const questionIds = getValidQuestionIds(questionInputValues);
+
+  const deletedQuestions = await runDeleteQuery(questionIds);
+  return deletedQuestions;
+
+  function getValidQuestionIds(inputValues) {
+    if ("question_ids" in inputValues) {
+      return inputValues.question_ids;
     }
+    return [];
   }
 
-  async function runUpdateQuery(questionObject) {
-    if (!questionObject?.questionIds) {
-      return [];
-    }
-
-    const results = database.query({
+  async function runDeleteQuery(questionIds) {
+    const results = await database.query({
       text: `
-        UPDATE
+        DELETE FROM
           questions
-        SET
-          type = COALESCE($2, type),
-          options = COALESCE($3, options),
-          option_marked = COALESCE($4, option_marked),
-          answer = COALESCE($5, type),
-          section_id = COALESCE($6, section_id),
-          updated_at = TIMEZONE('utc', NOW())
         WHERE
           id = ANY($1)
         RETURNING
           *
       ;`,
-      values: [
-        questionObject.questionIds,
-        questionObject.options,
-        questionObject.optionMarked,
-        questionObject.answer,
-        questionObject.sectionId,
-      ],
+      values: [questionIds],
     });
 
     return results.rows;
@@ -446,6 +439,30 @@ async function validateUniqueStatement(statement) {
   }
 }
 
+async function findOneValidById(id) {
+  const results = await database.query({
+    text: `
+        SELECT
+          *
+        FROM
+          questions
+        WHERE
+          id = $1
+        LIMIT
+          1
+      ;`,
+    values: [id],
+  });
+
+  if (results.rowCount === 0) {
+    throw new NotFoundError({
+      message: "Pergunta não existe.",
+      action: "Verifique se o id da pergunta está correto e tente novamente.",
+    });
+  }
+  return results.rows[0];
+}
+
 async function addFeatures(forbiddenUser) {
   const allowedUser = user.addFeaturesByUserId(forbiddenUser.id, [
     "create:question",
@@ -457,6 +474,15 @@ async function addFeatures(forbiddenUser) {
   return allowedUser;
 }
 
-const question = { create, update, retrieveAll, updateByArrayId, addFeatures };
+const question = {
+  create,
+  update,
+  retrieveAll,
+  updateManyByIdArray,
+  deleteOneById,
+  deleteManyByIdArray,
+  addFeatures,
+  findOneValidById,
+};
 
 export default question;
