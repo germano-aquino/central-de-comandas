@@ -18,32 +18,43 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import { useRouter } from "next/navigation";
 
 const NAVIGATION_DATA = [
   {
-    href: "/cadastro/loja",
+    href: "/admin/lojas",
     title: "Lojas",
     description: "Criação de unidades de atendimento.",
   },
   {
-    href: "/cadastro/usuario",
+    href: "/admin/usuarios",
     title: "Usuários",
     description: "Criação de usuários.",
   },
   {
-    href: "/cadastro/cliente",
+    href: "/admin/clientes",
     title: "Clientes",
     description: "Criação de clientes.",
   },
   {
-    href: "/cadastro/servico",
+    href: "/admin/servicos",
     title: "Serviços",
-    description: "Criação de Serviços e Categorias de Serviços.",
+    description: "Criação de Serviços",
   },
   {
-    href: "/cadastro/questionario",
-    title: "Questionário",
-    description: "Criação das perguntas do questionário e seção de perguntas.",
+    href: "/admin/categorias",
+    title: "Categorias de Serviços",
+    description: "Criação das Categorias de Servios.",
+  },
+  {
+    href: "/admin/secoes",
+    title: "Seções de Perguntas",
+    description: "Criação das Seções de Perguntas presente no formulário.",
+  },
+  {
+    href: "/admin/perguntas",
+    title: "Categorias de Perguntas",
+    description: "Criação de Perguntas para o formulário.",
   },
   {
     href: "/atendimento",
@@ -97,11 +108,18 @@ function NavigationMenuDropdown() {
 }
 
 function NavigationMenuBar() {
+  const router = useRouter();
+
   return (
     <NavigationMenu className="max-md:hidden">
       <NavigationMenuList>
         <NavigationMenuItem>
-          <NavigationMenuTrigger>Cadastro</NavigationMenuTrigger>
+          <NavigationMenuTrigger
+            className="hover:cursor-pointer"
+            onClick={() => router.push("/admin")}
+          >
+            Cadastro
+          </NavigationMenuTrigger>
           <NavigationMenuContent>
             <ul className="w-64">
               {NAVIGATION_DATA.map(({ href, title, description }) => {
