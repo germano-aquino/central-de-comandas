@@ -172,16 +172,24 @@ describe("POST /api/v1/questions", () => {
           }),
         });
 
-        expect(response.status).toBe(400);
+        expect(response.status).toBe(201);
 
         const responseBody = await response.json();
 
-        expect(responseBody).toEqual({
-          name: "ValidationError",
-          message: "Esta pergunta já existe.",
-          action: "Reformule a pergunta e tente novamente.",
-          status_code: 400,
-        });
+        expect(responseBody.statement).toBe("What type of wax was used?");
+        expect(responseBody.type).toBe("multiple-choice");
+        expect(responseBody.options).toEqual([
+          "Mint",
+          "Chocco",
+          "Avocado",
+          "Banana",
+        ]);
+        expect(responseBody.section_id).toBeNull();
+        expect(responseBody.option_marked).toBeNull();
+        expect(responseBody.answer).toBeNull();
+        expect(uuidVersion(responseBody.id)).toBe(4);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
       });
 
       test("With invalid type", async () => {

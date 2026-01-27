@@ -39,8 +39,6 @@ async function create(questionInputValues) {
       });
     }
 
-    await validateUniqueStatement(inputValues.statement);
-
     return inputValues.statement;
   }
 
