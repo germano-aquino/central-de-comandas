@@ -17,6 +17,7 @@
     "lint:prettier:write": "prettier --write .",
     "lint:eslint:check": "eslint .",
     "lint:eslint:write": "eslint --fix .",
+    "populate:database": "node infra/scripts/populate-database.js",
     "prepare": "husky",
     "commit": "cz"
   },
