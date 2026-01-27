@@ -1,6 +1,6 @@
 import orchestrator from "../../tests/orchestrator";
 
-const CATEGORIES = [
+const SERVICE_CATEGORIES = [
   "Depilação",
   "Depilação à Linha",
   "Depilação Masculina",
@@ -771,19 +771,188 @@ const SERVICES_MASSAGEM = [
   },
 ];
 
-async function createCategories() {
+const QUESTION_SECTIONS = [
+  "Depilação",
+  "Sombrancelhas",
+  "Esmalteria",
+  "Alta Frequência",
+];
+
+const QUESTIONS_DEPILACAO = [
+  {
+    statement: "Costuma fazer depilação? Qual método?",
+    type: "both",
+    options: ["Não", "Sim"],
+  },
+  {
+    statement: "Gestante? Quanto tempo?",
+    type: "both",
+    options: ["Não", "Sim"],
+  },
+  {
+    statement: "Sensibilidade/alergia à algum produto?",
+    type: "both",
+    options: ["Não", "Sim"],
+  },
+  {
+    statement: "Realiza tratamento com ácido ou laser?",
+    type: "both",
+    options: ["Não", "Sim"],
+  },
+  {
+    statement: "Possui alguma cicatriz ou mancha?",
+    type: "both",
+    options: ["Não", "Sim"],
+  },
+  {
+    statement: "Tipo de pele:",
+    type: "multiple-choice",
+    options: ["Sensível", "Seca", "Muito seca"],
+  },
+  {
+    statement: "Espessura do pelo:",
+    type: "multiple-choice",
+    options: ["Fino", "Médio", "Grosso"],
+  },
+  {
+    statement: "Tem foliculite ou histórico?",
+    type: "both",
+    options: ["Não", "Sim"],
+  },
+  {
+    statement: "Tem pelos encravados?",
+    type: "both",
+    options: ["Não", "Sim"],
+  },
+  {
+    statement: "Qual cera utilizou?",
+    type: "multiple-choice",
+    options: [
+      "Cera de Açaí",
+      "Cera de Aveia",
+      "Cera de Castanha",
+      "Cera de Cupuaçu",
+    ],
+  },
+];
+
+const QUESTIONS_SOMBRANCELHA = [
+  {
+    statement: "Utiliza ácido na face?",
+    type: "both",
+    options: ["Não", "Sim"],
+  },
+  {
+    statement: "Alergia a hena ou coloração?",
+    type: "both",
+    options: ["Não", "Sim"],
+  },
+  {
+    statement: "Possui falhas na sombrancelha?",
+    type: "both",
+    options: ["Não", "Sim"],
+  },
+];
+
+const QUESTIONS_ESMALTERIA = [
+  {
+    statement: "Como você gosta que remova a cutícula?",
+    type: "multiple-choice",
+    options: ["Profunda", "Superficial"],
+  },
+  {
+    statement: "Possui unha encravada?",
+    type: "both",
+    options: ["Não", "Sim"],
+  },
+  {
+    statement: "Possui diabetes?",
+    type: "multiple-choice",
+    options: ["Não", "Sim"],
+  },
+  {
+    statement: "Sensibilidade/alergia à algum produto?",
+    type: "both",
+    options: ["Não", "Sim"],
+  },
+];
+
+const QUESTIONS_ALTA_FREQUENCIA = [
+  {
+    statement: "Tem epilepsia?",
+    type: "multiple-choice",
+    options: ["Não", "Sim"],
+  },
+  {
+    statement: "Tem diabetes?",
+    type: "multiple-choice",
+    options: ["Não", "Sim"],
+  },
+  {
+    statement: "É gestante?",
+    type: "multiple-choice",
+    options: ["Não", "Sim"],
+  },
+  {
+    statement: "É portadora de marca passo?",
+    type: "multiple-choice",
+    options: ["Não", "Sim"],
+  },
+  {
+    statement: "Alguma condição cardíaca?",
+    type: "multiple-choice",
+    options: ["Não", "Sim"],
+  },
+  {
+    statement: "Tem placas ou pinos no corpo?",
+    type: "multiple-choice",
+    options: ["Não", "Sim"],
+  },
+  {
+    statement: "Aceita registrar fotos de antes e depois para documentar?",
+    type: "multiple-choice",
+    options: ["Não", "Sim"],
+  },
+  {
+    statement: "Autoriza publicação em redes sociais do Clube Depil?",
+    type: "multiple-choice",
+    options: ["Não", "Sim"],
+  },
+  {
+    statement: "Alguma condição de saúde que ache importante mencionar?",
+    type: "discursive",
+    options: ["Não", "Sim"],
+  },
+];
+
+orchestrator.createQuestion();
+async function populateDatabase() {
+  const serviceCategories = await createServiceCategories();
+
+  await createServices(serviceCategories);
+
+  const formSections = await createQuestionSections();
+
+  await createQuestions(formSections);
+}
+
+async function createServiceCategories() {
   const categories = await orchestrator.createSections(
     undefined,
     undefined,
-    CATEGORIES,
+    SERVICE_CATEGORIES,
   );
 
-  const depilacao = categories.find((cat) => cat.name === "Depilação");
+  return categories;
+}
+
+async function createServices(serviceCategories) {
+  const depilacao = serviceCategories.find((cat) => cat.name === "Depilação");
   for (const service of SERVICES_DEPILACAO) {
     await orchestrator.createService(service.name, service.price, depilacao.id);
   }
 
-  const depilacaoLinha = categories.find(
+  const depilacaoLinha = serviceCategories.find(
     (cat) => cat.name === "Depilação à Linha",
   );
   for (const service of SERVICES_DEPILACAO_FACIAL_COM_LINHA) {
@@ -794,7 +963,7 @@ async function createCategories() {
     );
   }
 
-  const depilacaoMasc = categories.find(
+  const depilacaoMasc = serviceCategories.find(
     (cat) => cat.name === "Depilação Masculina",
   );
   for (const service of SERVICES_DEPILACAO_MASCULINA) {
@@ -805,7 +974,9 @@ async function createCategories() {
     );
   }
 
-  const facial = categories.find((cat) => cat.name === "Estética Facial");
+  const facial = serviceCategories.find(
+    (cat) => cat.name === "Estética Facial",
+  );
   for (const service of SERVICES_DESIGN_E_COLORAÇÃO) {
     await orchestrator.createService(service.name, service.price, facial.id);
   }
@@ -822,7 +993,7 @@ async function createCategories() {
     await orchestrator.createService(service.name, service.price, facial.id);
   }
 
-  const esmalteria = categories.find((cat) => cat.name === "Esmalteria");
+  const esmalteria = serviceCategories.find((cat) => cat.name === "Esmalteria");
   for (const service of SERVICES_MANICURE) {
     await orchestrator.createService(
       service.name,
@@ -831,10 +1002,66 @@ async function createCategories() {
     );
   }
 
-  const corporal = categories.find((cat) => cat.name === "Estética Corporal");
+  const corporal = serviceCategories.find(
+    (cat) => cat.name === "Estética Corporal",
+  );
   for (const service of SERVICES_MASSAGEM) {
     await orchestrator.createService(service.name, service.price, corporal.id);
   }
 }
 
-export default createCategories;
+async function createQuestionSections() {
+  const sections = await orchestrator.createSections(
+    undefined,
+    "form",
+    QUESTION_SECTIONS,
+  );
+
+  return sections;
+}
+
+async function createQuestions(formSections) {
+  const depilacao = formSections.find((sec) => sec.name === "Depilação");
+  for (const question of QUESTIONS_DEPILACAO) {
+    await orchestrator.createQuestion(
+      question.statement,
+      question.type,
+      question.options,
+      depilacao.id,
+    );
+  }
+
+  const sombrancelha = formSections.find((sec) => sec.name === "Sombrancelhas");
+  for (const question of QUESTIONS_SOMBRANCELHA) {
+    await orchestrator.createQuestion(
+      question.statement,
+      question.type,
+      question.options,
+      sombrancelha.id,
+    );
+  }
+
+  const esmalteria = formSections.find((sec) => sec.name === "Esmalteria");
+  for (const question of QUESTIONS_ESMALTERIA) {
+    await orchestrator.createQuestion(
+      question.statement,
+      question.type,
+      question.options,
+      esmalteria.id,
+    );
+  }
+
+  const alteFrequencia = formSections.find(
+    (sec) => sec.name === "Alta Frequência",
+  );
+  for (const question of QUESTIONS_ALTA_FREQUENCIA) {
+    await orchestrator.createQuestion(
+      question.statement,
+      question.type,
+      question.options,
+      alteFrequencia.id,
+    );
+  }
+}
+
+export default populateDatabase;

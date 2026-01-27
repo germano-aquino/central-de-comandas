@@ -1,4 +1,4 @@
-import createCategories from "@/infra/scripts/populate-database";
+import populateDatabase from "@/infra/scripts/populate-database";
 import controller from "@/infra/controller";
 import { createRouter } from "next-connect";
 
@@ -9,6 +9,6 @@ export default router.handler(controller.errorHandlers);
 router.post(postHandler);
 
 async function postHandler(request, response) {
-  await createCategories();
+  await populateDatabase();
   return response.status(200).end();
 }
