@@ -16,7 +16,7 @@ export function ServicesByCategory({
       {servicesByCategory.map(({ category, services }) => (
         <AccordionItem key={category} value={category}>
           <AccordionTrigger>
-            <div className="flex items-center justify-between w-full pr-4">
+            <div className="flex items-center justify-between w-full pr-4 cursor-pointer">
               <span>{category}</span>
               <span className="text-sm text-gray-500">
                 {services.filter((s) => selectedServices.has(s.id)).length} /{" "}
