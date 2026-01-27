@@ -4,7 +4,7 @@
 
 - id: Id da Pergunta
 - statement: Pergunta
-- type: Tipo de Resposta ["multiple-options", "discursive", "both"]
+- type: Tipo de Resposta ["multiple-choice", "discursive", "both"]
 - options: [varchar()]
 - option_marked: varchar()
 - answer: varchar()
@@ -20,7 +20,7 @@
 - Feature `create:question`
 - Corpo da requisição:
   - statement: Pergunta por extenso
-  - type: ["multiple-options", "discursive", "both"]
+  - type: ["multiple-choice", "discursive", "both"]
   - options: [Sim, Não]
   - option_marked: Sim
   - answer: Resposta descritiva
@@ -28,7 +28,7 @@
 - Retorno:
   - id: Id da Pergunta
   - statement: Pergunta por extenso
-  - type: ["multiple-options", "discursive", "both"]
+  - type: ["multiple-choice", "discursive", "both"]
   - options: [Sim, Não]
   - option_marked: Sim
   - answer: Resposta descritiva
@@ -48,7 +48,7 @@ Lista todas as Perguntas cadastradas.
   - Lista de Perguntas [
     - id: Id da Pergunta
     - statement: Pergunta por extenso
-    - type: ["multiple-options", "discursive", "both"]
+    - type: ["multiple-choice", "discursive", "both"]
     - options: [Sim, Não]
     - option_marked: Sim
     - answer: Resposta descritiva
@@ -67,7 +67,7 @@ Lista todas as Perguntas cadastradas.
   - Lista de Perguntas Pertencentes a uma seção determinada: [
     - id: Id da Pergunta
     - statement: Pergunta por extenso
-    - type: ["multiple-options", "discursive", "both"]
+    - type: ["multiple-choice", "discursive", "both"]
     - options: [Sim, Não]
     - option_marked: Sim
     - answer: Resposta descritiva
@@ -87,7 +87,7 @@ Edição da Pergunta pelo `id` da pergunta no corpo da requisição.
 - Corpo da requisição:
   - id: Id da Pergunta
   - statement: Pergunta por extenso
-  - type: ["multiple-options", "discursive", "both"]
+  - type: ["multiple-choice", "discursive", "both"]
   - options: [Sim, Não]
   - option_marked: Sim
   - answer: Resposta descritiva
@@ -95,7 +95,7 @@ Edição da Pergunta pelo `id` da pergunta no corpo da requisição.
 - Retorno:
   - id: Id da Pergunta
   - statement: Pergunta por extenso
-  - type: ["multiple-options", "discursive", "both"]
+  - type: ["multiple-choice", "discursive", "both"]
   - options: [Sim, Não]
   - option_marked: Sim
   - answer: Resposta descritiva
@@ -114,7 +114,7 @@ Deleção da Pergunta pelo `id` da pergunta no corpo da requisição.
 - Retorno:
   - id: Id da Pergunta
   - statement: Pergunta por extenso
-  - type: ["multiple-options", "discursive", "both"]
+  - type: ["multiple-choice", "discursive", "both"]
   - options: [Sim, Não]
   - option_marked: Sim
   - answer: Resposta descritiva
@@ -134,7 +134,7 @@ Deleção de múltiplas Perguntas definidas pelo `section_ids`
   - Lista de Perguntas Deletadas [
     - id: Id da Pergunta
     - statement: Pergunta por extenso
-    - type: ["multiple-options", "discursive", "both"]
+    - type: ["multiple-choice", "discursive", "both"]
     - options: [Sim, Não]
     - option_marked: Sim
     - answer: Resposta descritiva
