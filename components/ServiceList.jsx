@@ -10,7 +10,7 @@ export function ServiceList({ services, selectedServices, onToggleService }) {
           className="flex items-center space-x-3 flex-wrap mr-3"
         >
           <FieldLabel>
-            <Field orientation="horizontal">
+            <Field orientation="horizontal" className="cursor-pointer">
               <Checkbox
                 id={service.id}
                 className="hidden"
@@ -22,10 +22,6 @@ export function ServiceList({ services, selectedServices, onToggleService }) {
               </FieldContent>
             </Field>
           </FieldLabel>
-
-          {/* <Label htmlFor={service.id} className="flex-1 cursor-pointer">
-              <span className="block">{service.name}</span>
-            </Label> */}
         </div>
       ))}
     </div>
