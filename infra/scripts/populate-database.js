@@ -925,8 +925,17 @@ const QUESTIONS_ALTA_FREQUENCIA = [
   },
 ];
 
-orchestrator.createQuestion();
 async function populateDatabase() {
+  const user = await orchestrator.createUser({
+    username: "germano",
+    email: "germano@example.com",
+    password: "123456",
+  });
+
+  await orchestrator.activateUser(user);
+  await orchestrator.addCategoriesFeatures(user);
+  await orchestrator.addServicesFeatures(user);
+
   const serviceCategories = await createServiceCategories();
 
   await createServices(serviceCategories);
