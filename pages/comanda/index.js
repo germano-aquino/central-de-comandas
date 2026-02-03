@@ -94,10 +94,9 @@ function Command({ categories, services }) {
 
 export async function getServerSideProps(context) {
   async function findLoggedUser(request) {
-    const cookie = request.headers.cookie;
-    const token = cookie.match("(?<=session_id=)[\\da-fA-F]{64}");
-
-    const userSession = await session.findOneValidByToken(token[0]);
+    const userSession = await session.findOneValidByToken(
+      request.cookies?.session_id,
+    );
     const userRequesting = await user.findOneById(userSession.user_id);
 
     return userRequesting;
