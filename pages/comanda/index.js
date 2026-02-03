@@ -5,8 +5,13 @@ import { OrderSummary } from "@/components/OrderSummary";
 import { ServicesByCategory } from "@/components/ServicesByCategory";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import orchestrator from "@/tests/orchestrator";
 import { useState } from "react";
+import service from "@/models/service";
+import category from "@/models/category";
+import authorization from "@/models/authorization";
+import session from "@/models/session";
+import user from "@/models/user";
+import { ForbiddenError } from "@/infra/errors";
 
 function Command({ categories, services }) {
   const [clientName, setClientName] = useState("");
@@ -87,38 +92,70 @@ function Command({ categories, services }) {
   );
 }
 
-export async function getServerSideProps() {
-  const inactiveUser = await orchestrator.createUser();
-  const activeUser = await orchestrator.activateUser(inactiveUser);
-  await orchestrator.addCategoriesFeatures(activeUser);
-  await orchestrator.addServicesFeatures(activeUser);
-  const session = await orchestrator.createSession(activeUser);
-  const headers = {
-    Cookie: `session_id=${session.token}`,
-  };
+export async function getServerSideProps(context) {
+  async function findLoggedUser(request) {
+    const userSession = await session.findOneValidByToken(
+      request.cookies?.session_id,
+    );
+    const userRequesting = await user.findOneById(userSession.user_id);
 
-  const categoriesResponse = await fetch(
-    "http://localhost:3000/api/v1/categories",
-    {
-      headers,
-    },
-  );
-  const categories = await categoriesResponse.json();
+    return userRequesting;
+  }
 
-  const servicesResponse = await fetch(
-    "http://localhost:3000/api/v1/services",
-    {
-      headers,
-    },
-  );
-  const services = await servicesResponse.json();
+  function checkUserFeatures(user, features) {
+    features.forEach((feature) => {
+      if (!authorization.can(user, "read:category"))
+        throw new ForbiddenError({
+          message: "O usuário não possui permissão para executar esta ação.",
+          action: `Verifique se o usuário possui a feature "${feature}".`,
+        });
+    });
+  }
 
-  return {
-    props: {
-      categories,
-      services,
-    },
-  };
+  function dateToISOString(objects) {
+    const newObjects = objects.map((obj) => {
+      return {
+        ...obj,
+        updated_at: obj.updated_at.toISOString(),
+        created_at: obj.created_at.toISOString(),
+      };
+    });
+    return newObjects;
+  }
+
+  async function getCategoriesAndServices() {
+    let categories = await category.retrieveAll();
+    categories = dateToISOString(categories);
+
+    let services = await service.retrieveAll();
+    services = dateToISOString(services);
+
+    return [categories, services];
+  }
+
+  try {
+    const { req } = context;
+    const userRequesting = await findLoggedUser(req);
+
+    checkUserFeatures(userRequesting, ["read:category", "read:service"]);
+
+    const [categories, services] = await getCategoriesAndServices();
+
+    return {
+      props: {
+        categories,
+        services,
+      },
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      redirect: {
+        destination: "/login",
+        permanent: false,
+      },
+    };
+  }
 }
 
 export default Command;
