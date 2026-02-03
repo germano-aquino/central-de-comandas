@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 
 export default function proxy(request) {
-  console.log(request.cookies);
   const isAuthenticated = !!request.cookies?.get("session_id")?.value;
 
   if (!isAuthenticated)
