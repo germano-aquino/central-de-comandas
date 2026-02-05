@@ -1,127 +1,111 @@
-# Endpoints para Pergunta
+# Endpoints para Serviço
 
-## Tabela Questions
+## Tabela services
 
-- id: Id da Pergunta
-- statement: Pergunta
-- type: Tipo de Pergunta ["multiple-choice", "essay-questions", "both"]
-- options: [varchar()]
-- option_marked: varchar() - optional
-- answer: varchar() - optional
-- section_id: Id da seção que a pergunta pertence - optional
+- id: Id do Serviço
+- name: Nome do serviço
+- price: Preço do serviço em centavos
+- category_id: Id da categoria de serviço - opcional
+- partner_ids: Lista de ids da profissional que realizou o serviço - opcional
 - created_at: Data de criação
 - updated_at: Data da última atualização
 
-## Criação de Perguntas
+## Criação de Serviços
 
-### POST /api/v1/questions
+### POST /api/v1/services
 
 - Usuário logado
-- Feature `create:question`
+- Feature `create:service`
 - Corpo da requisição:
-  - statement: Pergunta por extenso
-  - type: ["multiple-choice", "essay-questions", "both"]
-  - options: [Sim, Não]
-  - option_marked: Sim
-  - answer: Resposta discrusiva
-  - section_id: uuid da section pai da pergunta
+  - name: Nome do serviço
+  - price: Preço do serviço em centavos
+  - category_id: Id da categoria de serviço - opcional
+  - partner_ids: Lista de ids da profissional que realizou o serviço - opcional
 - Retorno:
-  - id: Id da Pergunta
-  - statement: Pergunta por extenso
-  - type: ["multiple-choice", "essay-questions", "both"]
-  - options: [Sim, Não]
-  - option_marked: Sim
-  - answer: Resposta discrusiva
-  - section_id: uuid da section pai da pergunta
-  - created_at: Data de Criação
-  - updated_at: Date de Atualização
+  - id: Id do Serviço
+  - name: Nome do serviço
+  - price: Preço do serviço em centavos
+  - category_id: Id da categoria de serviço - opcional
+  - partner_ids: Lista de ids da profissional que realizou o serviço - opcional
+  - created_at: Data de criação
+  - updated_at: Data da última atualização
 
-## Listagem de Perguntas
+## Listagem de Serviços
 
-### GET /api/v1/questions
+### GET /api/v1/services
 
-Lista todas as Perguntas cadastradas.
+Lista todas as Serviços cadastradas.
 
 - Usuário logado
-- Feature: `read:question`
+- Feature: `read:service`
 - Retorno:
-  - Lista de Perguntas [
-    - id: Id da Pergunta
-    - statement: Pergunta por extenso
-    - type: ["multiple-choice", "essay-questions", "both"]
-    - options: [Sim, Não]
-    - option_marked: Sim
-    - answer: Resposta discrusiva
-    - section_id: uuid da section pai da pergunta
-    - created_at: Data de Criação
-    - updated_at: Date de Atualização
+  - Lista de Serviços [
+    - id: Id do Serviço
+    - name: Nome do serviço
+    - price: Preço do serviço em centavos
+    - category_id: Id da categoria de serviço - opcional
+    - partner_ids: Lista de ids da profissional que realizou o serviço - opcional
+    - created_at: Data de criação
+    - updated_at: Data da última atualização
       ]
 
-### GET /api/v1/questions?section_name=
+### GET /api/v1/services?category_name=
 
-Lista todas as Perguntas cadastradas.
+Lista todas as Serviços cadastradas.
 
 - Usuário logado
-- Feature: `read:question`
+- Feature: `read:service`
 - Retorno:
-  - Lista de Perguntas Pertencentes a uma seção determinada: [
-    - id: Id da Pergunta
-    - statement: Pergunta por extenso
-    - type: ["multiple-choice", "essay-questions", "both"]
-    - options: [Sim, Não]
-    - option_marked: Sim
-    - answer: Resposta discrusiva
-    - section_id: uuid da section pai da pergunta
-    - created_at: Data de Criação
-    - updated_at: Date de Atualização
+  - Lista de Serviços Pertencentes a uma seção determinada: [
+    - id: Id do Serviço
+    - name: Nome do serviço
+    - price: Preço do serviço em centavos
+    - category_id: Id da categoria de serviço - opcional
+    - partner_ids: Lista de ids da profissional que realizou o serviço - opcional
+    - created_at: Data de criação
+    - updated_at: Data da última atualização
       ]
 
-## Edição de Perguntas
+## Edição de Serviços
 
-### PATCH /api/v1/questions
+### PATCH /api/v1/services
 
-Edição da Pergunta pelo `id` da pergunta no corpo da requisição.
+Edição da Serviço pelo `id` do serviço no corpo da requisição.
 
 - Usuário logado
-- Feature: `edit:question`
+- Feature: `edit:service`
 - Corpo da requisição:
-  - id: Id da Pergunta
-  - statement: Pergunta por extenso
-  - type: ["multiple-choice", "essay-questions", "both"]
-  - options: [Sim, Não]
-  - option_marked: Sim
-  - answer: Resposta discrusiva
-  - section_id: uuid da section pai da pergunta
+  - id: id do serviço a ser editado
+  - name: Nome do serviço
+  - price: Preço do serviço em centavos
+  - category_id: Id da categoria de serviço - opcional
+  - partner_ids: Lista de ids da profissional que realizou o serviço - opcional
 - Retorno:
-  - id: Id da Pergunta
-  - statement: Pergunta por extenso
-  - type: ["multiple-choice", "essay-questions", "both"]
-  - options: [Sim, Não]
-  - option_marked: Sim
-  - answer: Resposta discrusiva
-  - section_id: uuid da section pai da pergunta
-  - created_at: Data de Criação
-  - updated_at: Date de Atualização
+  - id: Id do Serviço
+  - name: Nome do serviço
+  - price: Preço do serviço em centavos
+  - category_id: Id da categoria de serviço - opcional
+  - partner_ids: Lista de ids da profissional que realizou o serviço - opcional
+  - created_at: Data de criação
+  - updated_at: Data da última atualização
 
-## Deleção de Perguntas
+## Deleção de Serviços
 
-### DELETE /api/v1/questions/
+### DELETE /api/v1/services/
 
-Deleção de múltiplas Perguntas definidas pelo `section_ids`
+Deleção de múltiplas Serviços definidas pelo `services_ids`
 
 - Usuário logado
-- Feature: `delete:question`
+- Feature: `delete:service`
 - Corpo da Requisição:
-  - section_ids: Lista de Id's de Perguntas [question_id, ...]
+  - services_ids: Lista de Id's de Serviços [service_id, ...]
 - Retorno:
-  - Lista de Perguntas Deletadas [
-    - id: Id da Pergunta
-    - statement: Pergunta por extenso
-    - type: ["multiple-choice", "essay-questions", "both"]
-    - options: [Sim, Não]
-    - option_marked: Sim
-    - answer: Resposta discrusiva
-    - section_id: uuid da section pai da pergunta
-    - created_at: Data de Criação
-    - updated_at: Date de Atualização
+  - Lista de Serviços Deletadas [
+    - id: Id do Serviço
+    - name: Nome do serviço
+    - price: Preço do serviço em centavos
+    - category_id: Id da categoria de serviço - opcional
+    - partner_ids: Lista de ids da profissional que realizou o serviço - opcional
+    - created_at: Data de criação
+    - updated_at: Data da última atualização
       ]
