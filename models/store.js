@@ -71,6 +71,29 @@ async function deleteManyByIdArray(storeIds) {
   }
 }
 
+async function deleteOneByName(storeName) {
+  const storeToBeDeleted = await findOneValidByName(storeName);
+
+  const storeDeleted = await runDeleteQuery(storeToBeDeleted.id);
+  return storeDeleted;
+
+  async function runDeleteQuery(id) {
+    const results = await database.query({
+      text: `
+        DELETE FROM
+          stores
+        WHERE
+          id = $1
+        RETURNING
+          *
+      ;`,
+      values: [id],
+    });
+
+    return results.rows[0];
+  }
+}
+
 async function findOneValidByName(storeName) {
   const validStore = await runSelectQuery(storeName.trim());
 
@@ -97,6 +120,8 @@ async function findOneValidByName(storeName) {
         action: "Confirme o nome da loja e tente novamente.",
       });
     }
+
+    return results.rows[0];
   }
 }
 
@@ -131,6 +156,7 @@ async function addFeatures(unallowedUser) {
 
 const store = {
   create,
+  deleteOneByName,
   deleteManyByIdArray,
   retrieveAll,
   findOneValidByName,
