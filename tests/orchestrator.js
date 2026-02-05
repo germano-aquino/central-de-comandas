@@ -10,6 +10,7 @@ import section from "models/section";
 import service from "models/service";
 import session from "models/session";
 import user from "models/user";
+import store from "models/store";
 
 const emailHttpUrl = `http://${process.env.EMAIL_HTTP_HOST}:${process.env.EMAIL_HTTP_PORT}`;
 const webServerStatusPageUrl = "http://localhost:3000/api/v1/status";
@@ -81,6 +82,16 @@ async function createSession(unloggedUser) {
   return await session.create(unloggedUser.id);
 }
 
+async function createLoggedUser(userInputValues) {
+  const inactiveUser = await createUser(userInputValues);
+  const activatedUser = await activateUser(inactiveUser);
+  const session = await createSession(activatedUser);
+  return {
+    ...activatedUser,
+    token: session.token,
+  };
+}
+
 async function createServices(length = 5, serviceDefaultValues = {}) {
   let services = [];
 
@@ -118,6 +129,10 @@ async function addQuestionsFeatures(unallowedUser) {
 
 async function addFormSectionsFeatures(unallowedUser) {
   return await formSection.addFeatures(unallowedUser);
+}
+
+async function addStoreFeatures(unallowedUser) {
+  return await store.addFeatures(unallowedUser);
 }
 
 async function createSections(
@@ -183,6 +198,31 @@ async function createQuestion(
   return await question.create(questionInputValues);
 }
 
+async function createStores(length = 5, storesName = []) {
+  let stores = [];
+
+  if (storesName.length !== 0) {
+    for (const name of storesName) {
+      const storeObject = await createStore(name);
+      stores.push(storeObject);
+    }
+  } else {
+    for (let i = 0; i < length; i++) {
+      const storeObject = await createStore(undefined);
+      stores.push(storeObject);
+    }
+  }
+
+  return stores;
+}
+
+async function createStore(sectionName, sectionType = "service") {
+  const sectionInputValues = {
+    name: sectionName || faker.internet.username().replace(/[.-]/g, ""),
+  };
+  return await store.create(sectionInputValues, sectionType);
+}
+
 const orchestrator = {
   waitForAllServices,
   clearDatabase,
@@ -190,6 +230,7 @@ const orchestrator = {
   deleteAllEmails,
   getLastEmail,
   createUser,
+  createLoggedUser,
   activateUser,
   createSession,
   createService,
@@ -202,6 +243,9 @@ const orchestrator = {
   addFormSectionsFeatures,
   createSections,
   createSection,
+  addStoreFeatures,
+  createStore,
+  createStores,
 };
 
 export default orchestrator;
