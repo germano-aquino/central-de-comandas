@@ -120,6 +120,36 @@ async function create(customerInputValues) {
   }
 }
 
+async function retrieveAll(name, phone) {
+  console.log("nome:", name);
+  console.log("phone", phone);
+  const storedCustomers = await runSelectQuery(name, phone);
+  return storedCustomers;
+
+  async function runSelectQuery(name, phone) {
+    let text = `SELECT * FROM customers WHERE TRUE`;
+    let values = [];
+    if (name) {
+      values.push("%" + name + "%");
+      text += ` AND LOWER(name) LIKE $${values.length}`;
+    }
+
+    if (phone) {
+      values.push(phone + "%");
+      text += ` AND phone LIKE $${values.length}`;
+    }
+
+    text += ";";
+
+    const results = await database.query({
+      text,
+      values,
+    });
+
+    return results.rows;
+  }
+}
+
 async function addFeatures(unallowedUser) {
   const allowedUser = user.addFeaturesByUserId(unallowedUser.id, [
     "create:customer",
@@ -132,6 +162,7 @@ async function addFeatures(unallowedUser) {
 
 const customer = {
   create,
+  retrieveAll,
   addFeatures,
 };
 
