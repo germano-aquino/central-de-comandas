@@ -1,4 +1,4 @@
-import { ValidationError } from "@/infra/errors";
+import { NotFoundError, ValidationError } from "@/infra/errors";
 import user from "./user";
 import database from "@/infra/database";
 
@@ -150,6 +150,52 @@ async function retrieveAll(name, phone) {
   }
 }
 
+async function deleteManyByIdArray(customerIds) {
+  const deletedCustomers = await runDeleteQuery(customerIds);
+  return deletedCustomers;
+
+  async function runDeleteQuery(customerIds) {
+    const results = await database.query({
+      text: `
+        DELETE FROM
+          customers
+        WHERE
+          id = ANY($1)
+        RETURNING
+          *
+      ;`,
+      values: [customerIds],
+    });
+
+    return results.rows;
+  }
+}
+
+async function findOneValidByName(name) {
+  const results = await database.query({
+    text: `
+      SELECT
+        *
+      FROM
+        customers
+      WHERE
+        LOWER(name) = LOWER($1)
+      LIMIT
+        1
+      ;`,
+    values: [name],
+  });
+
+  if (results.rowCount < 1) {
+    throw new NotFoundError({
+      message: "Não existe cliente com esse nome.",
+      action: "Verifique se o nome está correto e tente novamente.",
+    });
+  }
+
+  return results.rows[0];
+}
+
 async function addFeatures(unallowedUser) {
   const allowedUser = user.addFeaturesByUserId(unallowedUser.id, [
     "create:customer",
@@ -163,6 +209,8 @@ async function addFeatures(unallowedUser) {
 const customer = {
   create,
   retrieveAll,
+  deleteManyByIdArray,
+  findOneValidByName,
   addFeatures,
 };
 
