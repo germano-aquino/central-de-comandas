@@ -39,69 +39,6 @@ async function create(customerInputValues) {
     return validInputValues;
   }
 
-  async function validateUniqueName(customerName) {
-    const results = await database.query({
-      text: `
-        SELECT
-          *
-        FROM
-          customers
-        WHERE
-          LOWER(name) = LOWER($1)
-        LIMIT
-          1
-      ;`,
-      values: [customerName],
-    });
-
-    if (results.rowCount > 0) {
-      throw new ValidationError({
-        message: "O nome escolhido para o cliente já está sendo utilizado.",
-        action: "Escolha um novo nome para o cliente e tente novamente.",
-      });
-    }
-  }
-
-  function getValidPhoneNumber(phoneNumber) {
-    const phoneNumberPattern = new RegExp(
-      "[\\+][(]?[0-9]{1,3}[)]?[-\\s\\.]?[0-9]{2,3}[-\\s\\.]?[0-9]{4,5}[-\\s\\.]?[0-9]{4}",
-    );
-    if (!phoneNumberPattern.test(phoneNumber)) {
-      throw new ValidationError({
-        message: "Número de telefone inválido.",
-        action:
-          "Envie um número de telefone com o seguinte formato: '+55 91 98765-4321'.",
-      });
-    }
-    const validPhoneNumber = phoneNumber.replace(/[^\\+0-9]/g, "");
-    return validPhoneNumber;
-  }
-
-  async function validateUniquePhone(phone) {
-    const results = await database.query({
-      text: `
-        SELECT
-          *
-        FROM
-          customers
-        WHERE
-          LOWER(phone) = LOWER($1)
-        LIMIT
-          1
-      ;`,
-      values: [phone],
-    });
-
-    if (results.rowCount > 0) {
-      throw new ValidationError({
-        message:
-          "O número de telefone escolhido para o cliente já está sendo utilizado.",
-        action:
-          "Escolha um novo número de telefone para o cliente e tente novamente.",
-      });
-    }
-  }
-
   async function runInsertQuery(inputValues) {
     const results = await database.query({
       text: `
@@ -120,9 +57,130 @@ async function create(customerInputValues) {
   }
 }
 
+async function update(customerInputValues, storedName) {
+  const validValues = await getValidInputValues(
+    customerInputValues,
+    storedName,
+  );
+
+  const updatedCustomer = await runUpdateQuery(validValues, storedName);
+  return updatedCustomer;
+
+  async function getValidInputValues(inputValues, oldName) {
+    try {
+      let validValues = {};
+      await findOneValidByName(oldName);
+
+      if ("name" in inputValues) {
+        const newName = inputValues.name;
+        if (newName.toLowerCase() != oldName.toLowerCase())
+          await validateUniqueName(newName);
+        validValues.name = newName;
+      } else {
+        validValues.name = null;
+      }
+
+      if ("phone" in inputValues) {
+        const validPhone = getValidPhoneNumber(inputValues.phone);
+        await validateUniquePhone(validPhone);
+        validValues.phone = validPhone;
+      } else {
+        validValues.phone = null;
+      }
+
+      return validValues;
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw new ValidationError(error);
+      }
+      throw error;
+    }
+  }
+
+  async function runUpdateQuery(inputValues, oldName) {
+    const results = await database.query({
+      text: `
+        UPDATE
+          customers
+        SET
+          name = COALESCE($1, name),
+          phone = COALESCE($2, phone),
+          updated_at = TIMEZONE('utc', NOW())
+        WHERE
+          LOWER(name) = LOWER($3)
+        RETURNING
+          *
+      ;`,
+      values: [inputValues.name, inputValues.phone, oldName],
+    });
+
+    return results.rows[0];
+  }
+}
+
+function getValidPhoneNumber(phoneNumber) {
+  const phoneNumberPattern = new RegExp(
+    "[\\+][(]?[0-9]{1,3}[)]?[-\\s\\.]?[0-9]{2,3}[-\\s\\.]?[0-9]{4,5}[-\\s\\.]?[0-9]{4}",
+  );
+  if (!phoneNumberPattern.test(phoneNumber)) {
+    throw new ValidationError({
+      message: "Número de telefone inválido.",
+      action:
+        "Envie um número de telefone com o seguinte formato: '+55 91 98765-4321'.",
+    });
+  }
+  const validPhoneNumber = phoneNumber.replace(/[^\\+0-9]/g, "");
+  return validPhoneNumber;
+}
+
+async function validateUniquePhone(phone) {
+  const results = await database.query({
+    text: `
+        SELECT
+          *
+        FROM
+          customers
+        WHERE
+          LOWER(phone) = LOWER($1)
+        LIMIT
+          1
+      ;`,
+    values: [phone],
+  });
+
+  if (results.rowCount > 0) {
+    throw new ValidationError({
+      message:
+        "O número de telefone escolhido para o cliente já está sendo utilizado.",
+      action:
+        "Escolha um novo número de telefone para o cliente e tente novamente.",
+    });
+  }
+}
+async function validateUniqueName(customerName) {
+  const results = await database.query({
+    text: `
+        SELECT
+          *
+        FROM
+          customers
+        WHERE
+          LOWER(name) = LOWER($1)
+        LIMIT
+          1
+      ;`,
+    values: [customerName],
+  });
+
+  if (results.rowCount > 0) {
+    throw new ValidationError({
+      message: "O nome escolhido para o cliente já está sendo utilizado.",
+      action: "Escolha um novo nome para o cliente e tente novamente.",
+    });
+  }
+}
+
 async function retrieveAll(name, phone) {
-  console.log("nome:", name);
-  console.log("phone", phone);
   const storedCustomers = await runSelectQuery(name, phone);
   return storedCustomers;
 
@@ -208,6 +266,7 @@ async function addFeatures(unallowedUser) {
 
 const customer = {
   create,
+  update,
   retrieveAll,
   deleteManyByIdArray,
   findOneValidByName,
