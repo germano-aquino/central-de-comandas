@@ -216,11 +216,11 @@ async function createStores(length = 5, storesName = []) {
   return stores;
 }
 
-async function createStore(sectionName, sectionType = "service") {
-  const sectionInputValues = {
+async function createStore(sectionName) {
+  const storeInputValues = {
     name: sectionName || faker.internet.username().replace(/[.-]/g, ""),
   };
-  return await store.create(sectionInputValues, sectionType);
+  return await store.create(storeInputValues);
 }
 
 const orchestrator = {

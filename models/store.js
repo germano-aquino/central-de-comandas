@@ -8,29 +8,6 @@ async function create(storeInputValues) {
   const storeCreated = await runInsertQuery(storeInputValues.name);
   return storeCreated;
 
-  async function validateUniqueName(storeName) {
-    const results = await database.query({
-      text: `
-        SELECT
-          *
-        FROM
-          stores
-        WHERE
-          LOWER(name) = LOWER($1)
-        LIMIT
-          1
-      ;`,
-      values: [storeName],
-    });
-
-    if (results.rowCount > 0) {
-      throw new ValidationError({
-        message: "Este nome de loja já está sendo utilizado.",
-        action: "Escolha um novo nome para loja e tente novamente.",
-      });
-    }
-  }
-
   async function runInsertQuery(storeName) {
     const results = await database.query({
       text: `
@@ -43,6 +20,77 @@ async function create(storeInputValues) {
           *
       ;`,
       values: [storeName],
+    });
+
+    return results.rows[0];
+  }
+}
+
+async function validateUniqueName(storeName) {
+  const results = await database.query({
+    text: `
+        SELECT
+          *
+        FROM
+          stores
+        WHERE
+          LOWER(name) = LOWER($1)
+        LIMIT
+          1
+      ;`,
+    values: [storeName],
+  });
+
+  if (results.rowCount > 0) {
+    throw new ValidationError({
+      message: "Este nome de loja já está sendo utilizado.",
+      action: "Escolha um novo nome para loja e tente novamente.",
+    });
+  }
+}
+
+async function update(storeInputValues, storeName) {
+  await validateUpdateInputValues(storeInputValues, storeName);
+
+  const updatedStore = await runUpdateQuery(storeInputValues, storeName);
+
+  return updatedStore;
+
+  async function validateUpdateInputValues(inputValues, storeName) {
+    try {
+      if ("name" in inputValues) {
+        const newName = inputValues.name;
+        if (newName.toLowerCase() !== storeName.toLowerCase()) {
+          await validateUniqueName(newName);
+        }
+      }
+
+      await findOneValidByName(storeName);
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw new ValidationError({
+          message: `Não é possível editar ${storeName}. Loja inexistente.`,
+          action:
+            "Verifique o nome da loja que deseja editar e tente novamente.",
+        });
+      } else throw error;
+    }
+  }
+
+  async function runUpdateQuery(storeInputValues, oldName) {
+    const results = await database.query({
+      text: `
+        UPDATE
+          stores
+        SET
+          name = $1,
+          updated_at = TIMEZONE('utc', NOW())
+        WHERE
+          name = $2
+        RETURNING
+          *
+      ;`,
+      values: [storeInputValues.name, oldName],
     });
 
     return results.rows[0];
@@ -156,6 +204,7 @@ async function addFeatures(unallowedUser) {
 
 const store = {
   create,
+  update,
   deleteOneByName,
   deleteManyByIdArray,
   retrieveAll,
