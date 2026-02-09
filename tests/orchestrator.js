@@ -11,6 +11,7 @@ import service from "models/service";
 import session from "models/session";
 import user from "models/user";
 import store from "models/store";
+import customer from "models/customer";
 
 const emailHttpUrl = `http://${process.env.EMAIL_HTTP_HOST}:${process.env.EMAIL_HTTP_PORT}`;
 const webServerStatusPageUrl = "http://localhost:3000/api/v1/status";
@@ -223,6 +224,37 @@ async function createStore(sectionName) {
   return await store.create(storeInputValues);
 }
 
+async function addCustomerFeatures(unallowedUser) {
+  const allowedUser = await customer.addFeatures(unallowedUser);
+  return allowedUser;
+}
+
+async function createCustomer(name, phone) {
+  const customerInputValues = {
+    name: name || faker.internet.username().replace(/[.-]/g, ""),
+    phone: phone || faker.phone.number({ style: "international" }),
+  };
+  return await customer.create(customerInputValues);
+}
+
+async function createCustomers(length = 5, customersName = []) {
+  let customers = [];
+
+  if (customersName.length !== 0) {
+    for (const name of customersName) {
+      const customerObject = await createCustomer(name);
+      customers.push(customerObject);
+    }
+  } else {
+    for (let i = 0; i < length; i++) {
+      const customerObject = await createCustomer(undefined);
+      customers.push(customerObject);
+    }
+  }
+
+  return customers;
+}
+
 const orchestrator = {
   waitForAllServices,
   clearDatabase,
@@ -246,6 +278,9 @@ const orchestrator = {
   addStoreFeatures,
   createStore,
   createStores,
+  addCustomerFeatures,
+  createCustomer,
+  createCustomers,
 };
 
 export default orchestrator;
