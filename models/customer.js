@@ -208,6 +208,28 @@ async function retrieveAll(name, phone) {
   }
 }
 
+async function deleteOneByName(customerName) {
+  await findOneValidByName(customerName);
+  const deltedCustomer = await runDeleteQuery(customerName);
+  return deltedCustomer;
+
+  async function runDeleteQuery(customerName) {
+    const results = await database.query({
+      text: `
+        DELETE FROM
+          customers
+        WHERE
+          LOWER(name) = LOWER($1)
+        RETURNING
+          *
+      ;`,
+      values: [customerName],
+    });
+
+    return results.rows[0];
+  }
+}
+
 async function deleteManyByIdArray(customerIds) {
   const deletedCustomers = await runDeleteQuery(customerIds);
   return deletedCustomers;
@@ -268,6 +290,7 @@ const customer = {
   create,
   update,
   retrieveAll,
+  deleteOneByName,
   deleteManyByIdArray,
   findOneValidByName,
   addFeatures,

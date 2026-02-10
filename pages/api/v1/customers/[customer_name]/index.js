@@ -8,6 +8,7 @@ export default router.handler(controller.errorHandlers);
 
 router.use(controller.injectAnonymousOrUser);
 router.patch(controller.canRequest("edit:customer"), patchHandler);
+router.delete(controller.canRequest("delete:customer"), deleteHandler);
 
 async function patchHandler(request, response) {
   const customerName = request.query.customer_name;
@@ -19,4 +20,12 @@ async function patchHandler(request, response) {
   );
 
   return response.status(200).json(updatedCustomer);
+}
+
+async function deleteHandler(request, response) {
+  const customerName = request.query.customer_name;
+
+  const deletedCustomer = await customer.deleteOneByName(customerName);
+
+  return response.status(200).json(deletedCustomer);
 }
