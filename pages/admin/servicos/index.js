@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -27,14 +26,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ArrowLeft, Plus, Pencil, Trash2, Package } from "lucide-react";
+import { Plus, Pencil, Trash2, Package } from "lucide-react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { Header } from "@/components/Header";
+import category from "@/models/category";
+import service from "@/models/service";
+import { ForbiddenError } from "@/infra/errors";
+import authorization from "@/models/authorization";
+import user from "@/models/user";
+import session from "@/models/session";
 
-function ManageServices() {
-  const router = useRouter();
-  const [services, setServices] = useState([]);
-  const [categories, setCategories] = useState([]);
+function ManageServices({ clientServices, clientCategories }) {
+  const [services, setServices] = useState(clientServices);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingService, setEditingService] = useState(null);
   const [formData, setFormData] = useState({
@@ -42,32 +45,28 @@ function ManageServices() {
     description: "",
     price: 0,
     category: "",
-    image:
-      "https://images.unsplash.com/photo-1560750588-73207b1ef5b8?w=400&h=300&fit=crop",
   });
   const [filterCategory, setFilterCategory] = useState("all");
 
-  useEffect(() => {
-    loadServices();
-    loadCategories();
-  }, []);
-
-  function loadServices() {
-    const stored = localStorage.getItem("services");
-    if (stored) {
-      setServices(JSON.parse(stored));
+  async function saveServices(newServices, editingService) {
+    // Add saving on backend
+    try {
+      await fetch(`/api/v1/services/${editingService.name}`, {
+        method: "PATCH",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          name: editingService.name,
+          category_id: editingService.category_id,
+          price: editingService.price,
+        }),
+      });
+      setServices(newServices);
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message);
     }
-  }
-
-  function loadCategories() {
-    const stored = localStorage.getItem("categories");
-    if (stored) {
-      setCategories(JSON.parse(stored));
-    }
-  }
-
-  function saveServices(newServices) {
-    localStorage.setItem("services", JSON.stringify(newServices));
     setServices(newServices);
   }
 
@@ -79,7 +78,6 @@ function ManageServices() {
         description: service.description,
         price: service.price,
         category: service.category,
-        image: service.image,
       });
     } else {
       setEditingService(null);
@@ -87,9 +85,7 @@ function ManageServices() {
         name: "",
         description: "",
         price: 0,
-        category: categories[0]?.name || "",
-        image:
-          "https://images.unsplash.com/photo-1560750588-73207b1ef5b8?w=400&h=300&fit=crop",
+        category: "",
       });
     }
     setIsDialogOpen(true);
@@ -110,7 +106,7 @@ function ManageServices() {
       const updated = services.map((svc) =>
         svc.id === editingService.id ? { ...svc, ...formData } : svc,
       );
-      saveServices(updated);
+      saveServices(updated, editingService);
       toast.success("Serviço atualizado com sucesso!");
     } else {
       const newService = {
@@ -139,29 +135,7 @@ function ManageServices() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <header className="bg-white shadow-md sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Package className="w-8 h-8 text-green-600" />
-              <div>
-                <h1 className="text-green-600">Serviços</h1>
-                <p className="text-sm text-gray-600">
-                  Gerenciar serviços oferecidos
-                </p>
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => router.push("/admin")}
-              className="gap-2"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Voltar
-            </Button>
-          </div>
-        </div>
-      </header>
+      <Header subtitle="Gerenciar serviços" Icon={Package} />
 
       <div className="container mx-auto px-4 py-8">
         <Card>
@@ -178,7 +152,7 @@ function ManageServices() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todas as categorias</SelectItem>
-                    {categories.map((cat) => (
+                    {clientCategories.map((cat) => (
                       <SelectItem key={cat.id} value={cat.name}>
                         {cat.name}
                       </SelectItem>
@@ -198,7 +172,6 @@ function ManageServices() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Nome</TableHead>
-                    <TableHead>Descrição</TableHead>
                     <TableHead>Categoria</TableHead>
                     <TableHead>Preço</TableHead>
                     <TableHead className="text-right">Ações</TableHead>
@@ -209,9 +182,6 @@ function ManageServices() {
                     <TableRow key={service.id}>
                       <TableCell className="font-medium">
                         {service.name}
-                      </TableCell>
-                      <TableCell className="max-w-xs truncate">
-                        {service.description}
                       </TableCell>
                       <TableCell>{service.category}</TableCell>
                       <TableCell>R$ {service.price.toFixed(2)}</TableCell>
@@ -284,7 +254,7 @@ function ManageServices() {
                     <SelectValue placeholder="Selecione uma categoria" />
                   </SelectTrigger>
                   <SelectContent>
-                    {categories.map((cat) => (
+                    {clientCategories.map((cat) => (
                       <SelectItem key={cat.id} value={cat.name}>
                         {cat.name}
                       </SelectItem>
@@ -292,19 +262,6 @@ function ManageServices() {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description">Descrição</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                placeholder="Descrição do serviço"
-                rows={3}
-              />
             </div>
 
             <div className="space-y-2">
@@ -317,26 +274,11 @@ function ManageServices() {
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    price: parseFloat(e.target.value) || 0,
+                    price: parseFloat(e.target.value),
                   })
                 }
                 placeholder="0.00"
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="image">URL da Imagem</Label>
-              <Input
-                id="image"
-                value={formData.image}
-                onChange={(e) =>
-                  setFormData({ ...formData, image: e.target.value })
-                }
-                placeholder="https://..."
-              />
-              <p className="text-xs text-gray-500">
-                Deixe em branco para usar a imagem padrão
-              </p>
             </div>
           </div>
 
@@ -352,6 +294,80 @@ function ManageServices() {
       </Dialog>
     </div>
   );
+}
+
+export async function getServerSideProps(context) {
+  async function findLoggedUser(request) {
+    const userSession = await session.findOneValidByToken(
+      request.cookies?.session_id,
+    );
+    const userRequesting = await user.findOneById(userSession.user_id);
+
+    return userRequesting;
+  }
+
+  function checkUserFeatures(user, features) {
+    features.forEach((feature) => {
+      if (!authorization.can(user, feature))
+        throw new ForbiddenError({
+          message: "O usuário não possui permissão para executar esta ação.",
+          action: `Verifique se o usuário possui a feature "${feature}".`,
+        });
+    });
+  }
+
+  function getCategoryNameById(categories, id) {
+    const selectedCategory = categories.find((cat) => cat.id === id);
+
+    return selectedCategory ? selectedCategory.name : null;
+  }
+
+  async function getClientServiceObjects() {
+    const categories = await category.retrieveAll();
+    const services = await service.retrieveAll();
+
+    const clientServices = services.map((service) => {
+      return {
+        name: service.name,
+        category: getCategoryNameById(categories, service.category_id),
+        category_id: service.category_id,
+        price: service.price / 100,
+      };
+    });
+
+    const clientCategories = categories.map((cat) => {
+      return {
+        id: cat.id,
+        name: cat.name,
+      };
+    });
+
+    return [clientServices, clientCategories];
+  }
+
+  try {
+    const { req } = context;
+    const userRequesting = await findLoggedUser(req);
+
+    checkUserFeatures(userRequesting, ["read:category", "read:service"]);
+
+    const [clientServices, clientCategories] = await getClientServiceObjects();
+
+    return {
+      props: {
+        clientServices,
+        clientCategories,
+      },
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      redirect: {
+        destination: "/login",
+        permanent: false,
+      },
+    };
+  }
 }
 
 export default ManageServices;

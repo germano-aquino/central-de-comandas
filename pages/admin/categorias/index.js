@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,18 +19,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  ArrowLeft,
-  Plus,
-  Pencil,
-  Trash2,
-  FolderTree,
-  GripVertical,
-} from "lucide-react";
+import { Plus, Pencil, Trash2, FolderTree, GripVertical } from "lucide-react";
 import { toast } from "sonner";
+import { Header } from "@/components/Header";
 
 function ManageCategories() {
-  const router = useRouter();
   const [categories, setCategories] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
@@ -41,16 +33,77 @@ function ManageCategories() {
     loadCategories();
   }, []);
 
-  function loadCategories() {
-    const stored = localStorage.getItem("categories");
-    if (stored) {
-      setCategories(JSON.parse(stored));
+  async function loadCategories() {
+    const response = await fetch("/api/v1/categories");
+    const storedCategories = await response.json();
+    let i = 0;
+    const newCategories = storedCategories.map((cat) => {
+      return {
+        id: cat.id,
+        name: cat.name,
+        order: ++i,
+      };
+    });
+    setCategories(newCategories);
+  }
+
+  async function updateCategory() {
+    try {
+      const response = await fetch(
+        `/api/v1/categories/${editingCategory.name}`,
+        {
+          method: "PATCH",
+          headers: {
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            name: formData.name,
+          }),
+        },
+      );
+      if (response.status === 200) {
+        toast.success("Categoria atualizada com sucesso!");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message);
     }
   }
 
-  function saveCategories(newCategories) {
-    localStorage.setItem("categories", JSON.stringify(newCategories));
-    setCategories(newCategories);
+  async function createCategory() {
+    try {
+      const response = await fetch(`/api/v1/categories/`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+        }),
+      });
+      if (response.status === 201) {
+        const newCategory = await response.json();
+        return {
+          id: newCategory.id,
+          name: newCategory.name,
+          order: formData.order,
+        };
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message);
+    }
+  }
+
+  async function deleteCategory(categoryName) {
+    try {
+      await fetch(`/api/v1/categories/${categoryName}`, {
+        method: "DELETE",
+      });
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message);
+    }
   }
 
   function handleOpenDialog(category) {
@@ -70,7 +123,7 @@ function ManageCategories() {
     setFormData({ name: "", order: 0 });
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!formData.name.trim()) {
       toast.error("Por favor, preencha o nome da categoria");
       return;
@@ -78,31 +131,29 @@ function ManageCategories() {
 
     if (editingCategory) {
       // Edit existing
+      await updateCategory();
       const updated = categories.map((cat) =>
         cat.id === editingCategory.id
           ? { ...cat, name: formData.name, order: formData.order }
           : cat,
       );
-      saveCategories(updated);
+      setCategories(updated);
       toast.success("Categoria atualizada com sucesso!");
     } else {
-      // Create new
-      const newCategory = {
-        id: `cat_${Date.now()}`,
-        name: formData.name,
-        order: formData.order,
-      };
-      saveCategories([...categories, newCategory]);
+      //Create new category
+      const newCategory = await createCategory();
+      setCategories([...categories, newCategory]);
       toast.success("Categoria criada com sucesso!");
     }
 
     handleCloseDialog();
   }
 
-  function handleDelete(id) {
+  async function handleDelete(categoryName) {
     if (confirm("Tem certeza que deseja excluir esta categoria?")) {
-      const updated = categories.filter((cat) => cat.id !== id);
-      saveCategories(updated);
+      await deleteCategory(categoryName);
+      const updated = categories.filter((cat) => cat.name !== categoryName);
+      setCategories(updated);
       toast.success("Categoria excluída com sucesso!");
     }
   }
@@ -117,34 +168,18 @@ function ManageCategories() {
     sorted[index].order = sorted[newIndex].order;
     sorted[newIndex].order = temp;
 
-    saveCategories(sorted);
+    setCategories(sorted);
   }
 
   const sortedCategories = [...categories].sort((a, b) => a.order - b.order);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <header className="bg-white shadow-md sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <FolderTree className="w-8 h-8 text-blue-600" />
-              <div>
-                <h1 className="text-blue-600">Categorias de Serviços</h1>
-                <p className="text-sm text-gray-600">Gerenciar categorias</p>
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => router.push("/admin")}
-              className="gap-2"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Voltar
-            </Button>
-          </div>
-        </div>
-      </header>
+      <Header
+        title="Clube Depil"
+        subtitle="Gerenciar categorias"
+        Icon={FolderTree}
+      />
 
       <div className="container mx-auto px-4 py-8">
         <Card>
@@ -194,7 +229,7 @@ function ManageCategories() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleDelete(category.id)}
+                            onClick={() => handleDelete(category.name)}
                           >
                             <Trash2 className="w-4 h-4 text-red-600" />
                           </Button>
