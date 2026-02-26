@@ -195,9 +195,9 @@ async function createStores(length = 5, storesName = []) {
   return stores;
 }
 
-async function createStore(sectionName) {
+async function createStore(storeName) {
   const storeInputValues = {
-    name: sectionName || faker.internet.username().replace(/[.-]/g, ""),
+    name: storeName || faker.internet.username().replace(/[.-]/g, ""),
   };
   return await store.create(storeInputValues);
 }

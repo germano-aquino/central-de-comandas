@@ -454,8 +454,8 @@ async function findOneValidById(id) {
 
   if (results.rowCount === 0) {
     throw new NotFoundError({
-      message: "Pergunta não existe.",
-      action: "Verifique se o id da pergunta está correto e tente novamente.",
+      message: "Esta pergunta não existe.",
+      action: "Verifique o id da pergunta e tente novamente.",
     });
   }
   return results.rows[0];

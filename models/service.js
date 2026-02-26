@@ -292,6 +292,36 @@ async function findOneValidByName(serviceName) {
   }
 }
 
+async function findOneValidById(serviceId) {
+  const serviceFound = await runSelectQuery(serviceId);
+  return serviceFound;
+
+  async function runSelectQuery(serviceId) {
+    const results = await database.query({
+      text: `
+        SELECT
+          *
+        FROM
+          services
+        WHERE
+          id = $1
+        LIMIT
+          1
+      ;`,
+      values: [serviceId],
+    });
+
+    if (results.rowCount === 0) {
+      throw new NotFoundError({
+        message: "Este serviço não existe.",
+        action: "Verifique o id do serviço e tente novamente.",
+      });
+    }
+
+    return results.rows[0];
+  }
+}
+
 async function addFeatures(forbiddenUser) {
   const allowedUser = user.addFeaturesByUserId(forbiddenUser.id, [
     "create:service",
@@ -310,6 +340,7 @@ const service = {
   deleteManyByIdArray,
   retrieveAll,
   findOneValidByName,
+  findOneValidById,
   addFeatures,
 };
 
