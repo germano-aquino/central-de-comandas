@@ -9,7 +9,7 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
-import { Sparkles, MenuIcon } from "lucide-react";
+import { MenuIcon } from "lucide-react";
 import { Button } from "./ui/button";
 import {
   DropdownMenu,
@@ -63,17 +63,16 @@ const NAVIGATION_DATA = [
   },
 ];
 
-export function Header() {
+export function Header({ Icon, title = "Clube Depil", subtitle }) {
+  //Clube Depil , Escolha seus serviços, Sparkles
   return (
     <header className="bg-white shadow-md sticky top-0 z-10">
       <div className="container mx-auto px-4 py-4 flex item-center justify-between">
         <div className="flex items-center gap-3">
-          <Sparkles className="w-4 h-4 md:w-8 md:h-8 text-pink-600" />
+          <Icon className="w-4 h-4 md:w-8 md:h-8 text-pink-600" />
           <div>
-            <h1 className="text-pink-600 text-sm md:text-base">Clube Depil</h1>
-            <p className="text-gray-600 text-xs md:text-sm">
-              Escolha seus serviços!
-            </p>
+            <h1 className="text-pink-600 text-sm md:text-base">{title}</h1>
+            <p className="text-gray-600 text-xs md:text-sm">{subtitle}</p>
           </div>
         </div>
         <NavigationMenuBar />

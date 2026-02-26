@@ -14,7 +14,7 @@ describe("GET /api/v1/status", () => {
       const responseBody = await response.json();
 
       expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
-      expect(responseBody.dependencies.database.version).toBe("16.11");
+      expect(responseBody.dependencies.database.version).toBe("16.12");
       expect(responseBody.dependencies.database.opened_connections).toBe(1);
       expect(
         responseBody.dependencies.database.max_connections,

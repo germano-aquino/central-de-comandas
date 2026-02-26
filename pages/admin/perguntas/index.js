@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,8 +28,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Plus, Pencil, Trash2, HelpCircle } from "lucide-react";
+import { Plus, Pencil, Trash2, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
+import { Header } from "@/components/Header";
 
 const questionTypeLabels = {
   yes_no: "Sim/Não",
@@ -41,7 +41,6 @@ const questionTypeLabels = {
 };
 
 function ManageQuestions() {
-  const router = useRouter();
   const [questions, setQuestions] = useState([]);
   const [sections, setSections] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -206,29 +205,11 @@ function ManageQuestions() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <header className="bg-white shadow-md sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <HelpCircle className="w-8 h-8 text-pink-600" />
-              <div>
-                <h1 className="text-pink-600">Perguntas</h1>
-                <p className="text-sm text-gray-600">
-                  Gerenciar perguntas da avaliação
-                </p>
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => router.push("/admin")}
-              className="gap-2"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Voltar
-            </Button>
-          </div>
-        </div>
-      </header>
+      <Header
+        title="Clube Depil"
+        subtitle="Gerenciar perguntas"
+        Icon={HelpCircle}
+      />
 
       <div className="container mx-auto px-4 py-8">
         <Card>

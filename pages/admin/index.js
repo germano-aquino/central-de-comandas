@@ -9,12 +9,13 @@ import {
 } from "../../components/ui/card";
 import {
   Settings,
-  ArrowLeft,
   FolderTree,
   Package,
   ListChecks,
   HelpCircle,
+  NotebookText,
 } from "lucide-react";
+import { Header } from "@/components/Header";
 
 function AdminDashboard() {
   const router = useRouter();
@@ -51,33 +52,23 @@ function AdminDashboard() {
       color: "text-pink-600",
       bgColor: "bg-pink-50",
     },
+    {
+      title: "Comandas",
+      description: "Gerenciar formato da comanda dos atendimentos",
+      icon: NotebookText,
+      path: "/admin/comandas",
+      color: "text-amber-600",
+      bgColor: "bg-pink-50",
+    },
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <header className="bg-white shadow-md sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Settings className="w-8 h-8 text-gray-700" />
-              <div>
-                <h1 className="text-gray-700">Painel Administrativo</h1>
-                <p className="text-sm text-gray-600">
-                  Gerenciamento do Sistema
-                </p>
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              className="gap-2"
-              onClick={() => router.push("/")}
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Voltar
-            </Button>
-          </div>
-        </div>
-      </header>
+      <Header
+        title="Clube Depil"
+        subtitle="Gerenciamento de Sistema"
+        Icon={Settings}
+      />
 
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
@@ -92,7 +83,6 @@ function AdminDashboard() {
           {adminSections.map((section) => {
             const Icon = section.icon;
             return (
-              // <Link href={section.path} key={section.path}>
               <Card
                 key={section.path}
                 className="cursor-pointer hover:shadow-lg transition-shadow"
@@ -115,7 +105,6 @@ function AdminDashboard() {
                   </Button>
                 </CardContent>
               </Card>
-              // </Link>
             );
           })}
         </div>

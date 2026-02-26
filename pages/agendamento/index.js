@@ -13,7 +13,9 @@ import session from "@/models/session";
 import user from "@/models/user";
 import { ForbiddenError } from "@/infra/errors";
 
-function Command({ categories, services }) {
+import { Sparkles } from "lucide-react";
+
+function Appointment({ categories, services }) {
   const [clientName, setClientName] = useState("");
   const [selectedServices, setSelectedServices] = useState(new Set());
   const [order, setOrder] = useState([]);
@@ -49,7 +51,11 @@ function Command({ categories, services }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
-      <Header />
+      <Header
+        Icon={Sparkles}
+        title="Clube Depil"
+        subtitle="Escolha seus serviços!"
+      />
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Service Container */}
@@ -158,4 +164,4 @@ export async function getServerSideProps(context) {
   }
 }
 
-export default Command;
+export default Appointment;

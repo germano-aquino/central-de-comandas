@@ -38,7 +38,6 @@ function Login() {
 
   async function handleLogin(data) {
     try {
-      console.log("handleSubmit");
       const response = await fetch("/api/v1/sessions", {
         method: "POST",
         headers: {
