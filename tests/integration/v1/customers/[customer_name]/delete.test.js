@@ -41,7 +41,7 @@ describe("DELETE /api/v1/customers/[customer_name]", () => {
   describe("Allowed user", () => {
     test("With valid data", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
-      await orchestrator.addCustomerFeatures(loggedUser);
+      await orchestrator.addFeatures(loggedUser, customer.addFeatures);
 
       const customerToBeDeleted = await orchestrator.createCustomer();
 
@@ -76,7 +76,7 @@ describe("DELETE /api/v1/customers/[customer_name]", () => {
 
     test("With different case", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
-      await orchestrator.addCustomerFeatures(loggedUser);
+      await orchestrator.addFeatures(loggedUser, customer.addFeatures);
 
       const customerToBeDeleted =
         await orchestrator.createCustomer("mismatchcase");
@@ -112,7 +112,7 @@ describe("DELETE /api/v1/customers/[customer_name]", () => {
 
     test("With nonexistent customer name", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
-      await orchestrator.addCustomerFeatures(loggedUser);
+      await orchestrator.addFeatures(loggedUser, customer.addFeatures);
 
       const response = await fetch(
         `http://localhost:3000/api/v1/customers/NonexistentCategory`,

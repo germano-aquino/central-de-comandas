@@ -1,3 +1,4 @@
+import service from "@/models/service";
 import orchestrator from "tests/orchestrator";
 
 beforeAll(async () => {
@@ -32,10 +33,8 @@ describe("GET /api/v1/services", () => {
     });
 
     test("With permission and without category filtering", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addServicesFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, service.addFeatures);
 
       let services = await orchestrator.createServices(7);
       services = services.map((service) => {
@@ -48,7 +47,7 @@ describe("GET /api/v1/services", () => {
 
       const response = await fetch("http://localhost:3000/api/v1/services", {
         headers: {
-          Cookie: `session_id=${userSession.token}`,
+          Cookie: `session_id=${loggedUser.token}`,
         },
       });
 
@@ -60,15 +59,13 @@ describe("GET /api/v1/services", () => {
     });
 
     test("With permission and with category filtering", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addServicesFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, service.addFeatures);
 
       const categories = await orchestrator.createSections(3);
 
       let selectedServices = await orchestrator.createServices(7, {
-        category_id: categories[0].id,
+        categoryId: categories[0].id,
       });
       selectedServices = selectedServices.map((service) => {
         return {
@@ -87,7 +84,7 @@ describe("GET /api/v1/services", () => {
         `http://localhost:3000/api/v1/services?${params}`,
         {
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
           },
         },
       );

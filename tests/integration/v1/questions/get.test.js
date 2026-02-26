@@ -1,3 +1,4 @@
+import question from "@/models/question";
 import orchestrator from "tests/orchestrator";
 
 let sections;
@@ -48,15 +49,13 @@ describe("GET /api/v1/questions", () => {
 
   describe("Allowed user", () => {
     test("Retrieve all questions", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addQuestionsFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
       const response = await fetch("http://localhost:3000/api/v1/questions", {
         method: "GET",
         headers: {
-          Cookie: `session_id=${userSession.token}`,
+          Cookie: `session_id=${loggedUser.token}`,
           "content-type": "application/json",
         },
       });
@@ -69,10 +68,8 @@ describe("GET /api/v1/questions", () => {
     });
 
     test("Retrieve all filtering by section", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addQuestionsFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
       for (let i = 0; i < 3; i++) {
         const params = new URLSearchParams();
@@ -83,7 +80,7 @@ describe("GET /api/v1/questions", () => {
           {
             method: "GET",
             headers: {
-              Cookie: `session_id=${userSession.token}`,
+              Cookie: `session_id=${loggedUser.token}`,
               "content-type": "application/json",
             },
           },
@@ -98,10 +95,8 @@ describe("GET /api/v1/questions", () => {
     });
 
     test("Retrieve all filtering by section with invalid section", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addQuestionsFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
       const params = new URLSearchParams();
       params.set("form_section_name", "nonExistentSection");
@@ -111,7 +106,7 @@ describe("GET /api/v1/questions", () => {
         {
           method: "GET",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
         },
@@ -130,10 +125,8 @@ describe("GET /api/v1/questions", () => {
     });
 
     test("Retrieve all filtering by type", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addQuestionsFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
       const questionTypes = ["multiple-choice", "discursive", "both"];
       for (const type of questionTypes) {
@@ -145,7 +138,7 @@ describe("GET /api/v1/questions", () => {
           {
             method: "GET",
             headers: {
-              Cookie: `session_id=${userSession.token}`,
+              Cookie: `session_id=${loggedUser.token}`,
               "content-type": "application/json",
             },
           },
@@ -160,10 +153,8 @@ describe("GET /api/v1/questions", () => {
     });
 
     test("Retrieve all filtering by type with invalid type", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addQuestionsFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
       const params = new URLSearchParams();
       params.set("question_type", "nonExistentType");
@@ -173,7 +164,7 @@ describe("GET /api/v1/questions", () => {
         {
           method: "GET",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
         },
@@ -193,10 +184,8 @@ describe("GET /api/v1/questions", () => {
     });
 
     test("Retrieve questions without form section", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addQuestionsFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
       const params = new URLSearchParams();
       params.set("no_form_section", "");
@@ -206,7 +195,7 @@ describe("GET /api/v1/questions", () => {
         {
           method: "GET",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
         },

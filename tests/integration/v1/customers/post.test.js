@@ -1,3 +1,4 @@
+import customer from "@/models/customer";
 import orchestrator from "tests/orchestrator";
 
 import { version as uuidVersion } from "uuid";
@@ -41,7 +42,7 @@ describe("POST /api/v1/customers", () => {
     test("With valid data", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
 
-      await orchestrator.addCustomerFeatures(loggedUser);
+      await orchestrator.addFeatures(loggedUser, customer.addFeatures);
 
       const response = await fetch("http://localhost:3000/api/v1/customers", {
         method: "POST",
@@ -69,7 +70,7 @@ describe("POST /api/v1/customers", () => {
     test("With duplicated customer name", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
 
-      await orchestrator.addCustomerFeatures(loggedUser);
+      await orchestrator.addFeatures(loggedUser, customer.addFeatures);
 
       const response = await fetch("http://localhost:3000/api/v1/customers", {
         method: "POST",
@@ -98,7 +99,7 @@ describe("POST /api/v1/customers", () => {
     test("With duplicated customer phone", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
 
-      await orchestrator.addCustomerFeatures(loggedUser);
+      await orchestrator.addFeatures(loggedUser, customer.addFeatures);
 
       const response = await fetch("http://localhost:3000/api/v1/customers", {
         method: "POST",
@@ -129,7 +130,7 @@ describe("POST /api/v1/customers", () => {
     test("With missing customer name", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
 
-      await orchestrator.addCustomerFeatures(loggedUser);
+      await orchestrator.addFeatures(loggedUser, customer.addFeatures);
 
       const response = await fetch("http://localhost:3000/api/v1/customers", {
         method: "POST",
@@ -158,7 +159,7 @@ describe("POST /api/v1/customers", () => {
     test("With missing customer phone", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
 
-      await orchestrator.addCustomerFeatures(loggedUser);
+      await orchestrator.addFeatures(loggedUser, customer.addFeatures);
 
       const response = await fetch("http://localhost:3000/api/v1/customers", {
         method: "POST",

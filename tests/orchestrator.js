@@ -2,8 +2,6 @@ import { faker } from "@faker-js/faker";
 import retry from "async-retry";
 import database from "infra/database";
 import activation from "models/activation";
-import category from "models/category";
-import formSection from "models/formSection";
 import migrator from "models/migrator";
 import question from "models/question";
 import section from "models/section";
@@ -100,7 +98,7 @@ async function createServices(length = 5, serviceDefaultValues = {}) {
     const newService = await createService(
       serviceDefaultValues?.name,
       serviceDefaultValues?.price,
-      serviceDefaultValues?.category_id,
+      serviceDefaultValues?.categoryId,
     );
     services.push(newService);
   }
@@ -114,26 +112,6 @@ async function createService(serviceName, servicePrice, categoryId) {
     category_id: categoryId || null,
   };
   return await service.create(serviceInputValues);
-}
-
-async function addServicesFeatures(unallowedUser) {
-  return await service.addFeatures(unallowedUser);
-}
-
-async function addCategoriesFeatures(unallowedUser) {
-  return await category.addFeatures(unallowedUser);
-}
-
-async function addQuestionsFeatures(unallowedUser) {
-  return await question.addFeatures(unallowedUser);
-}
-
-async function addFormSectionsFeatures(unallowedUser) {
-  return await formSection.addFeatures(unallowedUser);
-}
-
-async function addStoreFeatures(unallowedUser) {
-  return await store.addFeatures(unallowedUser);
 }
 
 async function createSections(
@@ -224,11 +202,6 @@ async function createStore(sectionName) {
   return await store.create(storeInputValues);
 }
 
-async function addCustomerFeatures(unallowedUser) {
-  const allowedUser = await customer.addFeatures(unallowedUser);
-  return allowedUser;
-}
-
 async function createCustomer(name, phone) {
   const customerInputValues = {
     name: name || faker.internet.username().replace(/[.-]/g, ""),
@@ -255,6 +228,11 @@ async function createCustomers(length = 5, customersName = []) {
   return customers;
 }
 
+async function addFeatures(unallowedUser, addFeaturesFunction) {
+  const allowedUser = await addFeaturesFunction(unallowedUser);
+  return allowedUser;
+}
+
 const orchestrator = {
   waitForAllServices,
   clearDatabase,
@@ -267,20 +245,15 @@ const orchestrator = {
   createSession,
   createService,
   createServices,
-  addServicesFeatures,
-  addCategoriesFeatures,
-  addQuestionsFeatures,
   createQuestion,
   createQuestions,
-  addFormSectionsFeatures,
   createSections,
   createSection,
-  addStoreFeatures,
   createStore,
   createStores,
-  addCustomerFeatures,
   createCustomer,
   createCustomers,
+  addFeatures,
 };
 
 export default orchestrator;

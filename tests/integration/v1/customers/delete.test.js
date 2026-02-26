@@ -43,7 +43,7 @@ describe("DELETE /api/v1/customers", () => {
   describe("Allowed user", () => {
     test("With valid data", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
-      await orchestrator.addCustomerFeatures(loggedUser);
+      await orchestrator.addFeatures(loggedUser, customer.addFeatures);
 
       let customers = await orchestrator.createCustomers(7);
       customers = customers.map((customer) => {
@@ -83,7 +83,7 @@ describe("DELETE /api/v1/customers", () => {
 
     test("With nonexistent customer ids", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
-      await orchestrator.addCustomerFeatures(loggedUser);
+      await orchestrator.addFeatures(loggedUser, customer.addFeatures);
 
       const response = await fetch(`http://localhost:3000/api/v1/customers`, {
         method: "DELETE",

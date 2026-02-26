@@ -1,3 +1,4 @@
+import formSection from "@/models/formSection";
 import orchestrator from "tests/orchestrator";
 
 import { version as uuidVersion } from "uuid";
@@ -44,19 +45,20 @@ describe("PATCH /api/v1/form/sections/[section_name]", () => {
     });
 
     test("With permission and valid data", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addFormSectionsFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, formSection.addFeatures);
 
-      const formSection = await orchestrator.createSection(undefined, "form");
+      const editedFormSection = await orchestrator.createSection(
+        undefined,
+        "form",
+      );
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/form/sections/${formSection.name}`,
+        `http://localhost:3000/api/v1/form/sections/${editedFormSection.name}`,
         {
           method: "PATCH",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
@@ -79,22 +81,20 @@ describe("PATCH /api/v1/form/sections/[section_name]", () => {
     });
 
     test("With permission and with different case", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addFormSectionsFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, formSection.addFeatures);
 
-      const formSection = await orchestrator.createSection(
+      const editedFormSection = await orchestrator.createSection(
         "mismatchcase",
         "form",
       );
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/form/sections/${formSection.name}`,
+        `http://localhost:3000/api/v1/form/sections/${editedFormSection.name}`,
         {
           method: "PATCH",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
@@ -108,9 +108,9 @@ describe("PATCH /api/v1/form/sections/[section_name]", () => {
       const responseBody = await response.json();
 
       expect(responseBody).toEqual({
-        id: formSection.id,
+        id: editedFormSection.id,
         name: "misMatchCase",
-        created_at: formSection.created_at.toISOString(),
+        created_at: editedFormSection.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });
 
@@ -120,17 +120,15 @@ describe("PATCH /api/v1/form/sections/[section_name]", () => {
     });
 
     test("With permission and nonexistent form section name", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addFormSectionsFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, formSection.addFeatures);
 
       const response = await fetch(
         `http://localhost:3000/api/v1/form/sections/NonexistentFormSection`,
         {
           method: "PATCH",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({

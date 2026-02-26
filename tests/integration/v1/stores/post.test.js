@@ -1,3 +1,4 @@
+import store from "@/models/store";
 import orchestrator from "tests/orchestrator";
 
 import { version as uuidVersion } from "uuid";
@@ -38,7 +39,7 @@ describe("POST /api/v1/stores", () => {
 
     test("With permission and valid data", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
-      await orchestrator.addStoreFeatures(loggedUser);
+      await orchestrator.addFeatures(loggedUser, store.addFeatures);
 
       const response = await fetch("http://localhost:3000/api/v1/stores", {
         method: "POST",
@@ -63,7 +64,7 @@ describe("POST /api/v1/stores", () => {
 
     test("With permission and duplicated store name", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
-      await orchestrator.addStoreFeatures(loggedUser);
+      await orchestrator.addFeatures(loggedUser, store.addFeatures);
 
       const response = await fetch("http://localhost:3000/api/v1/stores", {
         method: "POST",

@@ -1,3 +1,4 @@
+import customer from "@/models/customer";
 import orchestrator from "tests/orchestrator";
 
 beforeAll(async () => {
@@ -35,10 +36,8 @@ describe("GET /api/v1/customers/[customer_name]", () => {
 
   describe("Allowed user", () => {
     test("With valid data", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      const userSession = await orchestrator.createSession(activatedUser);
-      await orchestrator.addCustomerFeatures(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, customer.addFeatures);
 
       let customers = await orchestrator.createCustomers(7);
       customers = customers.map((customer) => {
@@ -53,7 +52,7 @@ describe("GET /api/v1/customers/[customer_name]", () => {
         `http://localhost:3000/api/v1/customers/${customers[1].name}`,
         {
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
           },
         },
       );

@@ -1,3 +1,4 @@
+import service from "@/models/service";
 import orchestrator from "tests/orchestrator";
 
 import { version as uuidVersion } from "uuid";
@@ -40,15 +41,13 @@ describe("POST /api/v1/services", () => {
     });
 
     test("With permission, valid data and without category", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addServicesFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, service.addFeatures);
 
       const response = await fetch("http://localhost:3000/api/v1/services", {
         method: "POST",
         headers: {
-          Cookie: `session_id=${userSession.token}`,
+          Cookie: `session_id=${loggedUser.token}`,
           "content-type": "application/json",
         },
         body: JSON.stringify({
@@ -69,10 +68,8 @@ describe("POST /api/v1/services", () => {
     });
 
     test("With permission, valid data and with category", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addServicesFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, service.addFeatures);
 
       const serviceCategory =
         await orchestrator.createSection("Brazilian Waxing");
@@ -80,7 +77,7 @@ describe("POST /api/v1/services", () => {
       const response = await fetch("http://localhost:3000/api/v1/services", {
         method: "POST",
         headers: {
-          Cookie: `session_id=${userSession.token}`,
+          Cookie: `session_id=${loggedUser.token}`,
           "content-type": "application/json",
         },
         body: JSON.stringify({
@@ -103,15 +100,13 @@ describe("POST /api/v1/services", () => {
     });
 
     test("With permission, valid data and nonexistent category", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addServicesFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, service.addFeatures);
 
       const response = await fetch("http://localhost:3000/api/v1/services", {
         method: "POST",
         headers: {
-          Cookie: `session_id=${userSession.token}`,
+          Cookie: `session_id=${loggedUser.token}`,
           "content-type": "application/json",
         },
         body: JSON.stringify({
@@ -134,15 +129,13 @@ describe("POST /api/v1/services", () => {
     });
 
     test("With permission and duplicated service name", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addServicesFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, service.addFeatures);
 
       const response = await fetch("http://localhost:3000/api/v1/services", {
         method: "POST",
         headers: {
-          Cookie: `session_id=${userSession.token}`,
+          Cookie: `session_id=${loggedUser.token}`,
           "content-type": "application/json",
         },
         body: JSON.stringify({

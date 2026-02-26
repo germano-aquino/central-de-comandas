@@ -1,3 +1,4 @@
+import question from "@/models/question";
 import orchestrator from "tests/orchestrator";
 
 beforeAll(async () => {
@@ -44,10 +45,8 @@ describe("PATCH /api/v1/questions/[id]", () => {
 
   describe("Allowed user", () => {
     test("With nonexistent question id", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addQuestionsFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
       const nonexistentId = "264b4eff-b94f-4efc-82f9-508a961723ed";
 
@@ -56,7 +55,7 @@ describe("PATCH /api/v1/questions/[id]", () => {
         {
           method: "PATCH",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
@@ -78,19 +77,17 @@ describe("PATCH /api/v1/questions/[id]", () => {
     });
 
     test("With new statement", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addQuestionsFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
-      const question = await orchestrator.createQuestion();
+      const editedQuestion = await orchestrator.createQuestion();
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/questions/${question.id}`,
+        `http://localhost:3000/api/v1/questions/${editedQuestion.id}`,
         {
           method: "PATCH",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
@@ -104,8 +101,8 @@ describe("PATCH /api/v1/questions/[id]", () => {
       const responseBody = await response.json();
 
       const questionWithNewStatement = {
-        ...question,
-        created_at: question.created_at.toISOString(),
+        ...editedQuestion,
+        created_at: editedQuestion.created_at.toISOString(),
         updated_at: responseBody.updated_at,
         statement: "Changing to a new valid statement.",
       };
@@ -117,10 +114,8 @@ describe("PATCH /api/v1/questions/[id]", () => {
     });
 
     test("With already in use statement", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addQuestionsFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
       await orchestrator.createQuestion(
         "Changing to a already in use statement.",
@@ -132,7 +127,7 @@ describe("PATCH /api/v1/questions/[id]", () => {
         {
           method: "PATCH",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
@@ -154,19 +149,17 @@ describe("PATCH /api/v1/questions/[id]", () => {
     });
 
     test("With new type", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addQuestionsFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
-      const question = await orchestrator.createQuestion();
+      const editedQuestion = await orchestrator.createQuestion();
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/questions/${question.id}`,
+        `http://localhost:3000/api/v1/questions/${editedQuestion.id}`,
         {
           method: "PATCH",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
@@ -180,8 +173,8 @@ describe("PATCH /api/v1/questions/[id]", () => {
       const responseBody = await response.json();
 
       const questionWithNewType = {
-        ...question,
-        created_at: question.created_at.toISOString(),
+        ...editedQuestion,
+        created_at: editedQuestion.created_at.toISOString(),
         updated_at: responseBody.updated_at,
         type: "both",
       };
@@ -194,23 +187,21 @@ describe("PATCH /api/v1/questions/[id]", () => {
     });
 
     test("With new type as multiple-choice and missing options", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addQuestionsFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
-      const question = await orchestrator.createQuestion(
+      const editedQuestion = await orchestrator.createQuestion(
         undefined,
         "discursive",
         [],
       );
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/questions/${question.id}`,
+        `http://localhost:3000/api/v1/questions/${editedQuestion.id}`,
         {
           method: "PATCH",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
@@ -233,22 +224,20 @@ describe("PATCH /api/v1/questions/[id]", () => {
     });
 
     test("With new type as multiple-choice and less than 2 options", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addQuestionsFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
-      const question = await orchestrator.createQuestion(
+      const editedQuestion = await orchestrator.createQuestion(
         undefined,
         "discursive",
       );
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/questions/${question.id}`,
+        `http://localhost:3000/api/v1/questions/${editedQuestion.id}`,
         {
           method: "PATCH",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
@@ -272,19 +261,17 @@ describe("PATCH /api/v1/questions/[id]", () => {
     });
 
     test("With new options", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addQuestionsFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
-      const question = await orchestrator.createQuestion();
+      const editedQuestion = await orchestrator.createQuestion();
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/questions/${question.id}`,
+        `http://localhost:3000/api/v1/questions/${editedQuestion.id}`,
         {
           method: "PATCH",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
@@ -298,8 +285,8 @@ describe("PATCH /api/v1/questions/[id]", () => {
       const responseBody = await response.json();
 
       const questionsWithNewOptions = {
-        ...question,
-        created_at: question.created_at.toISOString(),
+        ...editedQuestion,
+        created_at: editedQuestion.created_at.toISOString(),
         updated_at: responseBody.updated_at,
         options: ["green", "blue", "red"],
       };
@@ -312,19 +299,17 @@ describe("PATCH /api/v1/questions/[id]", () => {
     });
 
     test("With less than 2 options", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addQuestionsFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
-      const question = await orchestrator.createQuestion();
+      const editedQuestion = await orchestrator.createQuestion();
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/questions/${question.id}`,
+        `http://localhost:3000/api/v1/questions/${editedQuestion.id}`,
         {
           method: "PATCH",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
@@ -347,12 +332,10 @@ describe("PATCH /api/v1/questions/[id]", () => {
     });
 
     test("With new options and removing option marked from possible options", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addQuestionsFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
-      const question = await orchestrator.createQuestion(
+      const editedQuestion = await orchestrator.createQuestion(
         undefined,
         undefined,
         ["red", "blue", "green"],
@@ -361,11 +344,11 @@ describe("PATCH /api/v1/questions/[id]", () => {
       );
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/questions/${question.id}`,
+        `http://localhost:3000/api/v1/questions/${editedQuestion.id}`,
         {
           method: "PATCH",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
@@ -388,22 +371,20 @@ describe("PATCH /api/v1/questions/[id]", () => {
     });
 
     test("With new answer", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addQuestionsFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
-      const question = await orchestrator.createQuestion(
+      const editedQuestion = await orchestrator.createQuestion(
         undefined,
         "discursive",
       );
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/questions/${question.id}`,
+        `http://localhost:3000/api/v1/questions/${editedQuestion.id}`,
         {
           method: "PATCH",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
@@ -417,8 +398,8 @@ describe("PATCH /api/v1/questions/[id]", () => {
       const responseBody = await response.json();
 
       const questionWithNewAndwer = {
-        ...question,
-        created_at: question.created_at.toISOString(),
+        ...editedQuestion,
+        created_at: editedQuestion.created_at.toISOString(),
         updated_at: responseBody.updated_at,
         answer: "Creating new answer.",
       };
@@ -431,19 +412,17 @@ describe("PATCH /api/v1/questions/[id]", () => {
     });
 
     test("With new option marked", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addQuestionsFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
-      const question = await orchestrator.createQuestion();
+      const editedQuestion = await orchestrator.createQuestion();
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/questions/${question.id}`,
+        `http://localhost:3000/api/v1/questions/${editedQuestion.id}`,
         {
           method: "PATCH",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
@@ -457,8 +436,8 @@ describe("PATCH /api/v1/questions/[id]", () => {
       const responseBody = await response.json();
 
       const questionWithNewOptionMarked = {
-        ...question,
-        created_at: question.created_at.toISOString(),
+        ...editedQuestion,
+        created_at: editedQuestion.created_at.toISOString(),
         updated_at: responseBody.updated_at,
         option_marked: "Sim",
       };
@@ -471,12 +450,10 @@ describe("PATCH /api/v1/questions/[id]", () => {
     });
 
     test("With new option marked not present in options", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addQuestionsFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
-      const question = await orchestrator.createQuestion(
+      const editedQuestion = await orchestrator.createQuestion(
         undefined,
         undefined,
         ["red", "blue", "green"],
@@ -485,11 +462,11 @@ describe("PATCH /api/v1/questions/[id]", () => {
       );
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/questions/${question.id}`,
+        `http://localhost:3000/api/v1/questions/${editedQuestion.id}`,
         {
           method: "PATCH",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
@@ -512,21 +489,19 @@ describe("PATCH /api/v1/questions/[id]", () => {
     });
 
     test("With new form section", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addQuestionsFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
       const formSection = await orchestrator.createSection(undefined, "form");
 
-      const question = await orchestrator.createQuestion();
+      const editedQuestion = await orchestrator.createQuestion();
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/questions/${question.id}`,
+        `http://localhost:3000/api/v1/questions/${editedQuestion.id}`,
         {
           method: "PATCH",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
@@ -540,8 +515,8 @@ describe("PATCH /api/v1/questions/[id]", () => {
       const responseBody = await response.json();
 
       const questionWithNewFormSection = {
-        ...question,
-        created_at: question.created_at.toISOString(),
+        ...editedQuestion,
+        created_at: editedQuestion.created_at.toISOString(),
         updated_at: responseBody.updated_at,
         section_id: formSection.id,
       };
@@ -554,14 +529,12 @@ describe("PATCH /api/v1/questions/[id]", () => {
     });
 
     test("Removing form section", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addQuestionsFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
       const formSection = await orchestrator.createSection(undefined, "form");
 
-      const question = await orchestrator.createQuestion(
+      const editedQuestion = await orchestrator.createQuestion(
         undefined,
         undefined,
         undefined,
@@ -572,11 +545,11 @@ describe("PATCH /api/v1/questions/[id]", () => {
       params.set("remove_form_section", "");
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/questions/${question.id}?${params}`,
+        `http://localhost:3000/api/v1/questions/${editedQuestion.id}?${params}`,
         {
           method: "PATCH",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({}),
@@ -588,8 +561,8 @@ describe("PATCH /api/v1/questions/[id]", () => {
       const responseBody = await response.json();
 
       const questionWithoutFormSection = {
-        ...question,
-        created_at: question.created_at.toISOString(),
+        ...editedQuestion,
+        created_at: editedQuestion.created_at.toISOString(),
         updated_at: responseBody.updated_at,
         section_id: null,
       };
@@ -602,19 +575,17 @@ describe("PATCH /api/v1/questions/[id]", () => {
     });
 
     test("With nonexistent form section", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addQuestionsFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
-      const question = await orchestrator.createQuestion();
+      const editedQuestion = await orchestrator.createQuestion();
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/questions/${question.id}`,
+        `http://localhost:3000/api/v1/questions/${editedQuestion.id}`,
         {
           method: "PATCH",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({

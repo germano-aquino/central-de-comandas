@@ -1,3 +1,4 @@
+import service from "@/models/service";
 import orchestrator from "tests/orchestrator";
 
 beforeAll(async () => {
@@ -35,10 +36,8 @@ describe("GET /api/v1/services/[service_name]", () => {
     });
 
     test("With permission and valid request", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addServicesFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, service.addFeatures);
 
       let services = await orchestrator.createServices(7);
       services = services.map((service) => {
@@ -53,7 +52,7 @@ describe("GET /api/v1/services/[service_name]", () => {
         `http://localhost:3000/api/v1/services/${services[1].name}`,
         {
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
           },
         },
       );

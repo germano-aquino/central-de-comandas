@@ -1,3 +1,4 @@
+import store from "@/models/store";
 import orchestrator from "tests/orchestrator";
 
 beforeAll(async () => {
@@ -31,7 +32,7 @@ describe("GET /api/v1/stores", () => {
 
     test("With permission and valid request", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
-      await orchestrator.addStoreFeatures(loggedUser);
+      await orchestrator.addFeatures(loggedUser, store.addFeatures);
 
       let stores = await orchestrator.createStores(7);
       stores = stores.map((store) => {

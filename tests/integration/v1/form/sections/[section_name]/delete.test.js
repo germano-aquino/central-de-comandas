@@ -1,3 +1,4 @@
+import formSection from "@/models/formSection";
 import { NotFoundError } from "infra/errors";
 import category from "models/category";
 import orchestrator from "tests/orchestrator";
@@ -41,10 +42,8 @@ describe("DELETE /api/v1/form/sections/[section_name]", () => {
     });
 
     test("With permission and valid data", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addFormSectionsFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, formSection.addFeatures);
 
       const sectionToBeDeleted = await orchestrator.createSection(
         undefined,
@@ -56,7 +55,7 @@ describe("DELETE /api/v1/form/sections/[section_name]", () => {
         {
           method: "DELETE",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
           },
         },
       );
@@ -80,10 +79,8 @@ describe("DELETE /api/v1/form/sections/[section_name]", () => {
     });
 
     test("With permission and with different case", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addFormSectionsFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, formSection.addFeatures);
 
       const sectionToBeDeleted = await orchestrator.createSection(
         "mismatchcase",
@@ -95,7 +92,7 @@ describe("DELETE /api/v1/form/sections/[section_name]", () => {
         {
           method: "DELETE",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
           },
         },
       );
@@ -119,17 +116,15 @@ describe("DELETE /api/v1/form/sections/[section_name]", () => {
     });
 
     test("With permission and nonexistent category name", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addFormSectionsFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, formSection.addFeatures);
 
       const response = await fetch(
         `http://localhost:3000/api/v1/form/sections/NonexistentCategory`,
         {
           method: "DELETE",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
           },
         },
       );

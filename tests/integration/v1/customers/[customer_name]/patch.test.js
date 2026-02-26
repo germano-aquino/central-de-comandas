@@ -1,3 +1,4 @@
+import customer from "@/models/customer";
 import orchestrator from "tests/orchestrator";
 
 import { version as uuidVersion } from "uuid";
@@ -13,10 +14,10 @@ describe("PATCH /api/v1/customers/[customer_name]", () => {
     test("With valid data and without permission", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
 
-      const customer = await orchestrator.createCustomer("OldName");
+      const editedCustomer = await orchestrator.createCustomer("OldName");
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/customers/${customer.name}`,
+        `http://localhost:3000/api/v1/customers/${editedCustomer.name}`,
         {
           method: "PATCH",
           headers: {
@@ -45,12 +46,12 @@ describe("PATCH /api/v1/customers/[customer_name]", () => {
   describe("Allowed user", () => {
     test("With new name", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
-      await orchestrator.addCustomerFeatures(loggedUser);
+      await orchestrator.addFeatures(loggedUser, customer.addFeatures);
 
-      const customer = await orchestrator.createCustomer();
+      const editedCustomer = await orchestrator.createCustomer();
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/customers/${customer.name}`,
+        `http://localhost:3000/api/v1/customers/${editedCustomer.name}`,
         {
           method: "PATCH",
           headers: {
@@ -68,7 +69,7 @@ describe("PATCH /api/v1/customers/[customer_name]", () => {
       const responseBody = await response.json();
 
       expect(responseBody.name).toBe("Update Name");
-      expect(responseBody.phone).toBe(customer.phone);
+      expect(responseBody.phone).toBe(editedCustomer.phone);
       expect(uuidVersion(responseBody.id)).toBe(4);
       expect(Date.parse(responseBody.created_at)).not.toBeNaN();
       expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
@@ -79,12 +80,12 @@ describe("PATCH /api/v1/customers/[customer_name]", () => {
 
     test("With new phone", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
-      await orchestrator.addCustomerFeatures(loggedUser);
+      await orchestrator.addFeatures(loggedUser, customer.addFeatures);
 
-      const customer = await orchestrator.createCustomer();
+      const editedCustomer = await orchestrator.createCustomer();
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/customers/${customer.name}`,
+        `http://localhost:3000/api/v1/customers/${editedCustomer.name}`,
         {
           method: "PATCH",
           headers: {
@@ -102,7 +103,7 @@ describe("PATCH /api/v1/customers/[customer_name]", () => {
       const responseBody = await response.json();
 
       expect(responseBody.phone).toBe("+5591989897878");
-      expect(responseBody.name).toBe(customer.name);
+      expect(responseBody.name).toBe(editedCustomer.name);
       expect(uuidVersion(responseBody.id)).toBe(4);
       expect(Date.parse(responseBody.created_at)).not.toBeNaN();
       expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
@@ -113,12 +114,12 @@ describe("PATCH /api/v1/customers/[customer_name]", () => {
 
     test("With different case", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
-      await orchestrator.addCustomerFeatures(loggedUser);
+      await orchestrator.addFeatures(loggedUser, customer.addFeatures);
 
-      const customer = await orchestrator.createCustomer("mismatchcase");
+      const editedCustomer = await orchestrator.createCustomer("mismatchcase");
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/customers/${customer.name}`,
+        `http://localhost:3000/api/v1/customers/${editedCustomer.name}`,
         {
           method: "PATCH",
           headers: {
@@ -136,10 +137,10 @@ describe("PATCH /api/v1/customers/[customer_name]", () => {
       const responseBody = await response.json();
 
       expect(responseBody).toEqual({
-        id: customer.id,
+        id: editedCustomer.id,
         name: "misMatchCase",
-        phone: customer.phone,
-        created_at: customer.created_at.toISOString(),
+        phone: editedCustomer.phone,
+        created_at: editedCustomer.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });
 
@@ -150,7 +151,7 @@ describe("PATCH /api/v1/customers/[customer_name]", () => {
 
     test("With nonexistent customer name", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
-      await orchestrator.addCustomerFeatures(loggedUser);
+      await orchestrator.addFeatures(loggedUser, customer.addFeatures);
 
       const response = await fetch(
         `http://localhost:3000/api/v1/customers/NonexistentStore`,

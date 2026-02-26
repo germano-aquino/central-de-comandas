@@ -1,3 +1,4 @@
+import service from "@/models/service";
 import orchestrator from "tests/orchestrator";
 
 beforeAll(async () => {
@@ -41,10 +42,8 @@ describe("PATCH /api/v1/services", () => {
     });
 
     test("With permission and new price", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addServicesFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, service.addFeatures);
 
       const services = await orchestrator.createServices(3);
       const serviceIds = services.map((service) => service.id);
@@ -52,7 +51,7 @@ describe("PATCH /api/v1/services", () => {
       const response = await fetch("http://localhost:3000/api/v1/services", {
         method: "PATCH",
         headers: {
-          Cookie: `session_id=${userSession.token}`,
+          Cookie: `session_id=${loggedUser.token}`,
           "content-type": "application/json",
         },
         body: JSON.stringify({
@@ -82,10 +81,8 @@ describe("PATCH /api/v1/services", () => {
     });
 
     test("With permission and new category", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addServicesFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, service.addFeatures);
 
       const serviceCategory = await orchestrator.createSection("Brow Design");
 
@@ -95,7 +92,7 @@ describe("PATCH /api/v1/services", () => {
       const response = await fetch("http://localhost:3000/api/v1/services", {
         method: "PATCH",
         headers: {
-          Cookie: `session_id=${userSession.token}`,
+          Cookie: `session_id=${loggedUser.token}`,
           "content-type": "application/json",
         },
         body: JSON.stringify({
@@ -125,10 +122,8 @@ describe("PATCH /api/v1/services", () => {
     });
 
     test("With permission and nonexistent category", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addServicesFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, service.addFeatures);
 
       const services = await orchestrator.createServices(3);
       const serviceIds = services.map((service) => service.id);
@@ -136,7 +131,7 @@ describe("PATCH /api/v1/services", () => {
       const response = await fetch("http://localhost:3000/api/v1/services", {
         method: "PATCH",
         headers: {
-          Cookie: `session_id=${userSession.token}`,
+          Cookie: `session_id=${loggedUser.token}`,
           "content-type": "application/json",
         },
         body: JSON.stringify({
@@ -158,10 +153,8 @@ describe("PATCH /api/v1/services", () => {
     });
 
     test("With permission and new service name", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addServicesFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, service.addFeatures);
 
       const services = await orchestrator.createServices(3);
       const serviceIds = services.map((service) => service.id);
@@ -169,7 +162,7 @@ describe("PATCH /api/v1/services", () => {
       const response = await fetch("http://localhost:3000/api/v1/services", {
         method: "PATCH",
         headers: {
-          Cookie: `session_id=${userSession.token}`,
+          Cookie: `session_id=${loggedUser.token}`,
           "content-type": "application/json",
         },
         body: JSON.stringify({
@@ -192,15 +185,13 @@ describe("PATCH /api/v1/services", () => {
     });
 
     test("With permission and missing service ids array", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addServicesFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, service.addFeatures);
 
       const response = await fetch("http://localhost:3000/api/v1/services", {
         method: "PATCH",
         headers: {
-          Cookie: `session_id=${userSession.token}`,
+          Cookie: `session_id=${loggedUser.token}`,
           "content-type": "application/json",
         },
         body: JSON.stringify({
