@@ -60,6 +60,7 @@ describe("DELETE /api/v1/stores/[store_name]", () => {
       expect(responseBody).toEqual({
         id: storeToBeDeleted.id,
         name: storeToBeDeleted.name,
+        mold_id: null,
         created_at: storeToBeDeleted.created_at.toISOString(),
         updated_at: storeToBeDeleted.updated_at.toISOString(),
       });
@@ -94,6 +95,7 @@ describe("DELETE /api/v1/stores/[store_name]", () => {
       expect(responseBody).toEqual({
         id: storeToBeDeleted.id,
         name: "mismatchcase",
+        mold_id: null,
         created_at: storeToBeDeleted.created_at.toISOString(),
         updated_at: storeToBeDeleted.updated_at.toISOString(),
       });

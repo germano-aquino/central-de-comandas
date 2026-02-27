@@ -58,15 +58,14 @@ describe("PATCH /api/v1/molds/[:id]", () => {
           body: JSON.stringify({}),
         },
       );
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(200);
 
       const responseBody = await response.json();
 
       expect(responseBody).toEqual({
-        name: "ValidationError",
-        message: "Não é possível editar um molde sem novas propriedades.",
-        action: "Adicione propriedades válidas e tente novamente.",
-        status_code: 400,
+        ...storedMold,
+        created_at: storedMold.created_at.toISOString(),
+        updated_at: storedMold.updated_at.toISOString(),
       });
     });
 

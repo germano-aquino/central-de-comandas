@@ -227,8 +227,8 @@ describe("POST /api/v1/molds", () => {
 
       expect(responseBody).toEqual({
         name: "ValidationError",
-        message: "Esta pergunta não existe.",
-        action: "Verifique o id da pergunta e tente novamente.",
+        message: "Pergunta não existe.",
+        action: "Verifique se o id da pergunta está correto e tente novamente.",
         status_code: 400,
       });
     });

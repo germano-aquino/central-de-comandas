@@ -6,30 +6,31 @@ import service from "./service";
 import user from "./user";
 import database from "@/infra/database";
 
+const propValidationObject = [
+  {
+    name: "form_section_ids",
+    validateFunction: formSection.findOneValidById,
+  },
+  {
+    name: "category_ids",
+    validateFunction: category.findOneValidById,
+  },
+  {
+    name: "question_ids",
+    validateFunction: question.findOneValidById,
+  },
+  {
+    name: "service_ids",
+    validateFunction: service.findOneValidById,
+  },
+];
+
 async function create(inputValues) {
   const validValues = await getValidValues(inputValues);
   const createdMold = runInsertQuery(validValues);
   return createdMold;
 
   async function getValidValues(inputValues) {
-    const propValidationObject = [
-      {
-        name: "form_section_ids",
-        validateFunction: formSection.findOneValidById,
-      },
-      {
-        name: "category_ids",
-        validateFunction: category.findOneValidById,
-      },
-      {
-        name: "question_ids",
-        validateFunction: question.findOneValidById,
-      },
-      {
-        name: "service_ids",
-        validateFunction: service.findOneValidById,
-      },
-    ];
     let validValues = {};
 
     validateInputValuesNotEmpty(inputValues);
@@ -101,16 +102,50 @@ async function create(inputValues) {
 }
 
 async function update(moldId, inputValues) {
-  const validValues = await getValidValues(moldId, inputValues);
+  const [validValues, storedMold] = await getValidValues(moldId, inputValues);
+  if (validValues.isEmpty) return storedMold;
   const updatedMold = await runUpdateQuery(moldId, validValues);
   return updatedMold;
 
   async function getValidValues(moldId, inputValues) {
-    await findOneValidById(moldId);
+    try {
+      const storedMold = await findOneValidById(moldId);
 
-    const validValues = {};
+      const validValues = {};
 
-    return validValues;
+      for (const { name, validateFunction } of propValidationObject) {
+        validValues[name] = await validateInputValue(
+          inputValues,
+          name,
+          validateFunction,
+        );
+      }
+
+      validValues["isEmpty"] =
+        !validValues.form_section_ids &&
+        !validValues.category_ids &&
+        !validValues.question_ids &&
+        !validValues.service_ids;
+      return [validValues, storedMold];
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw new ValidationError(error);
+      }
+
+      throw error;
+    }
+
+    async function validateInputValue(inputValues, propName, validateFunction) {
+      if (!(propName in inputValues)) {
+        return null;
+      }
+
+      for (const id of inputValues[propName]) {
+        await validateFunction(id);
+      }
+
+      return inputValues[propName];
+    }
   }
 
   async function runUpdateQuery(moldId, inputValues) {

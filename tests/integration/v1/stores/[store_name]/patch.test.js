@@ -102,6 +102,7 @@ describe("PATCH /api/v1/stores/[store_name]", () => {
       expect(responseBody).toEqual({
         id: editedStore.id,
         name: "misMatchCase",
+        mold_id: null,
         created_at: editedStore.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });
