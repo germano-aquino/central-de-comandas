@@ -3,7 +3,6 @@ import category from "./category";
 import formSection from "./formSection";
 import question from "./question";
 import service from "./service";
-import store from "./store";
 import user from "./user";
 import database from "@/infra/database";
 
@@ -14,10 +13,6 @@ async function create(inputValues) {
 
   async function validateInputValues(inputValues) {
     const propValidationObject = [
-      {
-        name: "store_ids",
-        validateFunction: store.findOneValidById,
-      },
       {
         name: "form_section_ids",
         validateFunction: formSection.findOneValidById,
@@ -87,14 +82,13 @@ async function create(inputValues) {
       text: `
         INSERT INTO
           appointment_molds
-          (store_ids, form_section_ids, question_ids, category_ids, service_ids)
+          (form_section_ids, question_ids, category_ids, service_ids)
         VALUES
-          ($1, $2, $3, $4, $5)
+          ($1, $2, $3, $4)
         RETURNING
           *
       ;`,
       values: [
-        inputValues.store_ids,
         inputValues.form_section_ids,
         inputValues.question_ids,
         inputValues.category_ids,

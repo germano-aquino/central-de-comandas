@@ -78,55 +78,12 @@ describe("POST /api/v1/molds", () => {
       });
     });
 
-    test("With invalid store id", async () => {
-      const loggedUser = await orchestrator.createLoggedUser();
-      await orchestrator.addFeatures(loggedUser, mold.addFeatures);
-
-      const invalidStoreId = "cbd746a2-6090-4e1d-9f92-873fca25514d";
-      const serviceSection = await orchestrator.createSection();
-      const services = await orchestrator.createServices(5, {
-        categoryId: serviceSection.id,
-      });
-      const serviceIds = services.map((service) => service.id);
-      const formSection = await orchestrator.createSection(undefined, "form");
-      const questions = await orchestrator.createQuestions(5, {
-        sectionId: formSection.id,
-      });
-      const questionIds = questions.map((question) => question.id);
-
-      const response = await fetch("http://localhost:3000/api/v1/molds", {
-        method: "POST",
-        headers: {
-          Cookie: `session_id=${loggedUser.token}`,
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          store_ids: [invalidStoreId],
-          form_section_ids: [formSection.id],
-          question_ids: questionIds,
-          category_ids: [serviceSection.id],
-          service_ids: serviceIds,
-        }),
-      });
-      expect(response.status).toBe(400);
-
-      const responseBody = await response.json();
-
-      expect(responseBody).toEqual({
-        name: "ValidationError",
-        message: "Não existe uma loja com esse id.",
-        action: "Confirme o id da loja e tente novamente.",
-        status_code: 400,
-      });
-    });
-
     test("With invalid category id", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
       await orchestrator.addFeatures(loggedUser, mold.addFeatures);
 
       const invalidCategoryId = "cbd746a2-6090-4e1d-9f92-873fca25514d";
 
-      const store = await orchestrator.createStore();
       const services = await orchestrator.createServices(5);
       const serviceIds = services.map((service) => service.id);
       const formSection = await orchestrator.createSection(undefined, "form");
@@ -142,7 +99,6 @@ describe("POST /api/v1/molds", () => {
           "content-type": "application/json",
         },
         body: JSON.stringify({
-          store_ids: [store.id],
           form_section_ids: [formSection.id],
           question_ids: questionIds,
           category_ids: [invalidCategoryId],
@@ -167,7 +123,6 @@ describe("POST /api/v1/molds", () => {
 
       const invalidFormSectionId = "cbd746a2-6090-4e1d-9f92-873fca25514d";
 
-      const store = await orchestrator.createStore();
       const serviceSection = await orchestrator.createSection();
       const services = await orchestrator.createServices(5, {
         categoryId: serviceSection.id,
@@ -183,7 +138,6 @@ describe("POST /api/v1/molds", () => {
           "content-type": "application/json",
         },
         body: JSON.stringify({
-          store_ids: [store.id],
           form_section_ids: [invalidFormSectionId],
           question_ids: questionIds,
           category_ids: [serviceSection.id],
@@ -208,7 +162,6 @@ describe("POST /api/v1/molds", () => {
 
       const invalidServiceId = "cbd746a2-6090-4e1d-9f92-873fca25514d";
 
-      const store = await orchestrator.createStore();
       const serviceSection = await orchestrator.createSection();
 
       const formSection = await orchestrator.createSection(undefined, "form");
@@ -224,7 +177,6 @@ describe("POST /api/v1/molds", () => {
           "content-type": "application/json",
         },
         body: JSON.stringify({
-          store_ids: [store.id],
           form_section_ids: [formSection.id],
           question_ids: questionIds,
           category_ids: [serviceSection.id],
@@ -249,7 +201,6 @@ describe("POST /api/v1/molds", () => {
 
       const invalidQuestionId = "cbd746a2-6090-4e1d-9f92-873fca25514d";
 
-      const store = await orchestrator.createStore();
       const serviceSection = await orchestrator.createSection();
       const services = await orchestrator.createServices(5, {
         categoryId: serviceSection.id,
@@ -264,7 +215,6 @@ describe("POST /api/v1/molds", () => {
           "content-type": "application/json",
         },
         body: JSON.stringify({
-          store_ids: [store.id],
           form_section_ids: [formSection.id],
           question_ids: [invalidQuestionId],
           category_ids: [serviceSection.id],
@@ -287,7 +237,6 @@ describe("POST /api/v1/molds", () => {
       const loggedUser = await orchestrator.createLoggedUser();
       await orchestrator.addFeatures(loggedUser, mold.addFeatures);
 
-      const store = await orchestrator.createStore();
       const serviceSection = await orchestrator.createSection();
       const services = await orchestrator.createServices(5, {
         categoryId: serviceSection.id,
@@ -306,7 +255,6 @@ describe("POST /api/v1/molds", () => {
           "content-type": "application/json",
         },
         body: JSON.stringify({
-          store_ids: [store.id],
           form_section_ids: [formSection.id],
           question_ids: questionIds,
           category_ids: [serviceSection.id],
@@ -317,7 +265,6 @@ describe("POST /api/v1/molds", () => {
 
       const responseBody = await response.json();
 
-      expect(responseBody.store_ids).toEqual([store.id]);
       expect(responseBody.form_section_ids).toEqual([formSection.id]);
       expect(responseBody.question_ids).toEqual(questionIds);
       expect(responseBody.category_ids).toEqual([serviceSection.id]);
