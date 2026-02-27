@@ -100,6 +100,48 @@ async function create(inputValues) {
   }
 }
 
+async function update(moldId, inputValues) {
+  const validValues = await getValidValues(moldId, inputValues);
+  const updatedMold = await runUpdateQuery(moldId, validValues);
+  return updatedMold;
+
+  async function getValidValues(moldId, inputValues) {
+    await findOneValidById(moldId);
+
+    const validValues = {};
+
+    return validValues;
+  }
+
+  async function runUpdateQuery(moldId, inputValues) {
+    const results = await database.query({
+      text: `
+        UPDATE
+          appointment_molds
+        SET
+          category_ids = COALESCE($2, category_ids),
+          service_ids = COALESCE($3, service_ids),
+          form_section_ids = COALESCE($4, form_section_ids),
+          question_ids = COALESCE($5, question_ids),
+          updated_at = TIMEZONE('utc', NOW())
+        WHERE
+          id = $1
+        RETURNING
+          *
+      ;`,
+      values: [
+        moldId,
+        inputValues.category_ids,
+        inputValues.service_ids,
+        inputValues.form_section_ids,
+        inputValues.question_ids,
+      ],
+    });
+
+    return results.rows[0];
+  }
+}
+
 async function retrieveAll() {
   const storedMolds = await runSelectQuery();
   return storedMolds;
@@ -182,6 +224,7 @@ async function addFeatures(unallowedUser) {
 
 const mold = {
   create,
+  update,
   retrieveAll,
   deleteManyByIdArray,
   findOneValidById,
