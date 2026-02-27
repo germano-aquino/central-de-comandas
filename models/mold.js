@@ -120,6 +120,56 @@ async function retrieveAll() {
   }
 }
 
+async function deleteManyByIdArray(moldInputValues) {
+  const deletedMolds = await runDeleteQuery(moldInputValues?.mold_ids);
+  return deletedMolds;
+
+  async function runDeleteQuery(moldIds) {
+    const results = await database.query({
+      text: `
+        DELETE FROM
+          appointment_molds
+        WHERE
+          id = ANY($1)
+        RETURNING
+          *
+      ;`,
+      values: [moldIds],
+    });
+
+    return results.rows;
+  }
+}
+
+async function findOneValidById(moldId) {
+  const storedMold = await runSelectQuery(moldId);
+  return storedMold;
+
+  async function runSelectQuery(moldId) {
+    const results = await database.query({
+      text: `
+        SELECT
+          *
+        FROM
+          appointment_molds
+        WHERE
+          id = $1
+        LIMIT
+          1
+      ;`,
+      values: [moldId],
+    });
+
+    if (results.rowCount === 0) {
+      throw new NotFoundError({
+        message: "Não existe um molde correspondente para este id.",
+        action: "Verifique se o id está correto e tente novamente.",
+      });
+    }
+    return results.rows[0];
+  }
+}
+
 async function addFeatures(unallowedUser) {
   const allowedUser = user.addFeaturesByUserId(unallowedUser.id, [
     "create:mold",
@@ -130,6 +180,12 @@ async function addFeatures(unallowedUser) {
   return allowedUser;
 }
 
-const mold = { create, retrieveAll, addFeatures };
+const mold = {
+  create,
+  retrieveAll,
+  deleteManyByIdArray,
+  findOneValidById,
+  addFeatures,
+};
 
 export default mold;
