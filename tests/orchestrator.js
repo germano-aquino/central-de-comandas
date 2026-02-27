@@ -10,6 +10,7 @@ import session from "models/session";
 import user from "models/user";
 import store from "models/store";
 import customer from "models/customer";
+import mold from "@/models/mold";
 
 const emailHttpUrl = `http://${process.env.EMAIL_HTTP_HOST}:${process.env.EMAIL_HTTP_PORT}`;
 const webServerStatusPageUrl = "http://localhost:3000/api/v1/status";
@@ -228,6 +229,73 @@ async function createCustomers(length = 5, customersName = []) {
   return customers;
 }
 
+async function createMold(moldInputValues) {
+  const inputValues = {};
+
+  inputValues.category_ids = await getCategoryIds(moldInputValues?.categoryIds);
+  inputValues.form_section_ids = await getFormSectionIds(
+    moldInputValues?.formSectionIds,
+  );
+  inputValues.service_ids = await getServiceIds(
+    moldInputValues?.serviceIds,
+    inputValues.category_ids[0],
+  );
+  inputValues.question_ids = await getQuestionIds(
+    moldInputValues?.questionIds,
+    inputValues.form_section_ids[0],
+  );
+
+  const moldCreated = await mold.create(inputValues);
+  return moldCreated;
+
+  async function getCategoryIds(categoryIds) {
+    if (!categoryIds || !categoryIds.length) {
+      const category = await createSection();
+      return [category.id];
+    }
+
+    return categoryIds;
+  }
+
+  async function getFormSectionIds(formSectionIds) {
+    if (!formSectionIds || !formSectionIds.length) {
+      const formSection = await createSection(undefined, "form");
+      return [formSection.id];
+    }
+
+    return formSectionIds;
+  }
+
+  async function getServiceIds(serviceIds, categoryId) {
+    if (!serviceIds || !serviceIds.length) {
+      const services = await createServices(5, { categoryId: categoryId });
+      return services.map((service) => service.id);
+    }
+
+    return serviceIds;
+  }
+
+  async function getQuestionIds(questionIds, formSectionId) {
+    if (!questionIds || !questionIds.length) {
+      const questions = await createQuestions(5, { sectionId: formSectionId });
+      return questions.map((question) => question.id);
+    }
+
+    return questionIds;
+  }
+}
+
+async function createMolds(length = 5, defaultMoldValues) {
+  const createdMolds = [];
+
+  for (let i = 0; i < length; i++) {
+    const newMold = await createMold(defaultMoldValues);
+    createdMolds.push(newMold);
+  }
+
+  return createdMolds;
+}
+
 async function addFeatures(unallowedUser, addFeaturesFunction) {
   const allowedUser = await addFeaturesFunction(unallowedUser);
   return allowedUser;
@@ -253,6 +321,8 @@ const orchestrator = {
   createStores,
   createCustomer,
   createCustomers,
+  createMold,
+  createMolds,
   addFeatures,
 };
 

@@ -7,11 +7,11 @@ import user from "./user";
 import database from "@/infra/database";
 
 async function create(inputValues) {
-  const validValues = await validateInputValues(inputValues);
+  const validValues = await getValidValues(inputValues);
   const createdMold = runInsertQuery(validValues);
   return createdMold;
 
-  async function validateInputValues(inputValues) {
+  async function getValidValues(inputValues) {
     const propValidationObject = [
       {
         name: "form_section_ids",
@@ -100,6 +100,26 @@ async function create(inputValues) {
   }
 }
 
+async function retrieveAll() {
+  const storedMolds = await runSelectQuery();
+  return storedMolds;
+
+  async function runSelectQuery() {
+    const results = await database.query({
+      text: `
+        SELECT
+          *
+        FROM
+          appointment_molds
+        WHERE
+          TRUE
+      ;`,
+    });
+
+    return results.rows;
+  }
+}
+
 async function addFeatures(unallowedUser) {
   const allowedUser = user.addFeaturesByUserId(unallowedUser.id, [
     "create:mold",
@@ -110,6 +130,6 @@ async function addFeatures(unallowedUser) {
   return allowedUser;
 }
 
-const mold = { create, addFeatures };
+const mold = { create, retrieveAll, addFeatures };
 
 export default mold;
