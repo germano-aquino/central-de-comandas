@@ -57,7 +57,7 @@ const NAVIGATION_DATA = [
     description: "Criação de Perguntas para o formulário.",
   },
   {
-    href: "/atendimento",
+    href: "/agendamento",
     title: "Atendimentos",
     description: "",
   },
@@ -135,7 +135,7 @@ function NavigationMenuBar() {
         </NavigationMenuItem>
         <NavigationMenuItem>
           <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-            <Link href="/atendimento">Atendimentos</Link>
+            <Link href="/agendamento">Atendimentos</Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
       </NavigationMenuList>

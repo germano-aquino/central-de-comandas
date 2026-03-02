@@ -39,7 +39,7 @@ describe("DELETE /api/v1/stores/[store_name]", () => {
 
     test("With permission and valid data", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
-      await orchestrator.addStoreFeatures(loggedUser);
+      await orchestrator.addFeatures(loggedUser, store.addFeatures);
 
       const storeToBeDeleted = await orchestrator.createStore();
 
@@ -60,6 +60,7 @@ describe("DELETE /api/v1/stores/[store_name]", () => {
       expect(responseBody).toEqual({
         id: storeToBeDeleted.id,
         name: storeToBeDeleted.name,
+        mold_id: null,
         created_at: storeToBeDeleted.created_at.toISOString(),
         updated_at: storeToBeDeleted.updated_at.toISOString(),
       });
@@ -73,7 +74,7 @@ describe("DELETE /api/v1/stores/[store_name]", () => {
 
     test("With permission and with different case", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
-      await orchestrator.addStoreFeatures(loggedUser);
+      await orchestrator.addFeatures(loggedUser, store.addFeatures);
 
       const storeToBeDeleted = await orchestrator.createStore("mismatchcase");
 
@@ -94,6 +95,7 @@ describe("DELETE /api/v1/stores/[store_name]", () => {
       expect(responseBody).toEqual({
         id: storeToBeDeleted.id,
         name: "mismatchcase",
+        mold_id: null,
         created_at: storeToBeDeleted.created_at.toISOString(),
         updated_at: storeToBeDeleted.updated_at.toISOString(),
       });
@@ -107,7 +109,7 @@ describe("DELETE /api/v1/stores/[store_name]", () => {
 
     test("With permission and nonexistent store name", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
-      await orchestrator.addStoreFeatures(loggedUser);
+      await orchestrator.addFeatures(loggedUser, store.addFeatures);
 
       const response = await fetch(
         `http://localhost:3000/api/v1/stores/NonexistentCategory`,

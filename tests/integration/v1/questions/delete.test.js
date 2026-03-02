@@ -44,10 +44,8 @@ describe("DELETE /api/v1/question/", () => {
 
   describe("Allowed user", () => {
     test("With valid data", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addQuestionsFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
       let questionsToBeDeleted = await orchestrator.createQuestions();
       const questionIds = questionsToBeDeleted.map((question) => question.id);
@@ -55,7 +53,7 @@ describe("DELETE /api/v1/question/", () => {
       const response = await fetch(`http://localhost:3000/api/v1/questions`, {
         method: "DELETE",
         headers: {
-          Cookie: `session_id=${userSession.token}`,
+          Cookie: `session_id=${loggedUser.token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -87,10 +85,8 @@ describe("DELETE /api/v1/question/", () => {
     });
 
     test("With nonexistent question id", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addQuestionsFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
       const nonexistentQuestionIds = [
         "cbd746a2-6090-4e1d-9f92-873fca25514d",
@@ -101,7 +97,7 @@ describe("DELETE /api/v1/question/", () => {
       const response = await fetch(`http://localhost:3000/api/v1/questions`, {
         method: "DELETE",
         headers: {
-          Cookie: `session_id=${userSession.token}`,
+          Cookie: `session_id=${loggedUser.token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({

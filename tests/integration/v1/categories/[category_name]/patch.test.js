@@ -1,3 +1,4 @@
+import category from "@/models/category";
 import orchestrator from "tests/orchestrator";
 
 import { version as uuidVersion } from "uuid";
@@ -44,19 +45,17 @@ describe("PATCH /api/v1/categories/[category_name]", () => {
     });
 
     test("With permission and valid data", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addCategoriesFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, category.addFeatures);
 
-      const category = await orchestrator.createSection();
+      const editedCategory = await orchestrator.createSection();
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/categories/${category.name}`,
+        `http://localhost:3000/api/v1/categories/${editedCategory.name}`,
         {
           method: "PATCH",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
@@ -79,19 +78,17 @@ describe("PATCH /api/v1/categories/[category_name]", () => {
     });
 
     test("With permission and with different case", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addCategoriesFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, category.addFeatures);
 
-      const category = await orchestrator.createSection("mismatchcase");
+      const editedCategory = await orchestrator.createSection("mismatchcase");
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/categories/${category.name}`,
+        `http://localhost:3000/api/v1/categories/${editedCategory.name}`,
         {
           method: "PATCH",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
@@ -105,9 +102,9 @@ describe("PATCH /api/v1/categories/[category_name]", () => {
       const responseBody = await response.json();
 
       expect(responseBody).toEqual({
-        id: category.id,
+        id: editedCategory.id,
         name: "misMatchCase",
-        created_at: category.created_at.toISOString(),
+        created_at: editedCategory.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });
 
@@ -117,17 +114,15 @@ describe("PATCH /api/v1/categories/[category_name]", () => {
     });
 
     test("With permission and nonexistent category name", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addCategoriesFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, category.addFeatures);
 
       const response = await fetch(
         `http://localhost:3000/api/v1/categories/NonexistentCategory`,
         {
           method: "PATCH",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({

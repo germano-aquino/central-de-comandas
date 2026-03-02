@@ -1,3 +1,4 @@
+import store from "@/models/store";
 import orchestrator from "tests/orchestrator";
 
 import { version as uuidVersion } from "uuid";
@@ -13,10 +14,10 @@ describe("PATCH /api/v1/stores/[store_name]", () => {
     test("With valid data and without permission", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
 
-      const store = await orchestrator.createStore("OldName");
+      const editedStore = await orchestrator.createStore("OldName");
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/stores/${store.name}`,
+        `http://localhost:3000/api/v1/stores/${editedStore.name}`,
         {
           method: "PATCH",
           headers: {
@@ -43,12 +44,12 @@ describe("PATCH /api/v1/stores/[store_name]", () => {
 
     test("With permission and valid data", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
-      await orchestrator.addStoreFeatures(loggedUser);
+      await orchestrator.addFeatures(loggedUser, store.addFeatures);
 
-      const store = await orchestrator.createStore();
+      const editedStore = await orchestrator.createStore();
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/stores/${store.name}`,
+        `http://localhost:3000/api/v1/stores/${editedStore.name}`,
         {
           method: "PATCH",
           headers: {
@@ -76,12 +77,12 @@ describe("PATCH /api/v1/stores/[store_name]", () => {
 
     test("With permission and with different case", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
-      await orchestrator.addStoreFeatures(loggedUser);
+      await orchestrator.addFeatures(loggedUser, store.addFeatures);
 
-      const store = await orchestrator.createStore("mismatchcase");
+      const editedStore = await orchestrator.createStore("mismatchcase");
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/stores/${store.name}`,
+        `http://localhost:3000/api/v1/stores/${editedStore.name}`,
         {
           method: "PATCH",
           headers: {
@@ -99,9 +100,10 @@ describe("PATCH /api/v1/stores/[store_name]", () => {
       const responseBody = await response.json();
 
       expect(responseBody).toEqual({
-        id: store.id,
+        id: editedStore.id,
         name: "misMatchCase",
-        created_at: store.created_at.toISOString(),
+        mold_id: null,
+        created_at: editedStore.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });
 
@@ -112,7 +114,7 @@ describe("PATCH /api/v1/stores/[store_name]", () => {
 
     test("With permission and nonexistent store name", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
-      await orchestrator.addStoreFeatures(loggedUser);
+      await orchestrator.addFeatures(loggedUser, store.addFeatures);
 
       const response = await fetch(
         `http://localhost:3000/api/v1/stores/NonexistentStore`,

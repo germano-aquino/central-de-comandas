@@ -1,3 +1,4 @@
+import customer from "@/models/customer";
 import orchestrator from "tests/orchestrator";
 
 beforeAll(async () => {
@@ -33,7 +34,7 @@ describe("GET /api/v1/customers", () => {
   describe("Allowed user", () => {
     test("With a valid request", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
-      await orchestrator.addCustomerFeatures(loggedUser);
+      await orchestrator.addFeatures(loggedUser, customer.addFeatures);
 
       let customers = await orchestrator.createCustomers(7);
       customers = customers.map((customer) => {
@@ -59,7 +60,7 @@ describe("GET /api/v1/customers", () => {
 
     test("With name filter", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
-      await orchestrator.addCustomerFeatures(loggedUser);
+      await orchestrator.addFeatures(loggedUser, customer.addFeatures);
 
       await orchestrator.createCustomers(7);
 
@@ -91,7 +92,7 @@ describe("GET /api/v1/customers", () => {
 
     test("With phone filter", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
-      await orchestrator.addCustomerFeatures(loggedUser);
+      await orchestrator.addFeatures(loggedUser, customer.addFeatures);
 
       await orchestrator.createCustomers(7);
 

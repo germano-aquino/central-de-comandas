@@ -41,7 +41,7 @@ describe("DELETE /api/v1/stores", () => {
 
     test("With permission and valid data", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
-      await orchestrator.addStoreFeatures(loggedUser);
+      await orchestrator.addFeatures(loggedUser, store.addFeatures);
 
       let stores = await orchestrator.createStores(7);
       stores = stores.map((store) => {
@@ -81,7 +81,7 @@ describe("DELETE /api/v1/stores", () => {
 
     test("With permission and nonexistent store ids", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
-      await orchestrator.addStoreFeatures(loggedUser);
+      await orchestrator.addFeatures(loggedUser, store.addFeatures);
 
       const response = await fetch(`http://localhost:3000/api/v1/stores`, {
         method: "DELETE",

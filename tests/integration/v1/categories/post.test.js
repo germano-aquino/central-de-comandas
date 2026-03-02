@@ -1,3 +1,4 @@
+import category from "@/models/category";
 import orchestrator from "tests/orchestrator";
 
 import { version as uuidVersion } from "uuid";
@@ -39,15 +40,13 @@ describe("POST /api/v1/categories", () => {
     });
 
     test("With permission and valid data", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addCategoriesFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, category.addFeatures);
 
       const response = await fetch("http://localhost:3000/api/v1/categories", {
         method: "POST",
         headers: {
-          Cookie: `session_id=${userSession.token}`,
+          Cookie: `session_id=${loggedUser.token}`,
           "content-type": "application/json",
         },
         body: JSON.stringify({
@@ -66,15 +65,13 @@ describe("POST /api/v1/categories", () => {
     });
 
     test("With permission and duplicated category name", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addCategoriesFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, category.addFeatures);
 
       const response = await fetch("http://localhost:3000/api/v1/categories", {
         method: "POST",
         headers: {
-          Cookie: `session_id=${userSession.token}`,
+          Cookie: `session_id=${loggedUser.token}`,
           "content-type": "application/json",
         },
         body: JSON.stringify({

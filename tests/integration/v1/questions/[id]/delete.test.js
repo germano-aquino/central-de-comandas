@@ -42,10 +42,8 @@ describe("DELETE /api/v1/question/[id]", () => {
 
   describe("Allowed user", () => {
     test("With valid data", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addQuestionsFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
       const questionToBeDeleted = await orchestrator.createQuestion();
 
@@ -54,7 +52,7 @@ describe("DELETE /api/v1/question/[id]", () => {
         {
           method: "DELETE",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
           },
         },
       );
@@ -77,10 +75,8 @@ describe("DELETE /api/v1/question/[id]", () => {
     });
 
     test("With nonexistent question id", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addQuestionsFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
       const nonexistentId = "264b4eff-b94f-4efc-82f9-508a961723ed";
       const response = await fetch(
@@ -88,7 +84,7 @@ describe("DELETE /api/v1/question/[id]", () => {
         {
           method: "DELETE",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
           },
         },
       );

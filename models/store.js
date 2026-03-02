@@ -173,6 +173,37 @@ async function findOneValidByName(storeName) {
   }
 }
 
+async function findOneValidById(storeId) {
+  const validStore = await runSelectQuery(storeId);
+
+  return validStore;
+
+  async function runSelectQuery(storeId) {
+    const results = await database.query({
+      text: `
+        SELECT
+          *
+        FROM
+          stores
+        WHERE
+          id = $1
+        LIMIT
+          1
+      ;`,
+      values: [storeId],
+    });
+
+    if (results.rowCount != 1) {
+      throw new NotFoundError({
+        message: "Não existe uma loja com esse id.",
+        action: "Confirme o id da loja e tente novamente.",
+      });
+    }
+
+    return results.rows[0];
+  }
+}
+
 async function retrieveAll() {
   const stores = await runSelectQuery();
 
@@ -209,6 +240,7 @@ const store = {
   deleteManyByIdArray,
   retrieveAll,
   findOneValidByName,
+  findOneValidById,
   addFeatures,
 };
 

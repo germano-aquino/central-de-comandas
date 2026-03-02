@@ -40,10 +40,8 @@ describe("DELETE /api/v1/categories/[category_name]", () => {
     });
 
     test("With permission and valid data", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addCategoriesFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, category.addFeatures);
 
       const categoryToBeDeleted = await orchestrator.createSection();
 
@@ -52,7 +50,7 @@ describe("DELETE /api/v1/categories/[category_name]", () => {
         {
           method: "DELETE",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
           },
         },
       );
@@ -76,10 +74,8 @@ describe("DELETE /api/v1/categories/[category_name]", () => {
     });
 
     test("With permission and with different case", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addCategoriesFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, category.addFeatures);
 
       const categoryToBeDeleted =
         await orchestrator.createSection("mismatchcase");
@@ -89,7 +85,7 @@ describe("DELETE /api/v1/categories/[category_name]", () => {
         {
           method: "DELETE",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
           },
         },
       );
@@ -113,17 +109,15 @@ describe("DELETE /api/v1/categories/[category_name]", () => {
     });
 
     test("With permission and nonexistent category name", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addCategoriesFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, category.addFeatures);
 
       const response = await fetch(
         `http://localhost:3000/api/v1/categories/NonexistentCategory`,
         {
           method: "DELETE",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
           },
         },
       );

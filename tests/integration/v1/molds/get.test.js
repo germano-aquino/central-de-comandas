@@ -1,5 +1,5 @@
-import customer from "@/models/customer";
 import orchestrator from "tests/orchestrator";
+import mold from "models/mold";
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -7,19 +7,16 @@ beforeAll(async () => {
   await orchestrator.runPendingMigrations();
 });
 
-describe("GET /api/v1/customers/[customer_name]", () => {
+describe("GET /api/v1/molds", () => {
   describe("Default user", () => {
     test("With valid data", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
 
-      const response = await fetch(
-        `http://localhost:3000/api/v1/customers/NotAllowedUser`,
-        {
-          headers: {
-            Cookie: `session_id=${loggedUser.token}`,
-          },
+      const response = await fetch("http://localhost:3000/api/v1/molds", {
+        headers: {
+          Cookie: `session_id=${loggedUser.token}`,
         },
-      );
+      });
 
       expect(response.status).toBe(403);
 
@@ -28,7 +25,7 @@ describe("GET /api/v1/customers/[customer_name]", () => {
       expect(responseBody).toEqual({
         name: "ForbiddenError",
         message: "O usuário não possui permissão para executar esta ação.",
-        action: 'Verifique se o usuário possui a feature "read:customer".',
+        action: 'Verifique se o usuário possui a feature "read:mold".',
         status_code: 403,
       });
     });
@@ -37,39 +34,34 @@ describe("GET /api/v1/customers/[customer_name]", () => {
   describe("Allowed user", () => {
     test("With valid data", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
-      await orchestrator.addFeatures(loggedUser, customer.addFeatures);
+      await orchestrator.addFeatures(loggedUser, mold.addFeatures);
 
-      let customers = await orchestrator.createCustomers(7);
-      customers = customers.map((customer) => {
+      let molds = await orchestrator.createMolds();
+      molds = molds.map((mold) => {
         return {
-          ...customer,
-          created_at: customer.created_at.toISOString(),
-          updated_at: customer.updated_at.toISOString(),
+          ...mold,
+          updated_at: mold.updated_at.toISOString(),
+          created_at: mold.created_at.toISOString(),
         };
       });
 
-      const response = await fetch(
-        `http://localhost:3000/api/v1/customers/${customers[1].name}`,
-        {
-          headers: {
-            Cookie: `session_id=${loggedUser.token}`,
-          },
+      const response = await fetch("http://localhost:3000/api/v1/molds", {
+        method: "GET",
+        headers: {
+          Cookie: `session_id=${loggedUser.token}`,
         },
-      );
-
+      });
       expect(response.status).toBe(200);
 
       const responseBody = await response.json();
 
-      expect(responseBody).toEqual(customers[1]);
+      expect(responseBody).toEqual(molds);
     });
   });
 
   describe("Anonymous user", () => {
     test("With valid data", async () => {
-      const response = await fetch(
-        "http://localhost:3000/api/v1/customers/NotAllowedUser",
-      );
+      const response = await fetch("http://localhost:3000/api/v1/molds");
 
       expect(response.status).toBe(403);
 
@@ -78,7 +70,7 @@ describe("GET /api/v1/customers/[customer_name]", () => {
       expect(responseBody).toEqual({
         name: "ForbiddenError",
         message: "O usuário não possui permissão para executar esta ação.",
-        action: 'Verifique se o usuário possui a feature "read:customer".',
+        action: 'Verifique se o usuário possui a feature "read:mold".',
         status_code: 403,
       });
     });

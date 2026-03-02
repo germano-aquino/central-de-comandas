@@ -1,3 +1,4 @@
+import question from "@/models/question";
 import orchestrator from "tests/orchestrator";
 
 import { version as uuidVersion } from "uuid";
@@ -44,15 +45,13 @@ describe("POST /api/v1/questions", () => {
   describe("Allowed user", () => {
     describe("Multiple choice type", () => {
       test("With required data", async () => {
-        const inactiveUser = await orchestrator.createUser();
-        const activatedUser = await orchestrator.activateUser(inactiveUser);
-        await orchestrator.addQuestionsFeatures(activatedUser);
-        const userSession = await orchestrator.createSession(activatedUser);
+        const loggedUser = await orchestrator.createLoggedUser();
+        await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
         const response = await fetch("http://localhost:3000/api/v1/questions", {
           method: "POST",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
@@ -77,10 +76,8 @@ describe("POST /api/v1/questions", () => {
       });
 
       test("With required data and form section", async () => {
-        const inactiveUser = await orchestrator.createUser();
-        const activatedUser = await orchestrator.activateUser(inactiveUser);
-        await orchestrator.addQuestionsFeatures(activatedUser);
-        const userSession = await orchestrator.createSession(activatedUser);
+        const loggedUser = await orchestrator.createLoggedUser();
+        await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
         const formSection = await orchestrator.createSection(
           "Brazilian Waxing",
@@ -90,7 +87,7 @@ describe("POST /api/v1/questions", () => {
         const response = await fetch("http://localhost:3000/api/v1/questions", {
           method: "POST",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
@@ -122,15 +119,13 @@ describe("POST /api/v1/questions", () => {
       });
 
       test("With required data and nonexistent category", async () => {
-        const inactiveUser = await orchestrator.createUser();
-        const activatedUser = await orchestrator.activateUser(inactiveUser);
-        await orchestrator.addQuestionsFeatures(activatedUser);
-        const userSession = await orchestrator.createSession(activatedUser);
+        const loggedUser = await orchestrator.createLoggedUser();
+        await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
         const response = await fetch("http://localhost:3000/api/v1/questions", {
           method: "POST",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
@@ -154,15 +149,13 @@ describe("POST /api/v1/questions", () => {
       });
 
       test("With required data and duplicated statement", async () => {
-        const inactiveUser = await orchestrator.createUser();
-        const activatedUser = await orchestrator.activateUser(inactiveUser);
-        await orchestrator.addQuestionsFeatures(activatedUser);
-        const userSession = await orchestrator.createSession(activatedUser);
+        const loggedUser = await orchestrator.createLoggedUser();
+        await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
         const response = await fetch("http://localhost:3000/api/v1/questions", {
           method: "POST",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
@@ -193,15 +186,13 @@ describe("POST /api/v1/questions", () => {
       });
 
       test("With invalid type", async () => {
-        const inactiveUser = await orchestrator.createUser();
-        const activatedUser = await orchestrator.activateUser(inactiveUser);
-        await orchestrator.addQuestionsFeatures(activatedUser);
-        const userSession = await orchestrator.createSession(activatedUser);
+        const loggedUser = await orchestrator.createLoggedUser();
+        await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
         const response = await fetch("http://localhost:3000/api/v1/questions", {
           method: "POST",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
@@ -224,15 +215,13 @@ describe("POST /api/v1/questions", () => {
       });
 
       test("Missing statement property", async () => {
-        const inactiveUser = await orchestrator.createUser();
-        const activatedUser = await orchestrator.activateUser(inactiveUser);
-        await orchestrator.addQuestionsFeatures(activatedUser);
-        const userSession = await orchestrator.createSession(activatedUser);
+        const loggedUser = await orchestrator.createLoggedUser();
+        await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
         const response = await fetch("http://localhost:3000/api/v1/questions", {
           method: "POST",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
@@ -255,15 +244,13 @@ describe("POST /api/v1/questions", () => {
       });
 
       test("Empty statement property", async () => {
-        const inactiveUser = await orchestrator.createUser();
-        const activatedUser = await orchestrator.activateUser(inactiveUser);
-        await orchestrator.addQuestionsFeatures(activatedUser);
-        const userSession = await orchestrator.createSession(activatedUser);
+        const loggedUser = await orchestrator.createLoggedUser();
+        await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
         const response = await fetch("http://localhost:3000/api/v1/questions", {
           method: "POST",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
@@ -287,15 +274,13 @@ describe("POST /api/v1/questions", () => {
       });
 
       test("Missing options property", async () => {
-        const inactiveUser = await orchestrator.createUser();
-        const activatedUser = await orchestrator.activateUser(inactiveUser);
-        await orchestrator.addQuestionsFeatures(activatedUser);
-        const userSession = await orchestrator.createSession(activatedUser);
+        const loggedUser = await orchestrator.createLoggedUser();
+        await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
         const response = await fetch("http://localhost:3000/api/v1/questions", {
           method: "POST",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
@@ -317,15 +302,13 @@ describe("POST /api/v1/questions", () => {
       });
 
       test("Not enough options", async () => {
-        const inactiveUser = await orchestrator.createUser();
-        const activatedUser = await orchestrator.activateUser(inactiveUser);
-        await orchestrator.addQuestionsFeatures(activatedUser);
-        const userSession = await orchestrator.createSession(activatedUser);
+        const loggedUser = await orchestrator.createLoggedUser();
+        await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
         const response = await fetch("http://localhost:3000/api/v1/questions", {
           method: "POST",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
@@ -348,15 +331,13 @@ describe("POST /api/v1/questions", () => {
       });
 
       test("Option marked is not included on options", async () => {
-        const inactiveUser = await orchestrator.createUser();
-        const activatedUser = await orchestrator.activateUser(inactiveUser);
-        await orchestrator.addQuestionsFeatures(activatedUser);
-        const userSession = await orchestrator.createSession(activatedUser);
+        const loggedUser = await orchestrator.createLoggedUser();
+        await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
         const response = await fetch("http://localhost:3000/api/v1/questions", {
           method: "POST",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
@@ -383,15 +364,13 @@ describe("POST /api/v1/questions", () => {
 
     describe("Discursive type", () => {
       test("With required data", async () => {
-        const inactiveUser = await orchestrator.createUser();
-        const activatedUser = await orchestrator.activateUser(inactiveUser);
-        await orchestrator.addQuestionsFeatures(activatedUser);
-        const userSession = await orchestrator.createSession(activatedUser);
+        const loggedUser = await orchestrator.createLoggedUser();
+        await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
         const response = await fetch("http://localhost:3000/api/v1/questions", {
           method: "POST",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
@@ -415,10 +394,8 @@ describe("POST /api/v1/questions", () => {
       });
 
       test("With required data and form section", async () => {
-        const inactiveUser = await orchestrator.createUser();
-        const activatedUser = await orchestrator.activateUser(inactiveUser);
-        await orchestrator.addQuestionsFeatures(activatedUser);
-        const userSession = await orchestrator.createSession(activatedUser);
+        const loggedUser = await orchestrator.createLoggedUser();
+        await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
         const formSection = await orchestrator.createSection(
           "High Frequency",
@@ -428,7 +405,7 @@ describe("POST /api/v1/questions", () => {
         const response = await fetch("http://localhost:3000/api/v1/questions", {
           method: "POST",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
@@ -458,15 +435,13 @@ describe("POST /api/v1/questions", () => {
 
     describe("Both type", () => {
       test("With required data", async () => {
-        const inactiveUser = await orchestrator.createUser();
-        const activatedUser = await orchestrator.activateUser(inactiveUser);
-        await orchestrator.addQuestionsFeatures(activatedUser);
-        const userSession = await orchestrator.createSession(activatedUser);
+        const loggedUser = await orchestrator.createLoggedUser();
+        await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
         const response = await fetch("http://localhost:3000/api/v1/questions", {
           method: "POST",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({
@@ -493,17 +468,15 @@ describe("POST /api/v1/questions", () => {
       });
 
       test("With required data and form section", async () => {
-        const inactiveUser = await orchestrator.createUser();
-        const activatedUser = await orchestrator.activateUser(inactiveUser);
-        await orchestrator.addQuestionsFeatures(activatedUser);
-        const userSession = await orchestrator.createSession(activatedUser);
+        const loggedUser = await orchestrator.createLoggedUser();
+        await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
         const formSection = await orchestrator.createSection("Brow", "form");
 
         const response = await fetch("http://localhost:3000/api/v1/questions", {
           method: "POST",
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({

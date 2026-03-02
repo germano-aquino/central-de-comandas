@@ -42,10 +42,8 @@ describe("DELETE /api/v1/services", () => {
     });
 
     test("With permission and valid data", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addServicesFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, service.addFeatures);
 
       let services = await orchestrator.createServices(7);
       services = services.map((service) => {
@@ -60,7 +58,7 @@ describe("DELETE /api/v1/services", () => {
       const response = await fetch("http://localhost:3000/api/v1/services", {
         method: "DELETE",
         headers: {
-          Cookie: `session_id=${userSession.token}`,
+          Cookie: `session_id=${loggedUser.token}`,
           "content-type": "application/json",
         },
         body: JSON.stringify({
@@ -84,15 +82,13 @@ describe("DELETE /api/v1/services", () => {
     });
 
     test("With permission and nonexistent service ids", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addServicesFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, service.addFeatures);
 
       const response = await fetch(`http://localhost:3000/api/v1/services`, {
         method: "DELETE",
         headers: {
-          Cookie: `session_id=${userSession.token}`,
+          Cookie: `session_id=${loggedUser.token}`,
           "content-type": "application/json",
         },
         body: JSON.stringify({

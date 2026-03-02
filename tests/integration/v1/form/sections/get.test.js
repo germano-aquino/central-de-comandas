@@ -1,3 +1,4 @@
+import formSection from "@/models/formSection";
 import orchestrator from "tests/orchestrator";
 
 beforeAll(async () => {
@@ -35,10 +36,8 @@ describe("GET /api/v1/form/sections", () => {
     });
 
     test("With permission and valid request", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addFormSectionsFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, formSection.addFeatures);
 
       let formSections = await orchestrator.createSections(7, "form");
       formSections = formSections.map((section) => {
@@ -53,7 +52,7 @@ describe("GET /api/v1/form/sections", () => {
         "http://localhost:3000/api/v1/form/sections",
         {
           headers: {
-            Cookie: `session_id=${userSession.token}`,
+            Cookie: `session_id=${loggedUser.token}`,
           },
         },
       );

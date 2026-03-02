@@ -1,3 +1,4 @@
+import category from "@/models/category";
 import orchestrator from "tests/orchestrator";
 
 beforeAll(async () => {
@@ -32,10 +33,8 @@ describe("GET /api/v1/categories", () => {
     });
 
     test("With permission and valid request", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      await orchestrator.addCategoriesFeatures(activatedUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, category.addFeatures);
 
       let categories = await orchestrator.createSections(7);
       categories = categories.map((category) => {
@@ -48,7 +47,7 @@ describe("GET /api/v1/categories", () => {
 
       const response = await fetch("http://localhost:3000/api/v1/categories", {
         headers: {
-          Cookie: `session_id=${userSession.token}`,
+          Cookie: `session_id=${loggedUser.token}`,
         },
       });
 
