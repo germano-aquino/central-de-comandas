@@ -154,6 +154,7 @@ async function createQuestions(length = 5, questionDefaultValues = {}) {
       questionDefaultValues?.options,
       questionDefaultValues?.sectionId,
       questionDefaultValues?.optionMarked,
+      questionDefaultValues?.isMold,
     );
     questions.push(newQuestion);
   }
@@ -166,6 +167,7 @@ async function createQuestion(
   options,
   sectionId,
   optionMarked,
+  isMold,
 ) {
   const questionInputValues = {
     statement: statement || faker.lorem.sentence({ min: 3, max: 10 }),
@@ -173,6 +175,7 @@ async function createQuestion(
     options: options || ["Sim", "Não"],
     section_id: sectionId || null,
     option_marked: optionMarked || null,
+    is_mold: isMold || null,
   };
 
   return await question.create(questionInputValues);

@@ -596,6 +596,49 @@ describe("PATCH /api/v1/questions", () => {
         status_code: 404,
       });
     });
+
+    test("With is mold new value", async () => {
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, question.addFeatures);
+
+      const questions = await orchestrator.createQuestions(3, {});
+      const questionIds = questions.map((question) => question.id);
+
+      const response = await fetch("http://localhost:3000/api/v1/questions", {
+        method: "PATCH",
+        headers: {
+          Cookie: `session_id=${loggedUser.token}`,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          question_ids: questionIds,
+          option_marked: "Sim",
+          is_mold: true,
+        }),
+      });
+
+      expect(response.status).toBe(200);
+
+      const responseBody = await response.json();
+
+      const questionsWithNewCategory = questions.map((question, index) => {
+        return {
+          ...question,
+          created_at: question.created_at.toISOString(),
+          updated_at: responseBody[index].updated_at,
+          option_marked: "Sim",
+          is_mold: true,
+        };
+      });
+
+      expect(responseBody).toEqual(questionsWithNewCategory);
+
+      responseBody.map((response) =>
+        expect(Date.parse(response.updated_at)).toBeGreaterThan(
+          Date.parse(response.created_at),
+        ),
+      );
+    });
   });
 
   describe("Anonymous user", () => {

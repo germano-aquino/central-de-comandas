@@ -9,6 +9,7 @@ let questionsByType = {
   both: [],
   noSection: [],
 };
+let questionsIsMold = [];
 let questionsBySection = [];
 
 beforeAll(async () => {
@@ -207,6 +208,31 @@ describe("GET /api/v1/questions", () => {
 
       expect(responseBody).toEqual(questionsBySection[3]);
     });
+
+    test("Retrieve questions with is mold property", async () => {
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, question.addFeatures);
+
+      const params = new URLSearchParams();
+      params.set("is_mold", "true");
+
+      const response = await fetch(
+        `http://localhost:3000/api/v1/questions?${params}`,
+        {
+          method: "GET",
+          headers: {
+            Cookie: `session_id=${loggedUser.token}`,
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      expect(response.status).toBe(200);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toEqual(questionsIsMold);
+    });
   });
 
   describe("Anonymous user", () => {
@@ -242,6 +268,7 @@ async function createQuestions() {
     questionsByType[key] = convertDateToISOString(questionsByType[key]);
   });
   questionsBySection = questionsBySection.map(convertDateToISOString);
+  questionsIsMold = convertDateToISOString(questionsIsMold);
 }
 
 async function createQuestionsToEachSection(sectionIds, questionsAmount = 3) {
@@ -252,6 +279,7 @@ async function createQuestionsToEachSection(sectionIds, questionsAmount = 3) {
         sectionId: id,
       },
     );
+
     const discursiveQuestions = await orchestrator.createQuestions(
       questionsAmount,
       {
@@ -259,24 +287,67 @@ async function createQuestionsToEachSection(sectionIds, questionsAmount = 3) {
         type: "discursive",
       },
     );
+
     const bothQuestions = await orchestrator.createQuestions(questionsAmount, {
       sectionId: id,
       type: "both",
     });
 
+    const isMoldMultipleChoiceQuestions = await orchestrator.createQuestions(
+      questionsAmount,
+      {
+        sectionId: id,
+        isMold: true,
+      },
+    );
+    const isMoldDiscursiveQuestions = await orchestrator.createQuestions(
+      questionsAmount,
+      {
+        sectionId: id,
+        type: "discursive",
+        isMold: true,
+      },
+    );
+    const isMoldBothQuestions = await orchestrator.createQuestions(
+      questionsAmount,
+      {
+        sectionId: id,
+        type: "both",
+        isMold: true,
+      },
+    );
+
+    questionsIsMold.push(
+      ...isMoldMultipleChoiceQuestions,
+      ...isMoldDiscursiveQuestions,
+      ...isMoldBothQuestions,
+    );
+
     questionsBySection.push([
       ...multipleChoiceQuestions,
       ...discursiveQuestions,
       ...bothQuestions,
+      ...isMoldMultipleChoiceQuestions,
+      ...isMoldDiscursiveQuestions,
+      ...isMoldBothQuestions,
     ]);
     questionsByType.all.push(
       ...multipleChoiceQuestions,
       ...discursiveQuestions,
       ...bothQuestions,
+      ...isMoldMultipleChoiceQuestions,
+      ...isMoldDiscursiveQuestions,
+      ...isMoldBothQuestions,
     );
-    questionsByType["multiple-choice"].push(...multipleChoiceQuestions);
-    questionsByType.discursive.push(...discursiveQuestions);
-    questionsByType.both.push(...bothQuestions);
+    questionsByType["multiple-choice"].push(
+      ...multipleChoiceQuestions,
+      ...isMoldMultipleChoiceQuestions,
+    );
+    questionsByType.discursive.push(
+      ...discursiveQuestions,
+      ...isMoldDiscursiveQuestions,
+    );
+    questionsByType.both.push(...bothQuestions, ...isMoldBothQuestions);
   }
   const noSectionQuestions = await orchestrator.createQuestions();
 
