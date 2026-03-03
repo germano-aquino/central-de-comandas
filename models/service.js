@@ -14,9 +14,9 @@ async function create(serviceInputValues) {
       text: `
         INSERT INTO
           services
-          (name, price, category_id)
+          (name, price, category_id, is_mold)
         VALUES
-          ($1, $2, $3)
+          ($1, $2, $3, $4)
         RETURNING
           *
       ;`,
@@ -24,6 +24,7 @@ async function create(serviceInputValues) {
         serviceInputValues.name,
         serviceInputValues.price,
         serviceInputValues.category_id,
+        serviceInputValues.is_mold,
       ],
     });
 
@@ -38,6 +39,37 @@ async function create(serviceInputValues) {
       await findCategoryValidById(serviceInputValues.category_id);
     } else {
       serviceInputValues.category_id = null;
+    }
+
+    if (!("is_mold" in serviceInputValues)) {
+      serviceInputValues.is_mold = false;
+    }
+
+    if (typeof serviceInputValues.is_mold !== "boolean") {
+      throw new ValidationError({
+        message: "O tipo da propriedade is_mold é inválido.",
+        action:
+          "Modifique a propriedade is_mold para um booleano e tente novamente.",
+      });
+    }
+
+    if (!("price" in serviceInputValues)) {
+      throw new ValidationError({
+        message: "A propriedade price está ausente.",
+        action:
+          "Envie uma propriedade price com o preço do serviço em centavos.",
+      });
+    }
+
+    if (
+      !Number.isInteger(serviceInputValues.price) ||
+      serviceInputValues.price <= 0
+    ) {
+      throw new ValidationError({
+        message: "A propriedade price deve ser um número inteiro positivo.",
+        action:
+          "Envie uma propriedade price com o preço do serviço em centavos.",
+      });
     }
 
     await validateUniqueName(serviceInputValues.name);
