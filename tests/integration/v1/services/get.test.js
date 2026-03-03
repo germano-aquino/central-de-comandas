@@ -9,14 +9,12 @@ beforeAll(async () => {
 
 describe("GET /api/v1/services", () => {
   describe("Default user", () => {
-    test("Without permission", async () => {
-      const inactiveUser = await orchestrator.createUser();
-      const activatedUser = await orchestrator.activateUser(inactiveUser);
-      const userSession = await orchestrator.createSession(activatedUser);
+    test("With required data", async () => {
+      const loggedUser = await orchestrator.createLoggedUser();
 
       const response = await fetch("http://localhost:3000/api/v1/services", {
         headers: {
-          Cookie: `session_id=${userSession.token}`,
+          Cookie: `session_id=${loggedUser.token}`,
         },
       });
 
@@ -31,8 +29,10 @@ describe("GET /api/v1/services", () => {
         status_code: 403,
       });
     });
+  });
 
-    test("With permission and without category filtering", async () => {
+  describe("Allowed user", () => {
+    test("Without category filtering", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
       await orchestrator.addFeatures(loggedUser, service.addFeatures);
 
@@ -58,7 +58,7 @@ describe("GET /api/v1/services", () => {
       expect(responseBody).toEqual(services);
     });
 
-    test("With permission and with category filtering", async () => {
+    test("With category filtering", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
       await orchestrator.addFeatures(loggedUser, service.addFeatures);
 
@@ -78,6 +78,88 @@ describe("GET /api/v1/services", () => {
       await orchestrator.createServices(3, { category_id: categories[2].id });
 
       const params = new URLSearchParams();
+      params.append("category_name", categories[0].name);
+
+      const response = await fetch(
+        `http://localhost:3000/api/v1/services?${params}`,
+        {
+          headers: {
+            Cookie: `session_id=${loggedUser.token}`,
+          },
+        },
+      );
+
+      expect(response.status).toBe(200);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toEqual(selectedServices);
+    });
+
+    test("With is mold filtering", async () => {
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, service.addFeatures);
+
+      const categories = await orchestrator.createSections(3);
+
+      let selectedServices = await orchestrator.createServices(7, {
+        categoryId: categories[0].id,
+        isMold: true,
+      });
+      selectedServices = selectedServices.map((service) => {
+        return {
+          ...service,
+          created_at: service.created_at.toISOString(),
+          updated_at: service.updated_at.toISOString(),
+        };
+      });
+      await orchestrator.createServices(5, { category_id: categories[1].id });
+      await orchestrator.createServices(3, { category_id: categories[2].id });
+
+      const params = new URLSearchParams();
+      params.append("is_mold", "true");
+
+      const response = await fetch(
+        `http://localhost:3000/api/v1/services?${params}`,
+        {
+          headers: {
+            Cookie: `session_id=${loggedUser.token}`,
+          },
+        },
+      );
+
+      expect(response.status).toBe(200);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toEqual(selectedServices);
+    });
+
+    test("With category and is mold filtering", async () => {
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, service.addFeatures);
+
+      const categories = await orchestrator.createSections(3);
+
+      let selectedServices = await orchestrator.createServices(7, {
+        categoryId: categories[0].id,
+        isMold: true,
+      });
+      selectedServices = selectedServices.map((service) => {
+        return {
+          ...service,
+          created_at: service.created_at.toISOString(),
+          updated_at: service.updated_at.toISOString(),
+        };
+      });
+      await orchestrator.createServices(5, {
+        category_id: categories[1].id,
+        isMold: true,
+      });
+      await orchestrator.createServices(3, { category_id: categories[2].id });
+
+      const params = new URLSearchParams();
+      params.append("is_mold", "true");
       params.append("category_name", categories[0].name);
 
       const response = await fetch(

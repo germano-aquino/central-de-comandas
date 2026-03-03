@@ -100,17 +100,19 @@ async function createServices(length = 5, serviceDefaultValues = {}) {
       serviceDefaultValues?.name,
       serviceDefaultValues?.price,
       serviceDefaultValues?.categoryId,
+      serviceDefaultValues?.isMold,
     );
     services.push(newService);
   }
   return services;
 }
 
-async function createService(serviceName, servicePrice, categoryId) {
+async function createService(serviceName, servicePrice, categoryId, isMold) {
   const serviceInputValues = {
     name: serviceName || faker.internet.username().replace(/[.-]/g, ""),
     price: servicePrice || faker.number.int({ min: 99, max: 9999 }),
     category_id: categoryId || null,
+    is_mold: isMold || false,
   };
   return await service.create(serviceInputValues);
 }

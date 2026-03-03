@@ -242,8 +242,8 @@ async function deleteManyByIdArray(serviceIds) {
   }
 }
 
-async function retrieveAll(categoryName) {
-  const storedServices = await runSelectQuery(categoryName);
+async function retrieveAll(categoryName, isMold) {
+  const storedServices = await runSelectQuery(categoryName, isMold);
 
   return storedServices;
 
@@ -255,6 +255,12 @@ async function retrieveAll(categoryName) {
       const categoryId = await getCategoryIdByName(categoryName);
       values.push(categoryId);
       query += ` AND category_id = $${values.length}`;
+    }
+
+    if (isMold) {
+      const validIsMold = getValidBoolean(isMold);
+      values.push(validIsMold);
+      query += ` AND is_mold = $${values.length}`;
     }
 
     query += ";";
@@ -279,6 +285,16 @@ async function retrieveAll(categoryName) {
 
       throw error;
     }
+  }
+
+  function getValidBoolean(isMold) {
+    if (isMold.toLowerCase() === "true") return true;
+    if (isMold.toLowerCase() === "false") return false;
+    if (typeof isMold === "boolean") return isMold;
+    throw new ValidationError({
+      message: "Propriedade is_mold deve ser um booleano.",
+      action: "Envie um booleano como query params e tente novamente.",
+    });
   }
 }
 
