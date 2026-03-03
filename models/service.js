@@ -149,12 +149,23 @@ async function updateManyByIdArray(serviceInputValues) {
     if ("category_id" in serviceInputValues) {
       await findCategoryValidById(serviceInputValues.category_id);
     }
+
+    if ("is_mold" in serviceInputValues) {
+      if (typeof serviceInputValues.is_mold !== "boolean") {
+        throw new ValidationError({
+          message: "O tipo da propriedade is_mold é inválido.",
+          action:
+            "Modifique a propriedade is_mold para um booleano e tente novamente.",
+        });
+      }
+    }
   }
 
   async function runUpdateQuery(serviceInputValues) {
     const serviceIds = serviceInputValues?.service_ids || [];
     const price = serviceInputValues?.price || null;
     const categoryId = serviceInputValues?.category_id || null;
+    const isMold = serviceInputValues?.is_mold || null;
 
     const results = await database.query({
       text: `
@@ -163,13 +174,14 @@ async function updateManyByIdArray(serviceInputValues) {
         SET
           price = COALESCE($2, price),
           category_id = COALESCE($3, category_id),
+          is_mold = COALESCE($4, is_mold),
           updated_at = TIMEZONE('utc', NOW())
         WHERE
           id = ANY($1)
         RETURNING
           *
       ;`,
-      values: [serviceIds, price, categoryId],
+      values: [serviceIds, price, categoryId, isMold],
     });
 
     return results.rows;
