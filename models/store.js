@@ -2,24 +2,29 @@ import database from "@/infra/database";
 import user from "./user";
 import { NotFoundError, ValidationError } from "@/infra/errors";
 
+import { version as uuidVersion } from "uuid";
+import mold from "./mold";
+
 async function create(storeInputValues) {
   await validateUniqueName(storeInputValues.name);
+  const storeName = storeInputValues.name;
+  const moldId = storeInputValues?.mold_id ? storeInputValues.mold_id : null;
 
-  const storeCreated = await runInsertQuery(storeInputValues.name);
+  const storeCreated = await runInsertQuery(storeName, moldId);
   return storeCreated;
 
-  async function runInsertQuery(storeName) {
+  async function runInsertQuery(storeName, moldId) {
     const results = await database.query({
       text: `
         INSERT INTO
           stores
-          (name)
+          (name, mold_id)
         VALUES
-          ($1)
+          ($1, $2)
         RETURNING
           *
       ;`,
-      values: [storeName],
+      values: [storeName, moldId],
     });
 
     return results.rows[0];
@@ -65,14 +70,22 @@ async function update(storeInputValues, storeName) {
         }
       }
 
+      if ("mold_id" in inputValues) {
+        if (uuidVersion(inputValues.mold_id) !== 4) {
+          throw new ValidationError({
+            message:
+              "A propriedade mold_id está inválida. Não é um uuid versão 4.",
+            action: "Modifique o mold_id para um id válido.",
+          });
+        }
+
+        await mold.findOneValidById(inputValues.mold_id);
+      } else inputValues.mold_id = null;
+
       await findOneValidByName(storeName);
     } catch (error) {
       if (error instanceof NotFoundError) {
-        throw new ValidationError({
-          message: `Não é possível editar ${storeName}. Loja inexistente.`,
-          action:
-            "Verifique o nome da loja que deseja editar e tente novamente.",
-        });
+        throw new ValidationError(error);
       } else throw error;
     }
   }
@@ -83,14 +96,15 @@ async function update(storeInputValues, storeName) {
         UPDATE
           stores
         SET
-          name = $1,
+          name = COALESCE($2, name),
+          mold_id = COALESCE($3, mold_id),
           updated_at = TIMEZONE('utc', NOW())
         WHERE
-          name = $2
+          name = $1
         RETURNING
           *
       ;`,
-      values: [storeInputValues.name, oldName],
+      values: [oldName, storeInputValues.name, storeInputValues.mold_id],
     });
 
     return results.rows[0];
