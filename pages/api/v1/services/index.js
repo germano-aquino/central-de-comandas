@@ -22,8 +22,9 @@ async function postHandler(request, response) {
 
 async function getHandler(request, response) {
   const categoryName = request.query?.category_name;
+  const isMold = request.query?.is_mold;
 
-  const storedServices = await service.retrieveAll(categoryName);
+  const storedServices = await service.retrieveAll(categoryName, isMold);
 
   return response.status(200).json(storedServices);
 }

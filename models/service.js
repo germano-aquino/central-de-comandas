@@ -14,9 +14,9 @@ async function create(serviceInputValues) {
       text: `
         INSERT INTO
           services
-          (name, price, category_id)
+          (name, price, category_id, is_mold)
         VALUES
-          ($1, $2, $3)
+          ($1, $2, $3, $4)
         RETURNING
           *
       ;`,
@@ -24,6 +24,7 @@ async function create(serviceInputValues) {
         serviceInputValues.name,
         serviceInputValues.price,
         serviceInputValues.category_id,
+        serviceInputValues.is_mold,
       ],
     });
 
@@ -38,6 +39,37 @@ async function create(serviceInputValues) {
       await findCategoryValidById(serviceInputValues.category_id);
     } else {
       serviceInputValues.category_id = null;
+    }
+
+    if (!("is_mold" in serviceInputValues)) {
+      serviceInputValues.is_mold = false;
+    }
+
+    if (typeof serviceInputValues.is_mold !== "boolean") {
+      throw new ValidationError({
+        message: "O tipo da propriedade is_mold é inválido.",
+        action:
+          "Modifique a propriedade is_mold para um booleano e tente novamente.",
+      });
+    }
+
+    if (!("price" in serviceInputValues)) {
+      throw new ValidationError({
+        message: "A propriedade price está ausente.",
+        action:
+          "Envie uma propriedade price com o preço do serviço em centavos.",
+      });
+    }
+
+    if (
+      !Number.isInteger(serviceInputValues.price) ||
+      serviceInputValues.price <= 0
+    ) {
+      throw new ValidationError({
+        message: "A propriedade price deve ser um número inteiro positivo.",
+        action:
+          "Envie uma propriedade price com o preço do serviço em centavos.",
+      });
     }
 
     await validateUniqueName(serviceInputValues.name);
@@ -67,6 +99,16 @@ async function update(serviceName, serviceInputValues) {
       await findCategoryValidById(serviceInputValues.category_id);
     }
 
+    if ("is_mold" in serviceInputValues) {
+      if (typeof serviceInputValues.is_mold !== "boolean") {
+        throw new ValidationError({
+          message: "O tipo da propriedade is_mold é inválido.",
+          action:
+            "Modifique a propriedade is_mold para um booleano e tente novamente.",
+        });
+      }
+    }
+
     const newServiceValues = { ...currentService, ...serviceInputValues };
     return newServiceValues;
   }
@@ -80,6 +122,7 @@ async function update(serviceName, serviceInputValues) {
           name = $2,
           price = $3,
           category_id = $4,
+          is_mold = $5,
           updated_at = TIMEZONE('utc', NOW())
         WHERE
           LOWER(name) = LOWER($1)
@@ -91,6 +134,7 @@ async function update(serviceName, serviceInputValues) {
         newServiceValues.name,
         newServiceValues.price,
         newServiceValues.category_id,
+        newServiceValues.is_mold,
       ],
     });
 
@@ -117,12 +161,23 @@ async function updateManyByIdArray(serviceInputValues) {
     if ("category_id" in serviceInputValues) {
       await findCategoryValidById(serviceInputValues.category_id);
     }
+
+    if ("is_mold" in serviceInputValues) {
+      if (typeof serviceInputValues.is_mold !== "boolean") {
+        throw new ValidationError({
+          message: "O tipo da propriedade is_mold é inválido.",
+          action:
+            "Modifique a propriedade is_mold para um booleano e tente novamente.",
+        });
+      }
+    }
   }
 
   async function runUpdateQuery(serviceInputValues) {
     const serviceIds = serviceInputValues?.service_ids || [];
     const price = serviceInputValues?.price || null;
     const categoryId = serviceInputValues?.category_id || null;
+    const isMold = serviceInputValues?.is_mold || null;
 
     const results = await database.query({
       text: `
@@ -131,13 +186,14 @@ async function updateManyByIdArray(serviceInputValues) {
         SET
           price = COALESCE($2, price),
           category_id = COALESCE($3, category_id),
+          is_mold = COALESCE($4, is_mold),
           updated_at = TIMEZONE('utc', NOW())
         WHERE
           id = ANY($1)
         RETURNING
           *
       ;`,
-      values: [serviceIds, price, categoryId],
+      values: [serviceIds, price, categoryId, isMold],
     });
 
     return results.rows;
@@ -210,8 +266,8 @@ async function deleteManyByIdArray(serviceIds) {
   }
 }
 
-async function retrieveAll(categoryName) {
-  const storedServices = await runSelectQuery(categoryName);
+async function retrieveAll(categoryName, isMold) {
+  const storedServices = await runSelectQuery(categoryName, isMold);
 
   return storedServices;
 
@@ -223,6 +279,12 @@ async function retrieveAll(categoryName) {
       const categoryId = await getCategoryIdByName(categoryName);
       values.push(categoryId);
       query += ` AND category_id = $${values.length}`;
+    }
+
+    if (isMold) {
+      const validIsMold = getValidBoolean(isMold);
+      values.push(validIsMold);
+      query += ` AND is_mold = $${values.length}`;
     }
 
     query += ";";
@@ -247,6 +309,16 @@ async function retrieveAll(categoryName) {
 
       throw error;
     }
+  }
+
+  function getValidBoolean(isMold) {
+    if (isMold.toLowerCase() === "true") return true;
+    if (isMold.toLowerCase() === "false") return false;
+    if (typeof isMold === "boolean") return isMold;
+    throw new ValidationError({
+      message: "Propriedade is_mold deve ser um booleano.",
+      action: "Envie um booleano como query params e tente novamente.",
+    });
   }
 }
 

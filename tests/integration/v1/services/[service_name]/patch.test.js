@@ -9,7 +9,7 @@ beforeAll(async () => {
 
 describe("PATCH /api/v1/services/[service_name]", () => {
   describe("Default user", () => {
-    test("With valid data and without permission", async () => {
+    test("With valid data", async () => {
       const inactiveUser = await orchestrator.createUser();
       const activatedUser = await orchestrator.activateUser(inactiveUser);
       const userSession = await orchestrator.createSession(activatedUser);
@@ -41,8 +41,10 @@ describe("PATCH /api/v1/services/[service_name]", () => {
         status_code: 403,
       });
     });
+  });
 
-    test("With permission and update name", async () => {
+  describe("Allowed user", () => {
+    test("Update name", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
       await orchestrator.addFeatures(loggedUser, serviceModel.addFeatures);
 
@@ -77,7 +79,7 @@ describe("PATCH /api/v1/services/[service_name]", () => {
       );
     });
 
-    test("With permission and update price", async () => {
+    test("WWith new price", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
       await orchestrator.addFeatures(loggedUser, serviceModel.addFeatures);
 
@@ -112,7 +114,7 @@ describe("PATCH /api/v1/services/[service_name]", () => {
       );
     });
 
-    test("With permission and update category id", async () => {
+    test("With new category id", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
       await orchestrator.addFeatures(loggedUser, serviceModel.addFeatures);
 
@@ -152,7 +154,42 @@ describe("PATCH /api/v1/services/[service_name]", () => {
       );
     });
 
-    test("With permission and update every information", async () => {
+    test("With new is mold", async () => {
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, serviceModel.addFeatures);
+
+      const service = await orchestrator.createService();
+
+      const response = await fetch(
+        `http://localhost:3000/api/v1/services/${service.name}`,
+        {
+          method: "PATCH",
+          headers: {
+            Cookie: `session_id=${loggedUser.token}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            is_mold: true,
+          }),
+        },
+      );
+
+      expect(response.status).toBe(200);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toEqual({
+        ...service,
+        is_mold: true,
+        updated_at: responseBody.updated_at,
+        created_at: service.created_at.toISOString(),
+      });
+      expect(Date.parse(responseBody.created_at)).toBeLessThan(
+        Date.parse(responseBody.updated_at),
+      );
+    });
+
+    test("With every information new", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
       await orchestrator.addFeatures(loggedUser, serviceModel.addFeatures);
 
@@ -171,6 +208,7 @@ describe("PATCH /api/v1/services/[service_name]", () => {
             name: "UpdateAllInfos",
             price: 6666,
             category_id: category.id,
+            is_mold: true,
           }),
         },
       );
@@ -184,6 +222,7 @@ describe("PATCH /api/v1/services/[service_name]", () => {
         name: "UpdateAllInfos",
         price: 6666,
         category_id: category.id,
+        is_mold: true,
         created_at: service.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });
@@ -192,7 +231,7 @@ describe("PATCH /api/v1/services/[service_name]", () => {
       );
     });
 
-    test("With permission and with different name case", async () => {
+    test("With different name case", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
       await orchestrator.addFeatures(loggedUser, serviceModel.addFeatures);
 
@@ -228,7 +267,7 @@ describe("PATCH /api/v1/services/[service_name]", () => {
       );
     });
 
-    test("With permission and nonexistent service name", async () => {
+    test("With nonexistent service name", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
       await orchestrator.addFeatures(loggedUser, serviceModel.addFeatures);
 

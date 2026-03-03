@@ -100,17 +100,19 @@ async function createServices(length = 5, serviceDefaultValues = {}) {
       serviceDefaultValues?.name,
       serviceDefaultValues?.price,
       serviceDefaultValues?.categoryId,
+      serviceDefaultValues?.isMold,
     );
     services.push(newService);
   }
   return services;
 }
 
-async function createService(serviceName, servicePrice, categoryId) {
+async function createService(serviceName, servicePrice, categoryId, isMold) {
   const serviceInputValues = {
     name: serviceName || faker.internet.username().replace(/[.-]/g, ""),
     price: servicePrice || faker.number.int({ min: 99, max: 9999 }),
     category_id: categoryId || null,
+    is_mold: isMold || false,
   };
   return await service.create(serviceInputValues);
 }
@@ -154,6 +156,7 @@ async function createQuestions(length = 5, questionDefaultValues = {}) {
       questionDefaultValues?.options,
       questionDefaultValues?.sectionId,
       questionDefaultValues?.optionMarked,
+      questionDefaultValues?.isMold,
     );
     questions.push(newQuestion);
   }
@@ -166,6 +169,7 @@ async function createQuestion(
   options,
   sectionId,
   optionMarked,
+  isMold,
 ) {
   const questionInputValues = {
     statement: statement || faker.lorem.sentence({ min: 3, max: 10 }),
@@ -173,6 +177,7 @@ async function createQuestion(
     options: options || ["Sim", "Não"],
     section_id: sectionId || null,
     option_marked: optionMarked || null,
+    is_mold: isMold || null,
   };
 
   return await question.create(questionInputValues);

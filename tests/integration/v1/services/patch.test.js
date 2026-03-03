@@ -9,7 +9,7 @@ beforeAll(async () => {
 
 describe("PATCH /api/v1/services", () => {
   describe("Default user", () => {
-    test("With valid data and without permission", async () => {
+    test("With valid data", async () => {
       const inactiveUser = await orchestrator.createUser();
       const activatedUser = await orchestrator.activateUser(inactiveUser);
       const userSession = await orchestrator.createSession(activatedUser);
@@ -40,8 +40,9 @@ describe("PATCH /api/v1/services", () => {
         status_code: 403,
       });
     });
-
-    test("With permission and new price", async () => {
+  });
+  describe("Allowed user", () => {
+    test("With valid new price", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
       await orchestrator.addFeatures(loggedUser, service.addFeatures);
 
@@ -80,7 +81,7 @@ describe("PATCH /api/v1/services", () => {
       );
     });
 
-    test("With permission and new category", async () => {
+    test("With new category", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
       await orchestrator.addFeatures(loggedUser, service.addFeatures);
 
@@ -121,7 +122,78 @@ describe("PATCH /api/v1/services", () => {
       );
     });
 
-    test("With permission and nonexistent category", async () => {
+    test("With new is mold", async () => {
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, service.addFeatures);
+
+      const services = await orchestrator.createServices(3);
+      const serviceIds = services.map((service) => service.id);
+
+      const response = await fetch("http://localhost:3000/api/v1/services", {
+        method: "PATCH",
+        headers: {
+          Cookie: `session_id=${loggedUser.token}`,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          service_ids: serviceIds,
+          is_mold: true,
+        }),
+      });
+
+      expect(response.status).toBe(200);
+
+      const responseBody = await response.json();
+
+      const servicesWithNewCategory = services.map((service) => {
+        return {
+          ...service,
+          created_at: service.created_at.toISOString(),
+          updated_at: responseBody[0].updated_at,
+          is_mold: true,
+        };
+      });
+
+      expect(responseBody).toEqual(servicesWithNewCategory);
+
+      expect(Date.parse(responseBody[0].updated_at)).toBeGreaterThan(
+        Date.parse(responseBody[0].created_at),
+      );
+    });
+
+    test("With invalid is mold porperty", async () => {
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, service.addFeatures);
+
+      const services = await orchestrator.createServices(3);
+      const serviceIds = services.map((service) => service.id);
+
+      const response = await fetch("http://localhost:3000/api/v1/services", {
+        method: "PATCH",
+        headers: {
+          Cookie: `session_id=${loggedUser.token}`,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          service_ids: serviceIds,
+          is_mold: "esc",
+        }),
+      });
+
+      expect(response.status).toBe(400);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toEqual({
+        name: "ValidationError",
+        message: "O tipo da propriedade is_mold é inválido.",
+        action:
+          "Modifique a propriedade is_mold para um booleano e tente novamente.",
+        status_code: 400,
+      });
+    });
+
+    test("With nonexistent category", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
       await orchestrator.addFeatures(loggedUser, service.addFeatures);
 
@@ -152,7 +224,7 @@ describe("PATCH /api/v1/services", () => {
       });
     });
 
-    test("With permission and new service name", async () => {
+    test("With new service name", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
       await orchestrator.addFeatures(loggedUser, service.addFeatures);
 
@@ -184,7 +256,7 @@ describe("PATCH /api/v1/services", () => {
       });
     });
 
-    test("With permission and missing service ids array", async () => {
+    test("With missing service ids array", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
       await orchestrator.addFeatures(loggedUser, service.addFeatures);
 

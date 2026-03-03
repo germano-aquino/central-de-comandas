@@ -27,6 +27,8 @@ async function create(questionInputValues) {
 
     validValues.answer = inputValues?.answer ? inputValues.answer : null;
 
+    validValues.isMold = inputValues?.is_mold ? inputValues.is_mold : false;
+
     return validValues;
   }
 
@@ -81,9 +83,9 @@ async function create(questionInputValues) {
       text: `
         INSERT INTO
           questions
-          (statement, type, options, option_marked, answer, section_id)
+          (statement, type, options, option_marked, answer, section_id, is_mold)
         VALUES
-          ($1, $2, $3, $4, $5, $6)
+          ($1, $2, $3, $4, $5, $6, $7)
         RETURNING
           *
       ;`,
@@ -94,6 +96,7 @@ async function create(questionInputValues) {
         questionObject.optionMarked,
         questionObject.answer,
         questionObject.sectionId,
+        questionObject.isMold,
       ],
     });
 
@@ -128,6 +131,7 @@ async function update(questionInputValues, queryParams) {
     );
     validObject.answer = inputValues?.answer ? inputValues.answer : null;
     validObject.sectionId = await getValidSectionId(inputValues);
+    validObject.isMold = inputValues?.is_mold ? inputValues.is_mold : null;
 
     return validObject;
   }
@@ -225,6 +229,7 @@ async function update(questionInputValues, queryParams) {
       questionObject.options,
       questionObject.optionMarked,
       questionObject.answer,
+      questionObject.isMold,
     ];
     let query = `UPDATE
           questions
@@ -234,13 +239,14 @@ async function update(questionInputValues, queryParams) {
           options = COALESCE($4, options),
           option_marked = COALESCE($5, option_marked),
           answer = COALESCE($6, answer),
+          is_mold = COALESCE($7, is_mold),
           updated_at = TIMEZONE('utc', NOW()),`;
 
     if (questionObject.removeSection) {
       query += " section_id = NULL";
     } else {
       values.push(questionObject.sectionId);
-      query += " section_id = COALESCE($7, section_id)";
+      query += " section_id = COALESCE($8, section_id)";
     }
 
     query += " WHERE id = $1 RETURNING *;";
@@ -279,6 +285,12 @@ async function retrieveAll(queryParams) {
       const type = getValidType({ type: queryParams.question_type });
       values.push(type);
       query += ` AND type = $${values.length}`;
+    }
+
+    if ("is_mold" in queryParams) {
+      const isMold = queryParams.is_mold;
+      values.push(isMold);
+      query += ` AND is_mold = $${values.length}`;
     }
 
     query += ";";

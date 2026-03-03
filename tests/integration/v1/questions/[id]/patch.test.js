@@ -605,6 +605,44 @@ describe("PATCH /api/v1/questions/[id]", () => {
         status_code: 400,
       });
     });
+
+    test("With is mold new value", async () => {
+      const loggedUser = await orchestrator.createLoggedUser();
+      await orchestrator.addFeatures(loggedUser, question.addFeatures);
+
+      const editedQuestion = await orchestrator.createQuestion();
+
+      const response = await fetch(
+        `http://localhost:3000/api/v1/questions/${editedQuestion.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            Cookie: `session_id=${loggedUser.token}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            option_marked: "Sim",
+            is_mold: true,
+          }),
+        },
+      );
+
+      expect(response.status).toBe(200);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toEqual({
+        ...editedQuestion,
+        created_at: editedQuestion.created_at.toISOString(),
+        updated_at: responseBody.updated_at,
+        option_marked: "Sim",
+        is_mold: true,
+      });
+
+      expect(Date.parse(responseBody.updated_at)).toBeGreaterThan(
+        Date.parse(responseBody.created_at),
+      );
+    });
   });
 
   describe("Anonymous user", () => {

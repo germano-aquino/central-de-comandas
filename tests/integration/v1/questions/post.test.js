@@ -11,7 +11,7 @@ beforeAll(async () => {
 
 describe("POST /api/v1/questions", () => {
   describe("Default user", () => {
-    test("Without permission and valida data", async () => {
+    test("With valid data", async () => {
       const inactiveUser = await orchestrator.createUser();
       const activatedUser = await orchestrator.activateUser(inactiveUser);
       const userSession = await orchestrator.createSession(activatedUser);
@@ -70,6 +70,7 @@ describe("POST /api/v1/questions", () => {
         expect(responseBody.options).toEqual(["42", "Live"]);
         expect(responseBody.option_marked).toBeNull();
         expect(responseBody.answer).toBeNull();
+        expect(responseBody.is_mold).toBe(false);
         expect(uuidVersion(responseBody.id)).toBe(4);
         expect(Date.parse(responseBody.created_at)).not.toBeNaN();
         expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
@@ -113,6 +114,7 @@ describe("POST /api/v1/questions", () => {
         expect(responseBody.section_id).toBe(formSection.id);
         expect(responseBody.option_marked).toBeNull();
         expect(responseBody.answer).toBeNull();
+        expect(responseBody.is_mold).toBe(false);
         expect(uuidVersion(responseBody.id)).toBe(4);
         expect(Date.parse(responseBody.created_at)).not.toBeNaN();
         expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
@@ -180,6 +182,7 @@ describe("POST /api/v1/questions", () => {
         expect(responseBody.section_id).toBeNull();
         expect(responseBody.option_marked).toBeNull();
         expect(responseBody.answer).toBeNull();
+        expect(responseBody.is_mold).toBe(false);
         expect(uuidVersion(responseBody.id)).toBe(4);
         expect(Date.parse(responseBody.created_at)).not.toBeNaN();
         expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
@@ -360,6 +363,41 @@ describe("POST /api/v1/questions", () => {
           status_code: 400,
         });
       });
+
+      test("With required data and is mold property", async () => {
+        const loggedUser = await orchestrator.createLoggedUser();
+        await orchestrator.addFeatures(loggedUser, question.addFeatures);
+
+        const response = await fetch("http://localhost:3000/api/v1/questions", {
+          method: "POST",
+          headers: {
+            Cookie: `session_id=${loggedUser.token}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            statement: "Is mold question",
+            type: "multiple-choice",
+            options: ["right", "left"],
+            option_marked: "left",
+            is_mold: true,
+          }),
+        });
+
+        expect(response.status).toBe(201);
+
+        const responseBody = await response.json();
+
+        expect(responseBody.statement).toBe("Is mold question");
+        expect(responseBody.type).toBe("multiple-choice");
+        expect(responseBody.options).toEqual(["right", "left"]);
+        expect(responseBody.section_id).toBeNull();
+        expect(responseBody.option_marked).toBe("left");
+        expect(responseBody.answer).toBeNull();
+        expect(responseBody.is_mold).toBe(true);
+        expect(uuidVersion(responseBody.id)).toBe(4);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      });
     });
 
     describe("Discursive type", () => {
@@ -388,6 +426,7 @@ describe("POST /api/v1/questions", () => {
         expect(responseBody.options).toEqual([]);
         expect(responseBody.option_marked).toBeNull();
         expect(responseBody.answer).toBeNull();
+        expect(responseBody.is_mold).toBe(false);
         expect(uuidVersion(responseBody.id)).toBe(4);
         expect(Date.parse(responseBody.created_at)).not.toBeNaN();
         expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
@@ -427,6 +466,42 @@ describe("POST /api/v1/questions", () => {
         expect(responseBody.section_id).toBe(formSection.id);
         expect(responseBody.option_marked).toBeNull();
         expect(responseBody.answer).toBeNull();
+        expect(responseBody.is_mold).toBe(false);
+        expect(uuidVersion(responseBody.id)).toBe(4);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      });
+
+      test("With required data and is mold property", async () => {
+        const loggedUser = await orchestrator.createLoggedUser();
+        await orchestrator.addFeatures(loggedUser, question.addFeatures);
+
+        const response = await fetch("http://localhost:3000/api/v1/questions", {
+          method: "POST",
+          headers: {
+            Cookie: `session_id=${loggedUser.token}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            statement: "Do you have any health condition?",
+            type: "discursive",
+            answer: "Yes I do.",
+            is_mold: true,
+          }),
+        });
+
+        expect(response.status).toBe(201);
+
+        const responseBody = await response.json();
+
+        expect(responseBody.statement).toBe(
+          "Do you have any health condition?",
+        );
+        expect(responseBody.type).toBe("discursive");
+        expect(responseBody.options).toEqual([]);
+        expect(responseBody.option_marked).toBeNull();
+        expect(responseBody.answer).toBe("Yes I do.");
+        expect(responseBody.is_mold).toBe(true);
         expect(uuidVersion(responseBody.id)).toBe(4);
         expect(Date.parse(responseBody.created_at)).not.toBeNaN();
         expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
@@ -462,6 +537,7 @@ describe("POST /api/v1/questions", () => {
         expect(responseBody.options).toEqual(["EcoTurism", "Gastronomic"]);
         expect(responseBody.option_marked).toBeNull();
         expect(responseBody.answer).toBeNull();
+        expect(responseBody.is_mold).toBe(false);
         expect(uuidVersion(responseBody.id)).toBe(4);
         expect(Date.parse(responseBody.created_at)).not.toBeNaN();
         expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
@@ -497,6 +573,7 @@ describe("POST /api/v1/questions", () => {
         expect(responseBody.section_id).toBe(formSection.id);
         expect(responseBody.option_marked).toBeNull();
         expect(responseBody.answer).toBeNull();
+        expect(responseBody.is_mold).toBe(false);
         expect(uuidVersion(responseBody.id)).toBe(4);
         expect(Date.parse(responseBody.created_at)).not.toBeNaN();
         expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
