@@ -99,6 +99,16 @@ async function update(serviceName, serviceInputValues) {
       await findCategoryValidById(serviceInputValues.category_id);
     }
 
+    if ("is_mold" in serviceInputValues) {
+      if (typeof serviceInputValues.is_mold !== "boolean") {
+        throw new ValidationError({
+          message: "O tipo da propriedade is_mold é inválido.",
+          action:
+            "Modifique a propriedade is_mold para um booleano e tente novamente.",
+        });
+      }
+    }
+
     const newServiceValues = { ...currentService, ...serviceInputValues };
     return newServiceValues;
   }
@@ -112,6 +122,7 @@ async function update(serviceName, serviceInputValues) {
           name = $2,
           price = $3,
           category_id = $4,
+          is_mold = $5,
           updated_at = TIMEZONE('utc', NOW())
         WHERE
           LOWER(name) = LOWER($1)
@@ -123,6 +134,7 @@ async function update(serviceName, serviceInputValues) {
         newServiceValues.name,
         newServiceValues.price,
         newServiceValues.category_id,
+        newServiceValues.is_mold,
       ],
     });
 
