@@ -136,8 +136,8 @@ describe("PATCH /api/v1/stores/[store_name]", () => {
 
       expect(responseBody).toEqual({
         name: "ValidationError",
-        message: `Não é possível editar NonexistentStore. Loja inexistente.`,
-        action: "Verifique o nome da loja que deseja editar e tente novamente.",
+        message: "Não existe uma loja com esse nome.",
+        action: "Confirme o nome da loja e tente novamente.",
         status_code: 400,
       });
     });
