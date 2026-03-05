@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -18,14 +16,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Plus, Pencil, Trash2, Package } from "lucide-react";
 import { toast } from "sonner";
 import { Header } from "@/components/Header";
@@ -35,6 +25,7 @@ import { ForbiddenError } from "@/infra/errors";
 import authorization from "@/models/authorization";
 import user from "@/models/user";
 import session from "@/models/session";
+import { ServiceDialog } from "@/components/ServiceDialog";
 
 function ManageServices({ clientServices, clientCategories }) {
   const [services, setServices] = useState(clientServices);
@@ -219,79 +210,16 @@ function ManageServices({ clientServices, clientCategories }) {
       </div>
 
       {/* Dialog for Create/Edit */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>
-              {editingService ? "Editar Serviço" : "Novo Serviço"}
-            </DialogTitle>
-            <DialogDescription>Preencha os dados do serviço.</DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Nome do Serviço *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  placeholder="Ex: Depilação Axilas"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="category">Categoria *</Label>
-                <Select
-                  value={formData.category}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, category: value })
-                  }
-                >
-                  <SelectTrigger id="category">
-                    <SelectValue placeholder="Selecione uma categoria" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {clientCategories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.name}>
-                        {cat.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="price">Preço (R$) *</Label>
-              <Input
-                id="price"
-                type="number"
-                step="0.01"
-                value={formData.price}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    price: parseFloat(e.target.value),
-                  })
-                }
-                placeholder="0.00"
-              />
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={handleCloseDialog}>
-              Cancelar
-            </Button>
-            <Button onClick={handleSave}>
-              {editingService ? "Salvar Alterações" : "Criar Serviço"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ServiceDialog
+        isDialogOpen={isDialogOpen}
+        setIsDialogOpen={setIsDialogOpen}
+        editingService={editingService}
+        formData={formData}
+        setFormData={setFormData}
+        clientCategories={clientCategories}
+        handleSave={handleSave}
+        handleCloseDialog={handleCloseDialog}
+      />
     </div>
   );
 }

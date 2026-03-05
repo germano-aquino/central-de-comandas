@@ -3,6 +3,7 @@ import orchestrator from "../../tests/orchestrator";
 import service from "@/models/service";
 import question from "@/models/question";
 import formSection from "@/models/formSection";
+import password from "@/models/password";
 
 const SERVICE_CATEGORIES = [
   "Depilação",
@@ -936,7 +937,14 @@ async function populateDatabase() {
     password: "123456",
   });
 
+  const forbiddenUser = await orchestrator.createUser({
+    username: "semAcesso",
+    email: "user@forbidden.com",
+    password: "123456",
+  });
+
   await orchestrator.activateUser(user);
+  await orchestrator.activateUser(forbiddenUser);
 
   await orchestrator.addFeatures(user, category.addFeatures);
   await orchestrator.addFeatures(user, service.addFeatures);
