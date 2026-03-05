@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -11,23 +10,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+
 import { Plus, Pencil, Trash2, FolderTree, GripVertical } from "lucide-react";
 import { toast } from "sonner";
 import { Header } from "@/components/Header";
+import { CategoryDialog } from "@/components/CategoryDialog";
 
 function ManageCategories() {
   const [categories, setCategories] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
-  const [formData, setFormData] = useState({ name: "", order: 0 });
 
   useEffect(() => {
     loadCategories();
@@ -47,51 +39,16 @@ function ManageCategories() {
     setCategories(newCategories);
   }
 
-  async function updateCategory() {
-    try {
-      const response = await fetch(
-        `/api/v1/categories/${editingCategory.name}`,
-        {
-          method: "PATCH",
-          headers: {
-            "content-type": "application/json",
-          },
-          body: JSON.stringify({
-            name: formData.name,
-          }),
-        },
+  function updateCategories(newCategory, isEditing) {
+    if (isEditing) {
+      const updated = categories.map((cat) =>
+        cat.id === editingCategory.id
+          ? { ...cat, name: newCategory.name, order: newCategory.order }
+          : cat,
       );
-      if (response.status === 200) {
-        toast.success("Categoria atualizada com sucesso!");
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error(error.message);
-    }
-  }
-
-  async function createCategory() {
-    try {
-      const response = await fetch(`/api/v1/categories/`, {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          name: formData.name,
-        }),
-      });
-      if (response.status === 201) {
-        const newCategory = await response.json();
-        return {
-          id: newCategory.id,
-          name: newCategory.name,
-          order: formData.order,
-        };
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error(error.message);
+      setCategories(updated);
+    } else {
+      setCategories([...categories, newCategory]);
     }
   }
 
@@ -107,46 +64,8 @@ function ManageCategories() {
   }
 
   function handleOpenDialog(category) {
-    if (category) {
-      setEditingCategory(category);
-      setFormData({ name: category.name, order: category.order });
-    } else {
-      setEditingCategory(null);
-      setFormData({ name: "", order: categories.length + 1 });
-    }
+    setEditingCategory(category ? category : null);
     setIsDialogOpen(true);
-  }
-
-  function handleCloseDialog() {
-    setIsDialogOpen(false);
-    setEditingCategory(null);
-    setFormData({ name: "", order: 0 });
-  }
-
-  async function handleSave() {
-    if (!formData.name.trim()) {
-      toast.error("Por favor, preencha o nome da categoria");
-      return;
-    }
-
-    if (editingCategory) {
-      // Edit existing
-      await updateCategory();
-      const updated = categories.map((cat) =>
-        cat.id === editingCategory.id
-          ? { ...cat, name: formData.name, order: formData.order }
-          : cat,
-      );
-      setCategories(updated);
-      toast.success("Categoria atualizada com sucesso!");
-    } else {
-      //Create new category
-      const newCategory = await createCategory();
-      setCategories([...categories, newCategory]);
-      toast.success("Categoria criada com sucesso!");
-    }
-
-    handleCloseDialog();
   }
 
   async function handleDelete(categoryName) {
@@ -248,61 +167,89 @@ function ManageCategories() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Dialog for Create/Edit */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {editingCategory ? "Editar Categoria" : "Nova Categoria"}
-            </DialogTitle>
-            <DialogDescription>
-              Preencha os dados da categoria de serviços.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nome da Categoria</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                placeholder="Ex: Depilação"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="order">Ordem de Exibição</Label>
-              <Input
-                id="order"
-                type="number"
-                value={formData.order}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    order: parseInt(e.target.value) || 0,
-                  })
-                }
-                placeholder="1"
-              />
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={handleCloseDialog}>
-              Cancelar
-            </Button>
-            <Button onClick={handleSave}>
-              {editingCategory ? "Salvar Alterações" : "Criar Categoria"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <CategoryDialog
+        isDialogOpen={isDialogOpen}
+        setIsDialogOpen={setIsDialogOpen}
+        editingCategory={editingCategory}
+        setEditingCategory={setEditingCategory}
+        updateCategories={updateCategories}
+      />
     </div>
   );
 }
+
+// export async function getServerSideProps(context) {
+//   async function findLoggedUser(request) {
+//     const userSession = await session.findOneValidByToken(
+//       request.cookies?.session_id,
+//     );
+//     const userRequesting = await user.findOneById(userSession.user_id);
+
+//     return userRequesting;
+//   }
+
+//   function checkUserFeatures(user, features) {
+//     features.forEach((feature) => {
+//       if (!authorization.can(user, feature))
+//         throw new ForbiddenError({
+//           message: "O usuário não possui permissão para executar esta ação.",
+//           action: `Verifique se o usuário possui a feature "${feature}".`,
+//         });
+//     });
+//   }
+
+//   function getCategoryNameById(categories, id) {
+//     const selectedCategory = categories.find((cat) => cat.id === id);
+
+//     return selectedCategory ? selectedCategory.name : null;
+//   }
+
+//   async function getClientServiceObjects() {
+//     const categories = await category.retrieveAll();
+//     const services = await service.retrieveAll();
+
+//     const clientServices = services.map((service) => {
+//       return {
+//         name: service.name,
+//         category: getCategoryNameById(categories, service.category_id),
+//         category_id: service.category_id,
+//         price: service.price / 100,
+//       };
+//     });
+
+//     const clientCategories = categories.map((cat) => {
+//       return {
+//         id: cat.id,
+//         name: cat.name,
+//       };
+//     });
+
+//     return [clientServices, clientCategories];
+//   }
+
+//   try {
+//     const { req } = context;
+//     const userRequesting = await findLoggedUser(req);
+
+//     checkUserFeatures(userRequesting, ["read:category", "read:service"]);
+
+//     const [clientServices, clientCategories] = await getClientServiceObjects();
+
+//     return {
+//       props: {
+//         clientServices,
+//         clientCategories,
+//       },
+//     };
+//   } catch (error) {
+//     console.error(error);
+//     return {
+//       redirect: {
+//         destination: "/login",
+//         permanent: false,
+//       },
+//     };
+//   }
+// }
 
 export default ManageCategories;
