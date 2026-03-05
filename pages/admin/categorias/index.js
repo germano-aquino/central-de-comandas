@@ -15,11 +15,14 @@ import { Plus, Pencil, Trash2, FolderTree, GripVertical } from "lucide-react";
 import { toast } from "sonner";
 import { Header } from "@/components/Header";
 import { CategoryDialog } from "@/components/CategoryDialog";
+// import { useRouter } from "next/router";
 
 function ManageCategories() {
   const [categories, setCategories] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
+
+  // const router = useRouter();
 
   useEffect(() => {
     loadCategories();
@@ -27,6 +30,10 @@ function ManageCategories() {
 
   async function loadCategories() {
     const response = await fetch("/api/v1/categories");
+    // if (response.status !== 200) {
+    //   router.
+    // }
+
     const storedCategories = await response.json();
     let i = 0;
     const newCategories = storedCategories.map((cat) => {
@@ -64,7 +71,8 @@ function ManageCategories() {
   }
 
   function handleOpenDialog(category) {
-    setEditingCategory(category ? category : null);
+    const oldCategory = category ? category : null;
+    setEditingCategory(oldCategory);
     setIsDialogOpen(true);
   }
 
@@ -177,79 +185,5 @@ function ManageCategories() {
     </div>
   );
 }
-
-// export async function getServerSideProps(context) {
-//   async function findLoggedUser(request) {
-//     const userSession = await session.findOneValidByToken(
-//       request.cookies?.session_id,
-//     );
-//     const userRequesting = await user.findOneById(userSession.user_id);
-
-//     return userRequesting;
-//   }
-
-//   function checkUserFeatures(user, features) {
-//     features.forEach((feature) => {
-//       if (!authorization.can(user, feature))
-//         throw new ForbiddenError({
-//           message: "O usuário não possui permissão para executar esta ação.",
-//           action: `Verifique se o usuário possui a feature "${feature}".`,
-//         });
-//     });
-//   }
-
-//   function getCategoryNameById(categories, id) {
-//     const selectedCategory = categories.find((cat) => cat.id === id);
-
-//     return selectedCategory ? selectedCategory.name : null;
-//   }
-
-//   async function getClientServiceObjects() {
-//     const categories = await category.retrieveAll();
-//     const services = await service.retrieveAll();
-
-//     const clientServices = services.map((service) => {
-//       return {
-//         name: service.name,
-//         category: getCategoryNameById(categories, service.category_id),
-//         category_id: service.category_id,
-//         price: service.price / 100,
-//       };
-//     });
-
-//     const clientCategories = categories.map((cat) => {
-//       return {
-//         id: cat.id,
-//         name: cat.name,
-//       };
-//     });
-
-//     return [clientServices, clientCategories];
-//   }
-
-//   try {
-//     const { req } = context;
-//     const userRequesting = await findLoggedUser(req);
-
-//     checkUserFeatures(userRequesting, ["read:category", "read:service"]);
-
-//     const [clientServices, clientCategories] = await getClientServiceObjects();
-
-//     return {
-//       props: {
-//         clientServices,
-//         clientCategories,
-//       },
-//     };
-//   } catch (error) {
-//     console.error(error);
-//     return {
-//       redirect: {
-//         destination: "/login",
-//         permanent: false,
-//       },
-//     };
-//   }
-// }
 
 export default ManageCategories;

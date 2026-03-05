@@ -1,4 +1,8 @@
+import category from "@/models/category";
 import orchestrator from "../../tests/orchestrator";
+import service from "@/models/service";
+import question from "@/models/question";
+import formSection from "@/models/formSection";
 
 const SERVICE_CATEGORIES = [
   "Depilação",
@@ -933,16 +937,19 @@ async function populateDatabase() {
   });
 
   await orchestrator.activateUser(user);
-  await orchestrator.addCategoriesFeatures(user);
-  await orchestrator.addServicesFeatures(user);
 
-  const serviceCategories = await createServiceCategories();
+  await orchestrator.addFeatures(user, category.addFeatures);
+  await orchestrator.addFeatures(user, service.addFeatures);
+  await orchestrator.addFeatures(user, question.addFeatures);
+  await orchestrator.addFeatures(user, formSection.addFeatures);
 
-  await createServices(serviceCategories);
+  // const serviceCategories = await createServiceCategories();
 
-  const formSections = await createQuestionSections();
+  // await createServices(serviceCategories);
 
-  await createQuestions(formSections);
+  // const formSections = await createQuestionSections();
+
+  // await createQuestions(formSections);
 }
 
 async function createServiceCategories() {

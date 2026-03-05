@@ -12,7 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "./ui/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export function CategoryDialog({
   isDialogOpen,
@@ -21,7 +21,13 @@ export function CategoryDialog({
   setEditingCategory,
   updateCategories,
 }) {
-  const [formData, setFormData] = useState({ name: "", order: 0 });
+  const [formData, setFormData] = useState(
+    editingCategory ? editingCategory : { name: "", order: 0 },
+  );
+
+  useEffect(() => {
+    setFormData(editingCategory ? editingCategory : { name: "", order: 0 });
+  }, [editingCategory]);
 
   async function createCategory() {
     try {
@@ -75,8 +81,7 @@ export function CategoryDialog({
 
   function handleCloseDialog() {
     setIsDialogOpen(false);
-    setEditingCategory(null);
-    setFormData({ name: "", order: 0 });
+    setEditingCategory({ name: "", order: 0 });
   }
 
   async function handleSave() {
@@ -102,7 +107,7 @@ export function CategoryDialog({
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-      <DialogContent>
+      <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>
             {editingCategory ? "Editar Categoria" : "Nova Categoria"}
@@ -134,7 +139,7 @@ export function CategoryDialog({
               onChange={(e) =>
                 setFormData({
                   ...formData,
-                  order: parseInt(e.target.value) || 0,
+                  order: parseInt(e.target.value),
                 })
               }
               placeholder="1"
