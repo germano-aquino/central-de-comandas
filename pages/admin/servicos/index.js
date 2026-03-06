@@ -31,54 +31,22 @@ function ManageServices({ clientServices, clientCategories }) {
   const [services, setServices] = useState(clientServices);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingService, setEditingService] = useState(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    price: 0,
-    category: "",
-  });
   const [filterCategory, setFilterCategory] = useState("all");
 
-  async function saveServices(newServices, editingService) {
-    // Add saving on backend
-    try {
-      await fetch(`/api/v1/services/${editingService.name}`, {
-        method: "PATCH",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          name: editingService.name,
-          category_id: editingService.category_id,
-          price: editingService.price,
-        }),
-      });
-      setServices(newServices);
-    } catch (error) {
-      console.error(error);
-      toast.error(error.message);
+  function updateServices(newService, isEditing) {
+    if (isEditing) {
+      const updated = services.map((service) =>
+        service.id === newService.id ? { ...service, ...newService } : service,
+      );
+      setServices(updated);
+    } else {
+      const updated = [...services, newService];
+      setServices(updated);
     }
-    setServices(newServices);
   }
 
   function handleOpenDialog(service) {
-    if (service) {
-      setEditingService(service);
-      setFormData({
-        name: service.name,
-        description: service.description,
-        price: service.price,
-        category: service.category,
-      });
-    } else {
-      setEditingService(null);
-      setFormData({
-        name: "",
-        description: "",
-        price: 0,
-        category: "",
-      });
-    }
+    setEditingService(service ? service : null);
     setIsDialogOpen(true);
   }
 
@@ -87,34 +55,10 @@ function ManageServices({ clientServices, clientCategories }) {
     setEditingService(null);
   }
 
-  function handleSave() {
-    if (!formData.name.trim() || !formData.category) {
-      toast.error("Por favor, preencha todos os campos obrigatórios");
-      return;
-    }
-
-    if (editingService) {
-      const updated = services.map((svc) =>
-        svc.id === editingService.id ? { ...svc, ...formData } : svc,
-      );
-      saveServices(updated, editingService);
-      toast.success("Serviço atualizado com sucesso!");
-    } else {
-      const newService = {
-        id: `svc_${Date.now()}`,
-        ...formData,
-      };
-      saveServices([...services, newService]);
-      toast.success("Serviço criado com sucesso!");
-    }
-
-    handleCloseDialog();
-  }
-
   function handleDelete(id) {
     if (confirm("Tem certeza que deseja excluir este serviço?")) {
       const updated = services.filter((svc) => svc.id !== id);
-      saveServices(updated);
+      updateServices(updated);
       toast.success("Serviço excluído com sucesso!");
     }
   }
@@ -214,11 +158,9 @@ function ManageServices({ clientServices, clientCategories }) {
         isDialogOpen={isDialogOpen}
         setIsDialogOpen={setIsDialogOpen}
         editingService={editingService}
-        formData={formData}
-        setFormData={setFormData}
         clientCategories={clientCategories}
-        handleSave={handleSave}
         handleCloseDialog={handleCloseDialog}
+        updateServices={updateServices}
       />
     </div>
   );
@@ -254,12 +196,16 @@ export async function getServerSideProps(context) {
     const categories = await category.retrieveAll();
     const services = await service.retrieveAll();
 
+    let order = 1;
+
     const clientServices = services.map((service) => {
       return {
+        id: service.id,
         name: service.name,
         category: getCategoryNameById(categories, service.category_id),
         category_id: service.category_id,
         price: service.price / 100,
+        order: order++,
       };
     });
 
