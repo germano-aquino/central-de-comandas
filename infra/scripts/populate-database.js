@@ -1,4 +1,8 @@
+import category from "@/models/category";
 import orchestrator from "../../tests/orchestrator";
+import service from "@/models/service";
+import question from "@/models/question";
+import formSection from "@/models/formSection";
 
 const SERVICE_CATEGORIES = [
   "Depilação",
@@ -932,9 +936,19 @@ async function populateDatabase() {
     password: "123456",
   });
 
+  const forbiddenUser = await orchestrator.createUser({
+    username: "semAcesso",
+    email: "user@forbidden.com",
+    password: "123456",
+  });
+
   await orchestrator.activateUser(user);
-  await orchestrator.addCategoriesFeatures(user);
-  await orchestrator.addServicesFeatures(user);
+  await orchestrator.activateUser(forbiddenUser);
+
+  await orchestrator.addFeatures(user, category.addFeatures);
+  await orchestrator.addFeatures(user, service.addFeatures);
+  await orchestrator.addFeatures(user, question.addFeatures);
+  await orchestrator.addFeatures(user, formSection.addFeatures);
 
   const serviceCategories = await createServiceCategories();
 
