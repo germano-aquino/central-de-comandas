@@ -29,13 +29,16 @@ export function ServiceDialog({
   handleCloseDialog,
   updateServices,
 }) {
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    price: 0,
-    category: "",
-    order: 0,
-  });
+  const [formData, setFormData] = useState(
+    editingService
+      ? editingService
+      : {
+          name: "",
+          price: 0,
+          category: "",
+          order: 0,
+        },
+  );
 
   useEffect(() => {
     setFormData(
@@ -43,7 +46,6 @@ export function ServiceDialog({
         ? editingService
         : {
             name: "",
-            description: "",
             price: 0,
             category: "",
             order: 0,
@@ -60,7 +62,6 @@ export function ServiceDialog({
 
   async function createService() {
     try {
-      console.log(formData);
       const response = await fetch("/api/v1/services", {
         method: "POST",
         headers: {
@@ -68,8 +69,9 @@ export function ServiceDialog({
         },
         body: JSON.stringify({
           name: formData.name,
-          cateogry_id: getCategoryIdByName(formData.category),
+          category_id: getCategoryIdByName(formData.category),
           price: parseInt(formData.price * 100),
+          is_mold: true,
         }),
       });
 
@@ -78,9 +80,8 @@ export function ServiceDialog({
         const newService = {
           id: responseBody.id,
           name: responseBody.name,
-          category: clientCategories.find(
-            (cat) => cat.id === responseBody.catgory_id,
-          ).name,
+          category_id: responseBody.category_id,
+          category: formData.category,
           price: responseBody.price / 100,
           order: formData.order,
         };
@@ -93,23 +94,28 @@ export function ServiceDialog({
 
   async function updateService() {
     try {
-      console.log(formData);
-      const response = await fetch(
-        `/api/v1/categories/${editingService.name}`,
-        {
-          method: "PATCH",
-          headers: {
-            "content-type": "application/json",
-          },
-          body: JSON.stringify({
-            name: formData.name,
-            price: parseInt(formData.price * 100),
-            category_id: getCategoryIdByName(formData.category),
-          }),
+      const response = await fetch(`/api/v1/services/${editingService.name}`, {
+        method: "PATCH",
+        headers: {
+          "content-type": "application/json",
         },
-      );
+        body: JSON.stringify({
+          name: formData.name,
+          price: parseInt(formData.price * 100),
+          category_id: getCategoryIdByName(formData.category),
+        }),
+      });
       if (response.status === 200) {
-        updateServices(formData, true);
+        const responseBody = await response.json();
+        const newService = {
+          id: responseBody.id,
+          name: responseBody.name,
+          category_id: responseBody.category_id,
+          category: formData.category,
+          price: responseBody.price / 100,
+          order: formData.order,
+        };
+        updateServices(newService, true);
       }
     } catch (error) {
       console.error(error);
@@ -130,6 +136,13 @@ export function ServiceDialog({
       await createService();
       toast.success("Serviço criado com sucesso!");
     }
+
+    setFormData({
+      name: "",
+      price: 0,
+      order: 0,
+      category: "",
+    });
 
     handleCloseDialog();
   }
@@ -163,16 +176,19 @@ export function ServiceDialog({
               <Select
                 value={formData.category}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, category: value })
+                  setFormData({
+                    ...formData,
+                    category: value,
+                  })
                 }
               >
                 <SelectTrigger id="category">
                   <SelectValue placeholder="Selecione uma categoria" />
                 </SelectTrigger>
                 <SelectContent>
-                  {clientCategories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.name}>
-                      {cat.name}
+                  {clientCategories.map((category) => (
+                    <SelectItem key={category.id} value={category.name}>
+                      {category.name}
                     </SelectItem>
                   ))}
                 </SelectContent>

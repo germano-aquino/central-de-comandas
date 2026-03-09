@@ -3,7 +3,6 @@ import orchestrator from "../../tests/orchestrator";
 import service from "@/models/service";
 import question from "@/models/question";
 import formSection from "@/models/formSection";
-import password from "@/models/password";
 
 const SERVICE_CATEGORIES = [
   "Depilação",
@@ -951,13 +950,13 @@ async function populateDatabase() {
   await orchestrator.addFeatures(user, question.addFeatures);
   await orchestrator.addFeatures(user, formSection.addFeatures);
 
-  // const serviceCategories = await createServiceCategories();
+  const serviceCategories = await createServiceCategories();
 
-  // await createServices(serviceCategories);
+  await createServices(serviceCategories);
 
-  // const formSections = await createQuestionSections();
+  const formSections = await createQuestionSections();
 
-  // await createQuestions(formSections);
+  await createQuestions(formSections);
 }
 
 async function createServiceCategories() {

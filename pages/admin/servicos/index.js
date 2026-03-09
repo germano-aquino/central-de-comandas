@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -8,30 +7,56 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Plus, Pencil, Trash2, Package } from "lucide-react";
-import { toast } from "sonner";
 import { Header } from "@/components/Header";
-import category from "@/models/category";
-import service from "@/models/service";
-import { ForbiddenError } from "@/infra/errors";
-import authorization from "@/models/authorization";
-import user from "@/models/user";
-import session from "@/models/session";
 import { ServiceDialog } from "@/components/ServiceDialog";
+import { ServiceTable } from "@/components/ServiceTable";
 
-function ManageServices({ clientServices, clientCategories }) {
-  const [services, setServices] = useState(clientServices);
+import { useEffect, useState } from "react";
+import { Plus, Package } from "lucide-react";
+
+function ManageServices() {
+  const [services, setServices] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingService, setEditingService] = useState(null);
   const [filterCategory, setFilterCategory] = useState("all");
+
+  useEffect(() => {
+    async function loadServicesAndCategories() {
+      const categoryResponse = await fetch("/api/v1/categories");
+
+      const storedCategories = await categoryResponse.json();
+      let categoryOrder = 0;
+      const categoriesMap = new Map();
+      const newCategories = storedCategories.map((category) => {
+        categoriesMap.set(category.id, category.name);
+        return {
+          id: category.id,
+          name: category.name,
+          order: ++categoryOrder,
+        };
+      });
+      setCategories(newCategories);
+
+      const serviceResponse = await fetch("/api/v1/services");
+
+      const storedServices = await serviceResponse.json();
+      let serviceOrder = 0;
+      const newServices = storedServices.map((service) => {
+        return {
+          id: service.id,
+          name: service.name,
+          price: service.price / 100,
+          category_id: service.category_id,
+          category: categoriesMap.get(service.category_id),
+          order: ++serviceOrder,
+        };
+      });
+      setServices(newServices);
+    }
+
+    loadServicesAndCategories();
+  }, []);
 
   function updateServices(newService, isEditing) {
     if (isEditing) {
@@ -55,19 +80,6 @@ function ManageServices({ clientServices, clientCategories }) {
     setEditingService(null);
   }
 
-  function handleDelete(id) {
-    if (confirm("Tem certeza que deseja excluir este serviço?")) {
-      const updated = services.filter((svc) => svc.id !== id);
-      updateServices(updated);
-      toast.success("Serviço excluído com sucesso!");
-    }
-  }
-
-  const filteredServices =
-    filterCategory === "all"
-      ? services
-      : services.filter((svc) => svc.category === filterCategory);
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <Header subtitle="Gerenciar serviços" Icon={Package} />
@@ -87,9 +99,9 @@ function ManageServices({ clientServices, clientCategories }) {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todas as categorias</SelectItem>
-                    {clientCategories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.name}>
-                        {cat.name}
+                    {categories.map((category) => (
+                      <SelectItem key={category.id} value={category.name}>
+                        {category.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -102,53 +114,12 @@ function ManageServices({ clientServices, clientCategories }) {
             </div>
           </CardHeader>
           <CardContent>
-            {filteredServices.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Categoria</TableHead>
-                    <TableHead>Preço</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredServices.map((service) => (
-                    <TableRow key={service.id}>
-                      <TableCell className="font-medium">
-                        {service.name}
-                      </TableCell>
-                      <TableCell>{service.category}</TableCell>
-                      <TableCell>R$ {service.price.toFixed(2)}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex gap-2 justify-end">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleOpenDialog(service)}
-                          >
-                            <Pencil className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDelete(service.id)}
-                          >
-                            <Trash2 className="w-4 h-4 text-red-600" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            ) : (
-              <p className="text-center text-gray-500 py-8">
-                {filterCategory === "all"
-                  ? 'Nenhum serviço cadastrado. Clique em "Novo Serviço" para começar.'
-                  : "Nenhum serviço encontrado nesta categoria."}
-              </p>
-            )}
+            <ServiceTable
+              services={services}
+              setServices={setServices}
+              filterCategory={filterCategory}
+              handleOpenDialog={handleOpenDialog}
+            />
           </CardContent>
         </Card>
       </div>
@@ -158,90 +129,12 @@ function ManageServices({ clientServices, clientCategories }) {
         isDialogOpen={isDialogOpen}
         setIsDialogOpen={setIsDialogOpen}
         editingService={editingService}
-        clientCategories={clientCategories}
+        clientCategories={categories}
         handleCloseDialog={handleCloseDialog}
         updateServices={updateServices}
       />
     </div>
   );
-}
-
-export async function getServerSideProps(context) {
-  async function findLoggedUser(request) {
-    const userSession = await session.findOneValidByToken(
-      request.cookies?.session_id,
-    );
-    const userRequesting = await user.findOneById(userSession.user_id);
-
-    return userRequesting;
-  }
-
-  function checkUserFeatures(user, features) {
-    features.forEach((feature) => {
-      if (!authorization.can(user, feature))
-        throw new ForbiddenError({
-          message: "O usuário não possui permissão para executar esta ação.",
-          action: `Verifique se o usuário possui a feature "${feature}".`,
-        });
-    });
-  }
-
-  function getCategoryNameById(categories, id) {
-    const selectedCategory = categories.find((cat) => cat.id === id);
-
-    return selectedCategory ? selectedCategory.name : null;
-  }
-
-  async function getClientServiceObjects() {
-    const categories = await category.retrieveAll();
-    const services = await service.retrieveAll();
-
-    let order = 1;
-
-    const clientServices = services.map((service) => {
-      return {
-        id: service.id,
-        name: service.name,
-        category: getCategoryNameById(categories, service.category_id),
-        category_id: service.category_id,
-        price: service.price / 100,
-        order: order++,
-      };
-    });
-
-    const clientCategories = categories.map((cat) => {
-      return {
-        id: cat.id,
-        name: cat.name,
-      };
-    });
-
-    return [clientServices, clientCategories];
-  }
-
-  try {
-    const { req } = context;
-    const userRequesting = await findLoggedUser(req);
-
-    checkUserFeatures(userRequesting, ["read:category", "read:service"]);
-
-    const [clientServices, clientCategories] = await getClientServiceObjects();
-
-    return {
-      props: {
-        clientServices,
-        clientCategories,
-      },
-    };
-  } catch (error) {
-    console.error(error);
-    return {
-      redirect: {
-        destination: "/login",
-        permanent: false,
-      },
-    };
-  }
 }
 
 export default ManageServices;
