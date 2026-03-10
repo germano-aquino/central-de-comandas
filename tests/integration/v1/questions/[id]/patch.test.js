@@ -136,15 +136,15 @@ describe("PATCH /api/v1/questions/[id]", () => {
         },
       );
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(200);
 
       const responseBody = await response.json();
 
       expect(responseBody).toEqual({
-        name: "ValidationError",
-        message: "Esta pergunta já existe.",
-        action: "Reformule a pergunta e tente novamente.",
-        status_code: 400,
+        ...duplicatedQuestion,
+        statement: "Changing to a already in use statement.",
+        created_at: duplicatedQuestion.created_at.toISOString(),
+        updated_at: responseBody.updated_at,
       });
     });
 
