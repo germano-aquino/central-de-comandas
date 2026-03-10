@@ -17,8 +17,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useEffect, useState } from "react";
+import { questionTypeLabels } from "@/pages/admin/perguntas";
+
 import { toast } from "sonner";
+import { useEffect, useState } from "react";
 
 export function QuestionDialog({
   isDialogOpen,
@@ -26,13 +28,14 @@ export function QuestionDialog({
   editingQuestion,
   setEditingQuestion,
   updateQuestions,
+  sections,
 }) {
   const [formData, setFormData] = useState(
     editingQuestion
       ? editingQuestion
       : {
-          text: "",
-          type: "yes_no",
+          statement: "",
+          type: "multiple_choice",
           sectionId: "",
           order: 0,
           required: true,
@@ -46,28 +49,34 @@ export function QuestionDialog({
       editingQuestion
         ? editingQuestion
         : {
-            text: "",
-            type: "yes_no",
+            statement: "",
+            type: "multiple_choice",
             sectionId: "",
             order: 0,
             required: true,
             options: [],
           },
     );
+    if (editingQuestion?.options) {
+      setOptionsInput(editingQuestion.options.join("\n"));
+    } else {
+      setOptionsInput("");
+    }
   }, [editingQuestion]);
 
-  async function createQuestion() {
+  async function createQuestion(questionData) {
     try {
-      const response = await fetch("api/v1/questions", {
+      const response = await fetch("/api/v1/questions", {
         method: "POST",
         headers: {
           "content-type": "application/json",
         },
         body: JSON.stringify({
-          statement: "",
-          type: "",
-          options: "",
-          section_id: "",
+          statement: questionData.statement,
+          type: questionData.type,
+          options: questionData.options,
+          section_id: questionData.sectionId,
+          is_mold: true,
         }),
       });
 
@@ -78,7 +87,9 @@ export function QuestionDialog({
           id: responseBody.id,
           statement: responseBody.statement,
           options: responseBody.options,
-          section_id: responseBody.section_id,
+          type: responseBody.type,
+          sectionId: responseBody.section_id,
+          order: questionData.order,
         };
         updateQuestions(newQuestion, false);
       }
@@ -88,9 +99,44 @@ export function QuestionDialog({
     }
   }
 
+  async function updateQuestion(questionData) {
+    try {
+      const response = await fetch(`/api/v1/questions/${editingQuestion.id}`, {
+        method: "PATCH",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          statement: questionData.statement,
+          type: questionData.type,
+          options: questionData.options,
+          section_id: questionData.sectionId,
+          is_mold: true,
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      if (response.status === 200) {
+        const newQuestion = {
+          id: responseBody.id,
+          statement: responseBody.statement,
+          options: responseBody.options,
+          type: responseBody.type,
+          sectionId: responseBody.section_id,
+          order: questionData.order,
+        };
+        updateQuestions(newQuestion, true);
+      }
+    } catch (error) {
+      toast.error("Falha ao criar a pergunta.");
+      console.error(error);
+    }
+  }
+
   async function handleSave() {
-    if (!formData.text?.trim() || !formData.sectionId) {
-      toast.error("Por favor, preencha todos os campos obrigatórios");
+    if (!formData.statement?.trim() || !formData.sectionId) {
+      console.error("Por favor, preencha todos os campos obrigatórios");
       return;
     }
 
@@ -98,7 +144,7 @@ export function QuestionDialog({
 
     // Parse options for checkbox/radio
     if (
-      (formData.type === "checkbox" || formData.type === "radio") &&
+      (formData.type === "multiple-choice" || formData.type === "both") &&
       optionsInput.trim()
     ) {
       questionData.options = optionsInput
@@ -107,12 +153,10 @@ export function QuestionDialog({
     }
 
     if (editingQuestion) {
-      await updateQuestion();
-      updateQuestions(newQuestion, true);
+      await updateQuestion(questionData);
       toast.success("Pergunta atualizada com sucesso!");
     } else {
-      await createQuestion();
-      updateQuestions(newQuestion, false);
+      await createQuestion(questionData);
       toast.success("Pergunta criada com sucesso!");
     }
 
@@ -120,9 +164,17 @@ export function QuestionDialog({
   }
 
   function handleCloseDialog() {
-    setIsDialogOpen(false);
+    setFormData({
+      statement: "",
+      type: "multiple_choice",
+      sectionId: "",
+      order: 0,
+      required: true,
+      options: [],
+    });
     setEditingQuestion(null);
     setOptionsInput("");
+    setIsDialogOpen(false);
   }
 
   return (
@@ -139,20 +191,20 @@ export function QuestionDialog({
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="text">Texto da Pergunta *</Label>
+            <Label htmlFor="statement">Texto da Pergunta *</Label>
             <Textarea
-              id="text"
-              value={formData.text}
+              id="statement"
+              value={formData.statement}
               onChange={(e) =>
-                setFormData({ ...formData, text: e.target.value })
+                setFormData({ ...formData, statement: e.target.value })
               }
               placeholder="Ex: Já realizou depilação com cera antes?"
               rows={3}
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
+          <div className="grid grid-cols-5 gap-2">
+            <div className="space-y-2 col-span-3">
               <Label htmlFor="type">Tipo de Pergunta *</Label>
               <Select
                 value={formData.type}
@@ -173,7 +225,7 @@ export function QuestionDialog({
               </Select>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 col-span-2">
               <Label htmlFor="section">Seção *</Label>
               <Select
                 value={formData.sectionId}
@@ -195,14 +247,15 @@ export function QuestionDialog({
             </div>
           </div>
 
-          {(formData.type === "checkbox" || formData.type === "radio") && (
+          {(formData.type === "both" ||
+            formData.type === "multiple-choice") && (
             <div className="space-y-2">
               <Label htmlFor="options">Opções (uma por linha)</Label>
               <Textarea
                 id="options"
                 value={optionsInput}
                 onChange={(e) => setOptionsInput(e.target.value)}
-                placeholder="Opção 1&#10;Opção 2&#10;Opção 3"
+                placeholder={"Opção 1\nOpção 2\nOpção 3"}
                 rows={5}
               />
               <p className="text-xs text-gray-500">
@@ -221,7 +274,7 @@ export function QuestionDialog({
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    order: parseInt(e.target.value) || 0,
+                    order: parseInt(e.target.value),
                   })
                 }
                 placeholder="1"

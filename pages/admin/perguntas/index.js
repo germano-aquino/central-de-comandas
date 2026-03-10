@@ -22,12 +22,10 @@ import { toast } from "sonner";
 import { Header } from "@/components/Header";
 import { QuestionDialog } from "@/components/QuestionDialog";
 
-const questionTypeLabels = {
-  yes_no: "Sim/Não",
-  text: "Texto curto",
-  textarea: "Texto longo",
-  checkbox: "Múltipla escolha",
-  radio: "Escolha única",
+export const questionTypeLabels = {
+  "multiple-choice": "Múltipla Escolha",
+  both: "Múltipla escolha com justificativa",
+  discursive: "Discursiva",
 };
 
 function ManageQuestions() {
@@ -35,14 +33,6 @@ function ManageQuestions() {
   const [sections, setSections] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState(null);
-  const [formData, setFormData] = useState({
-    text: "",
-    type: "yes_no",
-    sectionId: "",
-    order: 0,
-    required: true,
-    options: [],
-  });
   const [filterSection, setFilterSection] = useState("all");
 
   useEffect(() => {
@@ -50,77 +40,50 @@ function ManageQuestions() {
     loadSections();
   }, []);
 
-  function loadQuestions() {
-    const stored = localStorage.getItem("questions");
-    if (stored) {
-      setQuestions(JSON.parse(stored));
+  async function loadQuestions() {
+    const response = await fetch("/api/v1/questions");
+    const storedQuestions = await response.json();
+
+    if (response.status === 200) {
+      let order = 1;
+      const clientQuestions = storedQuestions.map((question) => {
+        return {
+          id: question.id,
+          statement: question.statement,
+          type: question.type,
+          sectionId: question.section_id,
+          options: question.options,
+          order: order++,
+        };
+      });
+      setQuestions(clientQuestions);
     } else {
-      // Default questions
-      const defaultQuestions = [
-        {
-          id: "q1",
-          text: "Já realizou depilação com cera antes?",
-          type: "yes_no",
-          sectionId: "sec1",
-          order: 1,
-          required: true,
-        },
-        {
-          id: "q2",
-          text: "Apresenta alguma alergia?",
-          type: "yes_no",
-          sectionId: "sec1",
-          order: 2,
-          required: true,
-        },
-        {
-          id: "q3",
-          text: "Está usando algum medicamento?",
-          type: "yes_no",
-          sectionId: "sec1",
-          order: 3,
-          required: true,
-        },
-      ];
-      setQuestions(defaultQuestions);
-      localStorage.setItem("questions", JSON.stringify(defaultQuestions));
+      console.error(storedQuestions);
     }
   }
 
-  function loadSections() {
-    const stored = localStorage.getItem("questionSections");
-    if (stored) {
-      setSections(JSON.parse(stored));
-    }
-  }
+  async function loadSections() {
+    try {
+      const response = await fetch("/api/v1/form/sections");
+      const storedSections = await response.json();
 
-  function saveQuestions(newQuestions) {
-    localStorage.setItem("questions", JSON.stringify(newQuestions));
-    setQuestions(newQuestions);
+      let order = 1;
+      const clientSections = storedSections.map((section) => {
+        return {
+          id: section.id,
+          name: section.name,
+          order: order++,
+        };
+      });
+      setSections(clientSections);
+    } catch (error) {
+      toast.error(error.message);
+      console.error(error);
+    }
   }
 
   function handleOpenDialog(question) {
-    if (question) {
-      setEditingQuestion(question);
-      setFormData(question);
-      if (question.options) {
-        setOptionsInput(question.options.join("\n"));
-      }
-    } else {
-      setEditingQuestion(null);
-      const nextOrder =
-        questions.filter((q) => q.sectionId === filterSection).length + 1;
-      setFormData({
-        text: "",
-        type: "yes_no",
-        sectionId:
-          filterSection !== "all" ? filterSection : sections[0]?.id || "",
-        order: nextOrder,
-        required: true,
-        options: [],
-      });
-      setOptionsInput("");
-    }
+    setEditingQuestion(question ? question : null);
     setIsDialogOpen(true);
   }
 
@@ -135,10 +98,22 @@ function ManageQuestions() {
     }
   }
 
-  function handleDelete(id) {
+  async function deleteQuestion(id) {
+    try {
+      await fetch(`/api/v1/questions/${id}`, {
+        method: "DELETE",
+      });
+    } catch (error) {
+      toast.error(error.message);
+      console.error(error);
+    }
+  }
+
+  async function handleDelete(id) {
     if (confirm("Tem certeza que deseja excluir esta pergunta?")) {
+      await deleteQuestion(id);
       const updated = questions.filter((q) => q.id !== id);
-      saveQuestions(updated);
+      setQuestions(updated);
       toast.success("Pergunta excluída com sucesso!");
     }
   }
@@ -212,7 +187,7 @@ function ManageQuestions() {
                     <TableRow key={question.id}>
                       <TableCell className="max-w-md">
                         <div className="flex flex-col gap-1">
-                          <span>{question.text}</span>
+                          <span>{question.statement}</span>
                           {question.required && (
                             <Badge variant="secondary" className="w-fit">
                               Obrigatória
@@ -267,6 +242,7 @@ function ManageQuestions() {
         editingQuestion={editingQuestion}
         setEditingQuestion={setEditingQuestion}
         updateQuestions={updateQuestions}
+        sections={sections}
       />
     </div>
   );
