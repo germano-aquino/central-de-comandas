@@ -47,14 +47,14 @@ const NAVIGATION_DATA = [
     description: "Criação das Categorias de Servios.",
   },
   {
+    href: "/admin/perguntas",
+    title: "Perguntas",
+    description: "Criação de Perguntas para o formulário.",
+  },
+  {
     href: "/admin/secoes",
     title: "Seções de Perguntas",
     description: "Criação das Seções de Perguntas presente no formulário.",
-  },
-  {
-    href: "/admin/perguntas",
-    title: "Categorias de Perguntas",
-    description: "Criação de Perguntas para o formulário.",
   },
   {
     href: "/agendamento",

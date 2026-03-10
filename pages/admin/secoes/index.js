@@ -1,171 +1,62 @@
-import { useState, useEffect } from "react";
+import { FormSectionDialog } from "@/components/FormSectionDialog";
+import { FormSectionsTable } from "@/components/FormSectionsTable";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, ListChecks, GripVertical } from "lucide-react";
+
+import { Plus, ListChecks } from "lucide-react";
 import { toast } from "sonner";
+import { useState, useEffect } from "react";
 
 function ManageQuestionSections() {
   const [sections, setSections] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingSection, setEditingSection] = useState(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    order: 0,
-  });
 
   useEffect(() => {
     loadSections();
   }, []);
 
-  function loadSections() {
-    const stored = localStorage.getItem("questionSections");
-    if (stored) {
-      setSections(JSON.parse(stored));
-    } else {
-      // Default sections
-      const defaultSections = [
-        {
-          id: "sec1",
-          name: "Depilação",
-          description: "Perguntas relacionadas a depilação",
-          order: 1,
-        },
-        {
-          id: "sec2",
-          name: "Sobrancelhas",
-          description: "Perguntas sobre design de sobrancelhas",
-          order: 2,
-        },
-        {
-          id: "sec3",
-          name: "Esmalteria",
-          description: "Perguntas sobre serviços de esmalteria",
-          order: 3,
-        },
-        {
-          id: "sec4",
-          name: "Alta Frequência",
-          description: "Perguntas sobre tratamentos de alta frequência",
-          order: 4,
-        },
-        {
-          id: "sec5",
-          name: "Uso de Imagens",
-          description: "Autorização para uso de imagens",
-          order: 5,
-        },
-      ];
-      setSections(defaultSections);
-      localStorage.setItem("questionSections", JSON.stringify(defaultSections));
-    }
-  }
+  async function loadSections() {
+    const response = await fetch("/api/v1/form/sections");
 
-  function saveSections(newSections) {
-    localStorage.setItem("questionSections", JSON.stringify(newSections));
-    setSections(newSections);
-  }
+    const storedSections = await response.json();
 
-  function handleOpenDialog(section) {
-    if (section) {
-      setEditingSection(section);
-      setFormData({
-        name: section.name,
-        description: section.description,
-        order: section.order,
-      });
-    } else {
-      setEditingSection(null);
-      setFormData({ name: "", description: "", order: sections.length + 1 });
-    }
-    setIsDialogOpen(true);
-  }
-
-  function handleCloseDialog() {
-    setIsDialogOpen(false);
-    setEditingSection(null);
-    setFormData({ name: "", description: "", order: 0 });
-  }
-
-  function handleSave() {
-    if (!formData.name.trim()) {
-      toast.error("Por favor, preencha o nome da seção");
+    if (response.status !== 200) {
+      toast.error("Falha ao carrega as seções de perguntas.");
+      console.error(storedSections.message);
       return;
     }
 
-    if (editingSection) {
-      const updated = sections.map((sec) =>
-        sec.id === editingSection.id
-          ? {
-              ...sec,
-              name: formData.name,
-              description: formData.description,
-              order: formData.order,
-            }
-          : sec,
-      );
-      saveSections(updated);
-      toast.success("Seção atualizada com sucesso!");
-    } else {
-      const newSection = {
-        id: `sec_${Date.now()}`,
-        name: formData.name,
-        description: formData.description,
-        order: formData.order,
+    let order = 1;
+
+    const sections = storedSections.map((section) => {
+      return {
+        id: section.id,
+        name: section.name,
+        order: order++,
       };
-      saveSections([...sections, newSection]);
-      toast.success("Seção criada com sucesso!");
-    }
-
-    handleCloseDialog();
+    });
+    setSections(sections);
   }
 
-  function handleDelete(id) {
-    if (
-      confirm(
-        "Tem certeza que deseja excluir esta seção? As perguntas associadas não serão excluídas.",
-      )
-    ) {
-      const updated = sections.filter((sec) => sec.id !== id);
-      saveSections(updated);
-      toast.success("Seção excluída com sucesso!");
+  function updateSections(newSection, isEditing) {
+    if (isEditing) {
+      const updated = sections.map((section) =>
+        section.id === editingSection.id
+          ? { ...section, name: newSection.name, order: newSection.order }
+          : section,
+      );
+      setSections(updated);
+    } else {
+      setSections([...sections, newSection]);
     }
   }
 
-  function moveSection(index, direction) {
-    const sorted = [...sections].sort((a, b) => a.order - b.order);
-    const newIndex = direction === "up" ? index - 1 : index + 1;
-
-    if (newIndex < 0 || newIndex >= sorted.length) return;
-
-    const temp = sorted[index].order;
-    sorted[index].order = sorted[newIndex].order;
-    sorted[newIndex].order = temp;
-
-    saveSections(sorted);
+  function handleOpenDialog(section) {
+    setEditingSection(section ? section : null);
+    setIsDialogOpen(true);
   }
-
-  const sortedSections = [...sections].sort((a, b) => a.order - b.order);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -181,135 +72,21 @@ function ManageQuestionSections() {
             </Button>
           </CardHeader>
           <CardContent>
-            {sortedSections.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-12"></TableHead>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Descrição</TableHead>
-                    <TableHead className="w-24">Ordem</TableHead>
-                    <TableHead className="w-32 text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {sortedSections.map((section, index) => (
-                    <TableRow key={section.id}>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <button
-                            onClick={() => moveSection(index, "up")}
-                            disabled={index === 0}
-                            className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
-                          >
-                            <GripVertical className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {section.name}
-                      </TableCell>
-                      <TableCell className="max-w-md truncate">
-                        {section.description}
-                      </TableCell>
-                      <TableCell>{section.order}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex gap-2 justify-end">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleOpenDialog(section)}
-                          >
-                            <Pencil className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDelete(section.id)}
-                          >
-                            <Trash2 className="w-4 h-4 text-red-600" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            ) : (
-              <p className="text-center text-gray-500 py-8">
-                Nenhuma seção cadastrada. Clique em &ldquo;Nova Seção&rdquo;
-                para começar.
-              </p>
-            )}
+            <FormSectionsTable
+              sections={sections}
+              setSections={setSections}
+              handleOpenDialog={handleOpenDialog}
+            />
           </CardContent>
         </Card>
       </div>
-
-      {/* Dialog for Create/Edit */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {editingSection ? "Editar Seção" : "Nova Seção"}
-            </DialogTitle>
-            <DialogDescription>
-              Preencha os dados da seção de perguntas.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nome da Seção</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                placeholder="Ex: Depilação"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description">Descrição</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                placeholder="Descrição da seção"
-                rows={3}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="order">Ordem de Exibição</Label>
-              <Input
-                id="order"
-                type="number"
-                value={formData.order}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    order: parseInt(e.target.value) || 0,
-                  })
-                }
-                placeholder="1"
-              />
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={handleCloseDialog}>
-              Cancelar
-            </Button>
-            <Button onClick={handleSave}>
-              {editingSection ? "Salvar Alterações" : "Criar Seção"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <FormSectionDialog
+        isDialogOpen={isDialogOpen}
+        setIsDialogOpen={setIsDialogOpen}
+        editingSection={editingSection}
+        setEditingSection={setEditingSection}
+        updateSections={updateSections}
+      />
     </div>
   );
 }

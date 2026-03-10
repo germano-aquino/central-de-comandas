@@ -138,7 +138,13 @@ async function update(questionInputValues, queryParams) {
 
   async function getValidStatement(inputValues) {
     if ("statement" in inputValues && inputValues.statement) {
-      await validateUniqueStatement(inputValues.statement);
+      if (!inputValues.statement.trim()) {
+        throw new ValidationError({
+          message: "Campo de pergunta está inválido.",
+          action:
+            "Verifique se o campo de pergunta está correto e tente novamente.",
+        });
+      }
       return inputValues.statement;
     }
     return null;
@@ -424,29 +430,6 @@ function getValidType(inputValues) {
   }
 
   return inputValues.type;
-}
-
-async function validateUniqueStatement(statement) {
-  const results = await database.query({
-    text: `
-        SELECT
-          *
-        FROM
-          questions
-        WHERE
-          statement = $1
-        LIMIT
-          1
-      ;`,
-    values: [statement],
-  });
-
-  if (results.rowCount !== 0) {
-    throw new ValidationError({
-      message: "Esta pergunta já existe.",
-      action: "Reformule a pergunta e tente novamente.",
-    });
-  }
 }
 
 async function findOneValidById(id) {
