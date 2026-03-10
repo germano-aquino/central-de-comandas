@@ -107,7 +107,7 @@ export function CategoryDialog({
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-      <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>
             {editingCategory ? "Editar Categoria" : "Nova Categoria"}
