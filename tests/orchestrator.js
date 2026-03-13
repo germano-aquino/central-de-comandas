@@ -173,10 +173,10 @@ async function createQuestion(
 ) {
   const questionInputValues = {
     statement: statement || faker.lorem.sentence({ min: 3, max: 10 }),
-    type: type || "multiple-choice",
+    type: type || "radio",
     options: options || ["Sim", "Não"],
     section_id: sectionId || null,
-    option_marked: optionMarked || null,
+    options_marked: optionMarked || null,
     is_mold: isMold || null,
   };
 

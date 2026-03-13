@@ -3,8 +3,19 @@ import user from "./user";
 import database from "infra/database";
 import formSection from "./formSection";
 
-const REQUIRED_OPTIONS_TYPES = ["multiple-choice", "both"];
-const TYPES = ["multiple-choice", "discursive", "both"];
+const REQUIRED_OPTIONS_TYPES = [
+  "radio",
+  "checkBox",
+  "yesOrNo",
+  "yesOrNoDiscursive",
+];
+const TYPES = [
+  "radio",
+  "checkBox",
+  "yesOrNo",
+  "yesOrNoDiscursive",
+  "discursive",
+];
 
 async function create(questionInputValues) {
   const validQuestionObject = await getValidValues(questionInputValues);
