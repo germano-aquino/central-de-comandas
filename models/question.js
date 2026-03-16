@@ -213,13 +213,13 @@ async function update(questionInputValues, queryParams) {
           });
         }
 
-        const invalidOptionMarked = optionsMarked.reduce(
+        const optionsNotIncludesAllOptionsMarked = optionsMarked.reduce(
           (accumulator, markedOption) =>
             accumulator || !inputValues.options.includes(markedOption),
           false,
         );
 
-        if (invalidOptionMarked) {
+        if (optionsNotIncludesAllOptionsMarked) {
           throw new ValidationError({
             message: "As novas opções não contém a opção marcada.",
             action:

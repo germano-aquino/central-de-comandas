@@ -92,7 +92,7 @@ describe("PATCH /api/v1/questions", () => {
         },
         body: JSON.stringify({
           question_ids: questionIds,
-          type: "both",
+          type: "yesOrNoDiscursive",
         }),
       });
 
@@ -105,7 +105,7 @@ describe("PATCH /api/v1/questions", () => {
           ...question,
           created_at: question.created_at.toISOString(),
           updated_at: responseBody[index].updated_at,
-          type: "both",
+          type: "yesOrNoDiscursive",
         };
       });
 
@@ -118,7 +118,7 @@ describe("PATCH /api/v1/questions", () => {
       );
     });
 
-    test("With new type as multiple-choice and missing options", async () => {
+    test("With new type as radio and missing options", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
       await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
@@ -136,7 +136,7 @@ describe("PATCH /api/v1/questions", () => {
         },
         body: JSON.stringify({
           question_ids: questionIds,
-          type: "multiple-choice",
+          type: "radio",
         }),
       });
 
@@ -153,7 +153,7 @@ describe("PATCH /api/v1/questions", () => {
       });
     });
 
-    test("With new type as multiple-choice and less than 2 options", async () => {
+    test("With new type as radio and less than 2 options", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
       await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
@@ -171,7 +171,7 @@ describe("PATCH /api/v1/questions", () => {
         },
         body: JSON.stringify({
           question_ids: questionIds,
-          type: "multiple-choice",
+          type: "radio",
           options: ["Sim"],
         }),
       });
@@ -268,7 +268,7 @@ describe("PATCH /api/v1/questions", () => {
 
       const questions = await orchestrator.createQuestions(3, {
         options: ["red", "blue", "green"],
-        optionMarked: "red",
+        optionsMarked: ["red"],
       });
       const questionIds = questions.map((question) => question.id);
 
@@ -355,7 +355,7 @@ describe("PATCH /api/v1/questions", () => {
         },
         body: JSON.stringify({
           question_ids: questionIds,
-          option_marked: "Sim",
+          options_marked: ["Sim"],
         }),
       });
 
@@ -368,7 +368,7 @@ describe("PATCH /api/v1/questions", () => {
           ...question,
           created_at: question.created_at.toISOString(),
           updated_at: responseBody[index].updated_at,
-          option_marked: "Sim",
+          options_marked: ["Sim"],
         };
       });
 
@@ -387,7 +387,7 @@ describe("PATCH /api/v1/questions", () => {
 
       const questions = await orchestrator.createQuestions(3, {
         options: ["red", "blue", "green"],
-        optionMarked: "red",
+        optionsMarked: ["red"],
       });
       const questionIds = questions.map((question) => question.id);
 
@@ -399,7 +399,7 @@ describe("PATCH /api/v1/questions", () => {
         },
         body: JSON.stringify({
           question_ids: questionIds,
-          option_marked: ["Sim"],
+          options_marked: ["Sim"],
         }),
       });
 
@@ -612,7 +612,7 @@ describe("PATCH /api/v1/questions", () => {
         },
         body: JSON.stringify({
           question_ids: questionIds,
-          option_marked: "Sim",
+          options_marked: ["Sim"],
           is_mold: true,
         }),
       });
@@ -626,7 +626,7 @@ describe("PATCH /api/v1/questions", () => {
           ...question,
           created_at: question.created_at.toISOString(),
           updated_at: responseBody[index].updated_at,
-          option_marked: "Sim",
+          options_marked: ["Sim"],
           is_mold: true,
         };
       });

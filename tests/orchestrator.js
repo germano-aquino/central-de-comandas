@@ -155,7 +155,7 @@ async function createQuestions(length = 5, questionDefaultValues = {}) {
       questionDefaultValues?.type,
       questionDefaultValues?.options,
       questionDefaultValues?.sectionId,
-      questionDefaultValues?.optionMarked,
+      questionDefaultValues?.optionsMarked,
       questionDefaultValues?.isMold,
     );
     questions.push(newQuestion);
