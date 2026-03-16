@@ -163,7 +163,7 @@ describe("PATCH /api/v1/questions/[id]", () => {
             "content-type": "application/json",
           },
           body: JSON.stringify({
-            type: "both",
+            type: "yesOrNoDiscursive",
           }),
         },
       );
@@ -176,7 +176,7 @@ describe("PATCH /api/v1/questions/[id]", () => {
         ...editedQuestion,
         created_at: editedQuestion.created_at.toISOString(),
         updated_at: responseBody.updated_at,
-        type: "both",
+        type: "yesOrNoDiscursive",
       };
 
       expect(responseBody).toEqual(questionWithNewType);
@@ -186,7 +186,7 @@ describe("PATCH /api/v1/questions/[id]", () => {
       );
     });
 
-    test("With new type as multiple-choice and missing options", async () => {
+    test("With new type as radio and missing options", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
       await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
@@ -205,7 +205,7 @@ describe("PATCH /api/v1/questions/[id]", () => {
             "content-type": "application/json",
           },
           body: JSON.stringify({
-            type: "multiple-choice",
+            type: "radio",
           }),
         },
       );
@@ -223,7 +223,7 @@ describe("PATCH /api/v1/questions/[id]", () => {
       });
     });
 
-    test("With new type as multiple-choice and less than 2 options", async () => {
+    test("With new type as radio and less than 2 options", async () => {
       const loggedUser = await orchestrator.createLoggedUser();
       await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
@@ -241,7 +241,7 @@ describe("PATCH /api/v1/questions/[id]", () => {
             "content-type": "application/json",
           },
           body: JSON.stringify({
-            type: "multiple-choice",
+            type: "radio",
             options: ["Sim"],
           }),
         },
@@ -340,7 +340,7 @@ describe("PATCH /api/v1/questions/[id]", () => {
         undefined,
         ["red", "blue", "green"],
         undefined,
-        "red",
+        ["red"],
       );
 
       const response = await fetch(
@@ -426,7 +426,7 @@ describe("PATCH /api/v1/questions/[id]", () => {
             "content-type": "application/json",
           },
           body: JSON.stringify({
-            option_marked: "Sim",
+            options_marked: ["Sim"],
           }),
         },
       );
@@ -439,7 +439,7 @@ describe("PATCH /api/v1/questions/[id]", () => {
         ...editedQuestion,
         created_at: editedQuestion.created_at.toISOString(),
         updated_at: responseBody.updated_at,
-        option_marked: "Sim",
+        options_marked: ["Sim"],
       };
 
       expect(responseBody).toEqual(questionWithNewOptionMarked);
@@ -458,7 +458,7 @@ describe("PATCH /api/v1/questions/[id]", () => {
         undefined,
         ["red", "blue", "green"],
         undefined,
-        "red",
+        ["red"],
       );
 
       const response = await fetch(
@@ -470,7 +470,7 @@ describe("PATCH /api/v1/questions/[id]", () => {
             "content-type": "application/json",
           },
           body: JSON.stringify({
-            option_marked: ["Sim"],
+            options_marked: ["Sim"],
           }),
         },
       );
@@ -621,7 +621,7 @@ describe("PATCH /api/v1/questions/[id]", () => {
             "content-type": "application/json",
           },
           body: JSON.stringify({
-            option_marked: "Sim",
+            options_marked: ["Sim"],
             is_mold: true,
           }),
         },
@@ -635,7 +635,7 @@ describe("PATCH /api/v1/questions/[id]", () => {
         ...editedQuestion,
         created_at: editedQuestion.created_at.toISOString(),
         updated_at: responseBody.updated_at,
-        option_marked: "Sim",
+        options_marked: ["Sim"],
         is_mold: true,
       });
 
