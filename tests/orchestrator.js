@@ -168,7 +168,7 @@ async function createQuestion(
   type,
   options,
   sectionId,
-  optionMarked,
+  optionsMarked,
   isMold,
 ) {
   const questionInputValues = {
@@ -176,7 +176,7 @@ async function createQuestion(
     type: type || "radio",
     options: options || ["Sim", "Não"],
     section_id: sectionId || null,
-    options_marked: optionMarked || null,
+    options_marked: optionsMarked || [],
     is_mold: isMold || null,
   };
 

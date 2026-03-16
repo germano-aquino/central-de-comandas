@@ -158,7 +158,7 @@ async function update(questionInputValues, queryParams) {
     validObject.statement = await getValidStatement(inputValues);
     validObject.type = getValidType(inputValues);
     validObject.options = getValidOptions(inputValues, storedQuestion);
-    validObject.optionMarked = getValidOptionMarked(
+    validObject.optionsMarked = getValidOptionsMarked(
       inputValues,
       storedQuestion,
     );
@@ -199,9 +199,9 @@ async function update(questionInputValues, queryParams) {
 
   function getValidOptions(inputValues, storedQuestion) {
     const type = inputValues?.type ? inputValues.type : storedQuestion.type;
-    const optionMarked = inputValues?.option_marked
-      ? inputValues.option_marked
-      : storedQuestion.option_marked;
+    const optionsMarked = inputValues?.options_marked
+      ? inputValues.options_marked
+      : storedQuestion.options_marked;
 
     if (REQUIRED_OPTIONS_TYPES.includes(type)) {
       if ("options" in inputValues) {
@@ -213,7 +213,13 @@ async function update(questionInputValues, queryParams) {
           });
         }
 
-        if (optionMarked && !inputValues.options.includes(optionMarked)) {
+        const invalidOptionMarked = optionsMarked.reduce(
+          (accumulator, markedOption) =>
+            accumulator || !inputValues.options.includes(markedOption),
+          false,
+        );
+
+        if (invalidOptionMarked) {
           throw new ValidationError({
             message: "As novas opções não contém a opção marcada.",
             action:
@@ -238,15 +244,20 @@ async function update(questionInputValues, queryParams) {
     return null;
   }
 
-  function getValidOptionMarked(inputValues, storedQuestion) {
+  function getValidOptionsMarked(inputValues, storedQuestion) {
     const type = inputValues?.type ? inputValues.type : storedQuestion.type;
     const options = inputValues?.options
       ? inputValues.options
       : storedQuestion.options;
 
     if (REQUIRED_OPTIONS_TYPES.includes(type)) {
-      if ("option_marked" in inputValues) {
-        if (!options.includes(inputValues.option_marked)) {
+      if ("options_marked" in inputValues) {
+        const invalidOptionMarked = inputValues.options_marked.reduce(
+          (accumulator, markedOption) =>
+            accumulator || !options.includes(markedOption),
+          false,
+        );
+        if (invalidOptionMarked) {
           throw new ValidationError({
             message:
               "A nova opção marcada não está contida as opções possíveis.",
@@ -254,7 +265,7 @@ async function update(questionInputValues, queryParams) {
               "Modifique a opção marcada para uma dentre as opções possíveis.",
           });
         }
-        return inputValues.option_marked;
+        return inputValues.options_marked;
       }
     }
     return null;
@@ -266,7 +277,7 @@ async function update(questionInputValues, queryParams) {
       questionObject.statement,
       questionObject.type,
       questionObject.options,
-      questionObject.optionMarked,
+      questionObject.optionsMarked,
       questionObject.answer,
       questionObject.isMold,
     ];
@@ -276,7 +287,7 @@ async function update(questionInputValues, queryParams) {
           statement = COALESCE($2, statement),
           type = COALESCE($3, type),
           options = COALESCE($4, options),
-          option_marked = COALESCE($5, option_marked),
+          options_marked = COALESCE($5, options_marked),
           answer = COALESCE($6, answer),
           is_mold = COALESCE($7, is_mold),
           updated_at = TIMEZONE('utc', NOW()),`;
