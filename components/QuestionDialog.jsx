@@ -35,7 +35,7 @@ export function QuestionDialog({
       ? editingQuestion
       : {
           statement: "",
-          type: "multiple_choice",
+          type: "radio",
           sectionId: "",
           order: 0,
           required: true,
@@ -50,7 +50,7 @@ export function QuestionDialog({
         ? editingQuestion
         : {
             statement: "",
-            type: "multiple_choice",
+            type: "radio",
             sectionId: "",
             order: 0,
             required: true,
@@ -144,7 +144,7 @@ export function QuestionDialog({
 
     // Parse options for checkbox/radio
     if (
-      (formData.type === "multiple-choice" || formData.type === "both") &&
+      (formData.type === "radio" || formData.type === "checkBox") &&
       optionsInput.trim()
     ) {
       questionData.options = optionsInput
@@ -247,8 +247,7 @@ export function QuestionDialog({
             </div>
           </div>
 
-          {(formData.type === "both" ||
-            formData.type === "multiple-choice") && (
+          {(formData.type === "radio" || formData.type === "checkBox") && (
             <div className="space-y-2">
               <Label htmlFor="options">Opções (uma por linha)</Label>
               <Textarea

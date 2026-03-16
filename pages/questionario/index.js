@@ -1,4 +1,4 @@
-import { AnamnesisForm } from "components/AnamnesisForm";
+import { AnamnesisForm } from "@/components/questionaire/AnamnesisForm";
 
 export default function QuestionForm({ order, clientName, paymentMethod }) {
   return (

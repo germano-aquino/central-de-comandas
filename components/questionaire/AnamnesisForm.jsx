@@ -5,10 +5,10 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "./ui/card";
-import { Button } from "./ui/button";
-import { Label } from "./ui/label";
-import { Separator } from "./ui/separator";
+} from "../ui/card";
+import { Button } from "../ui/button";
+import { Label } from "../ui/label";
+import { Separator } from "../ui/separator";
 
 import { ChevronLeft, Download } from "lucide-react";
 import SignatureCanvas from "react-signature-canvas";
@@ -40,6 +40,8 @@ export function AnamnesisForm({ clientName }) {
         sectionId: question.section_id,
         type: question.type,
         options: question.options,
+        options_marked: question.options_marked,
+        answer: question?.answer ? question.answer : "",
       };
     });
     setQuestions(questions);
