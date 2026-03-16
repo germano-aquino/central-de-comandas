@@ -9,6 +9,9 @@ const REQUIRED_OPTIONS_TYPES = [
   "yesOrNo",
   "yesOrNoDiscursive",
 ];
+
+const YES_OR_NO_TYPES = ["yesOrNo", "yesOrNoDiscursive"];
+
 const TYPES = [
   "radio",
   "checkBox",
@@ -32,7 +35,7 @@ async function create(questionInputValues) {
 
     validValues.options = getValidOptions(inputValues);
 
-    validValues.optionMarked = getValidOptionMarked(inputValues);
+    validValues.optionsMarked = getValidOptionsMarked(inputValues);
 
     validValues.sectionId = await getValidSectionId(inputValues);
 
@@ -57,6 +60,10 @@ async function create(questionInputValues) {
 
   function getValidOptions(inputValues) {
     if (REQUIRED_OPTIONS_TYPES.includes(inputValues.type)) {
+      if (YES_OR_NO_TYPES.includes(inputValues.type)) {
+        return ["Não", "Sim"];
+      }
+
       if (
         !("options" in inputValues) ||
         !inputValues.options ||
@@ -71,22 +78,37 @@ async function create(questionInputValues) {
     return inputValues?.options ? inputValues.options : [];
   }
 
-  function getValidOptionMarked(inputValues) {
-    if ("option_marked" in inputValues && inputValues.option_marked) {
-      const optionMarked = inputValues.option_marked;
+  function getValidOptionsMarked(inputValues) {
+    if ("options_marked" in inputValues && inputValues.options_marked) {
+      const optionsMarked = inputValues.options_marked;
       const options = inputValues.options;
 
-      if (!options.includes(optionMarked)) {
+      const invalidOptionMarked = optionsMarked.reduce(
+        (accumulator, optionMarked) =>
+          accumulator || !options.includes(optionMarked),
+        false,
+      );
+
+      if (invalidOptionMarked) {
         throw new ValidationError({
           message: "Opção marcada inválida.",
           action:
             "Verifique se a opção marcada está presente nas opções possíveis.",
         });
       }
-      return inputValues.option_marked;
+
+      if (inputValues.type === "radio" && optionsMarked.length > 1) {
+        throw new ValidationError({
+          message:
+            "Só é permitido uma única opção marcada para a pergunta do tipo radio.",
+          action:
+            "Modifique a opção marcada para que tenha só uma opção possível.",
+        });
+      }
+      return inputValues.options_marked;
     }
 
-    return null;
+    return [];
   }
 
   async function runInsertQuestion(questionObject) {
@@ -94,7 +116,7 @@ async function create(questionInputValues) {
       text: `
         INSERT INTO
           questions
-          (statement, type, options, option_marked, answer, section_id, is_mold)
+          (statement, type, options, options_marked, answer, section_id, is_mold)
         VALUES
           ($1, $2, $3, $4, $5, $6, $7)
         RETURNING
@@ -104,7 +126,7 @@ async function create(questionInputValues) {
         questionObject.statement,
         questionObject.type,
         questionObject.options,
-        questionObject.optionMarked,
+        questionObject.optionsMarked,
         questionObject.answer,
         questionObject.sectionId,
         questionObject.isMold,
