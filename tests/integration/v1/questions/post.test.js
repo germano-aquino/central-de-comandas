@@ -43,7 +43,7 @@ describe("POST /api/v1/questions", () => {
   });
 
   describe("Allowed user", () => {
-    describe("Multiple choice type", () => {
+    describe("Radio type", () => {
       test("With required data", async () => {
         const loggedUser = await orchestrator.createLoggedUser();
         await orchestrator.addFeatures(loggedUser, question.addFeatures);
@@ -56,7 +56,7 @@ describe("POST /api/v1/questions", () => {
           },
           body: JSON.stringify({
             statement: "What is your life purpose?",
-            type: "multiple-choice",
+            type: "radio",
             options: ["42", "Live"],
           }),
         });
@@ -66,9 +66,9 @@ describe("POST /api/v1/questions", () => {
         const responseBody = await response.json();
 
         expect(responseBody.statement).toBe("What is your life purpose?");
-        expect(responseBody.type).toBe("multiple-choice");
+        expect(responseBody.type).toBe("radio");
         expect(responseBody.options).toEqual(["42", "Live"]);
-        expect(responseBody.option_marked).toBeNull();
+        expect(responseBody.options_marked).toEqual([]);
         expect(responseBody.answer).toBeNull();
         expect(responseBody.is_mold).toBe(false);
         expect(uuidVersion(responseBody.id)).toBe(4);
@@ -93,7 +93,7 @@ describe("POST /api/v1/questions", () => {
           },
           body: JSON.stringify({
             statement: "What type of wax was used?",
-            type: "multiple-choice",
+            type: "radio",
             options: ["Açaí", "Aveia", "Castanha", "Cupuaçu"],
             section_id: formSection.id,
           }),
@@ -104,7 +104,7 @@ describe("POST /api/v1/questions", () => {
         const responseBody = await response.json();
 
         expect(responseBody.statement).toBe("What type of wax was used?");
-        expect(responseBody.type).toBe("multiple-choice");
+        expect(responseBody.type).toBe("radio");
         expect(responseBody.options).toEqual([
           "Açaí",
           "Aveia",
@@ -112,7 +112,7 @@ describe("POST /api/v1/questions", () => {
           "Cupuaçu",
         ]);
         expect(responseBody.section_id).toBe(formSection.id);
-        expect(responseBody.option_marked).toBeNull();
+        expect(responseBody.options_marked).toEqual([]);
         expect(responseBody.answer).toBeNull();
         expect(responseBody.is_mold).toBe(false);
         expect(uuidVersion(responseBody.id)).toBe(4);
@@ -120,7 +120,7 @@ describe("POST /api/v1/questions", () => {
         expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
       });
 
-      test("With required data and nonexistent category", async () => {
+      test("With required data and nonexistent form section", async () => {
         const loggedUser = await orchestrator.createLoggedUser();
         await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
@@ -132,7 +132,7 @@ describe("POST /api/v1/questions", () => {
           },
           body: JSON.stringify({
             statement: "Skin type:",
-            type: "multiple-choice",
+            type: "radio",
             options: ["Sensitive", "Dry", "Very Dry"],
             section_id: "cbd746a2-6090-4e1d-9f92-873fca25514d",
           }),
@@ -162,7 +162,7 @@ describe("POST /api/v1/questions", () => {
           },
           body: JSON.stringify({
             statement: "What type of wax was used?",
-            type: "multiple-choice",
+            type: "radio",
             options: ["Mint", "Chocco", "Avocado", "Banana"],
           }),
         });
@@ -172,7 +172,7 @@ describe("POST /api/v1/questions", () => {
         const responseBody = await response.json();
 
         expect(responseBody.statement).toBe("What type of wax was used?");
-        expect(responseBody.type).toBe("multiple-choice");
+        expect(responseBody.type).toBe("radio");
         expect(responseBody.options).toEqual([
           "Mint",
           "Chocco",
@@ -180,7 +180,7 @@ describe("POST /api/v1/questions", () => {
           "Banana",
         ]);
         expect(responseBody.section_id).toBeNull();
-        expect(responseBody.option_marked).toBeNull();
+        expect(responseBody.options_marked).toEqual([]);
         expect(responseBody.answer).toBeNull();
         expect(responseBody.is_mold).toBe(false);
         expect(uuidVersion(responseBody.id)).toBe(4);
@@ -228,7 +228,7 @@ describe("POST /api/v1/questions", () => {
             "content-type": "application/json",
           },
           body: JSON.stringify({
-            type: "multiple-choice",
+            type: "radio",
             options: ["Mint", "Chocco", "Avocado", "Banana"],
           }),
         });
@@ -258,7 +258,7 @@ describe("POST /api/v1/questions", () => {
           },
           body: JSON.stringify({
             statement: "",
-            type: "multiple-choice",
+            type: "radio",
             options: ["Mint", "Chocco", "Avocado", "Banana"],
           }),
         });
@@ -288,7 +288,7 @@ describe("POST /api/v1/questions", () => {
           },
           body: JSON.stringify({
             statement: "Missing options test:",
-            type: "multiple-choice",
+            type: "radio",
           }),
         });
 
@@ -316,7 +316,7 @@ describe("POST /api/v1/questions", () => {
           },
           body: JSON.stringify({
             statement: "Only one option test:",
-            type: "multiple-choice",
+            type: "radio",
             options: ["One option"],
           }),
         });
@@ -345,9 +345,9 @@ describe("POST /api/v1/questions", () => {
           },
           body: JSON.stringify({
             statement: "Marked Option is not included on options:",
-            type: "multiple-choice",
+            type: "radio",
             options: ["right", "left"],
-            option_marked: ["left"],
+            options_marked: ["theft"],
           }),
         });
 
@@ -364,6 +364,38 @@ describe("POST /api/v1/questions", () => {
         });
       });
 
+      test("With more than one option marked", async () => {
+        const loggedUser = await orchestrator.createLoggedUser();
+        await orchestrator.addFeatures(loggedUser, question.addFeatures);
+
+        const response = await fetch("http://localhost:3000/api/v1/questions", {
+          method: "POST",
+          headers: {
+            Cookie: `session_id=${loggedUser.token}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            statement: "More than one option marked:",
+            type: "radio",
+            options: ["right", "left"],
+            options_marked: ["right", "left"],
+          }),
+        });
+
+        expect(response.status).toBe(400);
+
+        const responseBody = await response.json();
+
+        expect(responseBody).toEqual({
+          name: "ValidationError",
+          message:
+            "Só é permitido uma única opção marcada para a pergunta do tipo radio.",
+          action:
+            "Modifique a opção marcada para que tenha só uma opção possível.",
+          status_code: 400,
+        });
+      });
+
       test("With required data and is mold property", async () => {
         const loggedUser = await orchestrator.createLoggedUser();
         await orchestrator.addFeatures(loggedUser, question.addFeatures);
@@ -376,9 +408,9 @@ describe("POST /api/v1/questions", () => {
           },
           body: JSON.stringify({
             statement: "Is mold question",
-            type: "multiple-choice",
+            type: "radio",
             options: ["right", "left"],
-            option_marked: "left",
+            options_marked: ["left"],
             is_mold: true,
           }),
         });
@@ -388,10 +420,235 @@ describe("POST /api/v1/questions", () => {
         const responseBody = await response.json();
 
         expect(responseBody.statement).toBe("Is mold question");
-        expect(responseBody.type).toBe("multiple-choice");
+        expect(responseBody.type).toBe("radio");
         expect(responseBody.options).toEqual(["right", "left"]);
         expect(responseBody.section_id).toBeNull();
-        expect(responseBody.option_marked).toBe("left");
+        expect(responseBody.options_marked).toEqual(["left"]);
+        expect(responseBody.answer).toBeNull();
+        expect(responseBody.is_mold).toBe(true);
+        expect(uuidVersion(responseBody.id)).toBe(4);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      });
+    });
+
+    describe("Checkbox type", () => {
+      test("With required data", async () => {
+        const loggedUser = await orchestrator.createLoggedUser();
+        await orchestrator.addFeatures(loggedUser, question.addFeatures);
+
+        const response = await fetch("http://localhost:3000/api/v1/questions", {
+          method: "POST",
+          headers: {
+            Cookie: `session_id=${loggedUser.token}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            statement: "What is your favourite music genre?",
+            type: "checkBox",
+            options: ["country", "rock"],
+          }),
+        });
+
+        expect(response.status).toBe(201);
+
+        const responseBody = await response.json();
+
+        expect(responseBody.statement).toBe(
+          "What is your favourite music genre?",
+        );
+        expect(responseBody.type).toBe("checkBox");
+        expect(responseBody.options).toEqual(["country", "rock"]);
+        expect(responseBody.options_marked).toEqual([]);
+        expect(responseBody.answer).toBeNull();
+        expect(responseBody.is_mold).toBe(false);
+        expect(uuidVersion(responseBody.id)).toBe(4);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      });
+
+      test("With required data and form section", async () => {
+        const loggedUser = await orchestrator.createLoggedUser();
+        await orchestrator.addFeatures(loggedUser, question.addFeatures);
+
+        const formSection = await orchestrator.createSection(
+          "Coffee Type",
+          "form",
+        );
+
+        const response = await fetch("http://localhost:3000/api/v1/questions", {
+          method: "POST",
+          headers: {
+            Cookie: `session_id=${loggedUser.token}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            statement: "What type of coffee was used?",
+            type: "checkBox",
+            options: ["Brazilian", "Indian", "Arabic", "Persian"],
+            section_id: formSection.id,
+          }),
+        });
+
+        expect(response.status).toBe(201);
+
+        const responseBody = await response.json();
+
+        expect(responseBody.statement).toBe("What type of coffee was used?");
+        expect(responseBody.type).toBe("checkBox");
+        expect(responseBody.options).toEqual([
+          "Brazilian",
+          "Indian",
+          "Arabic",
+          "Persian",
+        ]);
+        expect(responseBody.section_id).toBe(formSection.id);
+        expect(responseBody.options_marked).toEqual([]);
+        expect(responseBody.answer).toBeNull();
+        expect(responseBody.is_mold).toBe(false);
+        expect(uuidVersion(responseBody.id)).toBe(4);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      });
+    });
+
+    describe("YesOrNo type", () => {
+      test("With required data", async () => {
+        const loggedUser = await orchestrator.createLoggedUser();
+        await orchestrator.addFeatures(loggedUser, question.addFeatures);
+
+        const response = await fetch("http://localhost:3000/api/v1/questions", {
+          method: "POST",
+          headers: {
+            Cookie: `session_id=${loggedUser.token}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            statement: "Is it your first time?",
+            type: "yesOrNo",
+          }),
+        });
+
+        expect(response.status).toBe(201);
+
+        const responseBody = await response.json();
+
+        expect(responseBody.statement).toBe("Is it your first time?");
+        expect(responseBody.type).toBe("yesOrNo");
+        expect(responseBody.options).toEqual(["Não", "Sim"]);
+        expect(responseBody.options_marked).toEqual([]);
+        expect(responseBody.answer).toBeNull();
+        expect(responseBody.is_mold).toBe(false);
+        expect(uuidVersion(responseBody.id)).toBe(4);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      });
+
+      test("With required data and form section", async () => {
+        const loggedUser = await orchestrator.createLoggedUser();
+        await orchestrator.addFeatures(loggedUser, question.addFeatures);
+
+        const formSection = await orchestrator.createSection(
+          "Harry Potter",
+          "form",
+        );
+
+        const response = await fetch("http://localhost:3000/api/v1/questions", {
+          method: "POST",
+          headers: {
+            Cookie: `session_id=${loggedUser.token}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            statement: "Are you a witch?",
+            type: "yesOrNo",
+            options: ["Yes", "No"],
+            section_id: formSection.id,
+          }),
+        });
+
+        expect(response.status).toBe(201);
+
+        const responseBody = await response.json();
+
+        expect(responseBody.statement).toBe("Are you a witch?");
+        expect(responseBody.type).toBe("yesOrNo");
+        expect(responseBody.options).toEqual(["Não", "Sim"]);
+        expect(responseBody.section_id).toBe(formSection.id);
+        expect(responseBody.options_marked).toEqual([]);
+        expect(responseBody.answer).toBeNull();
+        expect(responseBody.is_mold).toBe(false);
+        expect(uuidVersion(responseBody.id)).toBe(4);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      });
+    });
+
+    describe("YesOrNoDiscursive type", () => {
+      test("With required data", async () => {
+        const loggedUser = await orchestrator.createLoggedUser();
+        await orchestrator.addFeatures(loggedUser, question.addFeatures);
+
+        const response = await fetch("http://localhost:3000/api/v1/questions", {
+          method: "POST",
+          headers: {
+            Cookie: `session_id=${loggedUser.token}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            statement: "What is your favorite vacation style?",
+            type: "yesOrNoDiscursive",
+            options: ["EcoTurism", "Gastronomic"],
+          }),
+        });
+
+        expect(response.status).toBe(201);
+
+        const responseBody = await response.json();
+
+        expect(responseBody.statement).toBe(
+          "What is your favorite vacation style?",
+        );
+        expect(responseBody.type).toBe("yesOrNoDiscursive");
+        expect(responseBody.options).toEqual(["Não", "Sim"]);
+        expect(responseBody.options_marked).toEqual([]);
+        expect(responseBody.answer).toBeNull();
+        expect(responseBody.is_mold).toBe(false);
+        expect(uuidVersion(responseBody.id)).toBe(4);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      });
+
+      test("With required data and form section", async () => {
+        const loggedUser = await orchestrator.createLoggedUser();
+        await orchestrator.addFeatures(loggedUser, question.addFeatures);
+
+        const formSection = await orchestrator.createSection("Brow", "form");
+
+        const response = await fetch("http://localhost:3000/api/v1/questions", {
+          method: "POST",
+          headers: {
+            Cookie: `session_id=${loggedUser.token}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            statement: "Do you use acid on your face?",
+            type: "yesOrNoDiscursive",
+            options: ["Yes", "No"],
+            section_id: formSection.id,
+            is_mold: true,
+          }),
+        });
+
+        expect(response.status).toBe(201);
+
+        const responseBody = await response.json();
+
+        expect(responseBody.statement).toBe("Do you use acid on your face?");
+        expect(responseBody.type).toBe("yesOrNoDiscursive");
+        expect(responseBody.options).toEqual(["Não", "Sim"]);
+        expect(responseBody.section_id).toBe(formSection.id);
+        expect(responseBody.options_marked).toEqual([]);
         expect(responseBody.answer).toBeNull();
         expect(responseBody.is_mold).toBe(true);
         expect(uuidVersion(responseBody.id)).toBe(4);
@@ -424,7 +681,7 @@ describe("POST /api/v1/questions", () => {
         expect(responseBody.statement).toBe("What is your favorite color?");
         expect(responseBody.type).toBe("discursive");
         expect(responseBody.options).toEqual([]);
-        expect(responseBody.option_marked).toBeNull();
+        expect(responseBody.options_marked).toEqual([]);
         expect(responseBody.answer).toBeNull();
         expect(responseBody.is_mold).toBe(false);
         expect(uuidVersion(responseBody.id)).toBe(4);
@@ -464,7 +721,7 @@ describe("POST /api/v1/questions", () => {
         expect(responseBody.type).toBe("discursive");
         expect(responseBody.options).toEqual([]);
         expect(responseBody.section_id).toBe(formSection.id);
-        expect(responseBody.option_marked).toBeNull();
+        expect(responseBody.options_marked).toEqual([]);
         expect(responseBody.answer).toBeNull();
         expect(responseBody.is_mold).toBe(false);
         expect(uuidVersion(responseBody.id)).toBe(4);
@@ -499,81 +756,9 @@ describe("POST /api/v1/questions", () => {
         );
         expect(responseBody.type).toBe("discursive");
         expect(responseBody.options).toEqual([]);
-        expect(responseBody.option_marked).toBeNull();
+        expect(responseBody.options_marked).toEqual([]);
         expect(responseBody.answer).toBe("Yes I do.");
         expect(responseBody.is_mold).toBe(true);
-        expect(uuidVersion(responseBody.id)).toBe(4);
-        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
-        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
-      });
-    });
-
-    describe("Both type", () => {
-      test("With required data", async () => {
-        const loggedUser = await orchestrator.createLoggedUser();
-        await orchestrator.addFeatures(loggedUser, question.addFeatures);
-
-        const response = await fetch("http://localhost:3000/api/v1/questions", {
-          method: "POST",
-          headers: {
-            Cookie: `session_id=${loggedUser.token}`,
-            "content-type": "application/json",
-          },
-          body: JSON.stringify({
-            statement: "What is your favorite vacation style?",
-            type: "both",
-            options: ["EcoTurism", "Gastronomic"],
-          }),
-        });
-
-        expect(response.status).toBe(201);
-
-        const responseBody = await response.json();
-
-        expect(responseBody.statement).toBe(
-          "What is your favorite vacation style?",
-        );
-        expect(responseBody.type).toBe("both");
-        expect(responseBody.options).toEqual(["EcoTurism", "Gastronomic"]);
-        expect(responseBody.option_marked).toBeNull();
-        expect(responseBody.answer).toBeNull();
-        expect(responseBody.is_mold).toBe(false);
-        expect(uuidVersion(responseBody.id)).toBe(4);
-        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
-        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
-      });
-
-      test("With required data and form section", async () => {
-        const loggedUser = await orchestrator.createLoggedUser();
-        await orchestrator.addFeatures(loggedUser, question.addFeatures);
-
-        const formSection = await orchestrator.createSection("Brow", "form");
-
-        const response = await fetch("http://localhost:3000/api/v1/questions", {
-          method: "POST",
-          headers: {
-            Cookie: `session_id=${loggedUser.token}`,
-            "content-type": "application/json",
-          },
-          body: JSON.stringify({
-            statement: "Do you use acid on your face?",
-            type: "both",
-            options: ["Yes", "No"],
-            section_id: formSection.id,
-          }),
-        });
-
-        expect(response.status).toBe(201);
-
-        const responseBody = await response.json();
-
-        expect(responseBody.statement).toBe("Do you use acid on your face?");
-        expect(responseBody.type).toBe("both");
-        expect(responseBody.options).toEqual(["Yes", "No"]);
-        expect(responseBody.section_id).toBe(formSection.id);
-        expect(responseBody.option_marked).toBeNull();
-        expect(responseBody.answer).toBeNull();
-        expect(responseBody.is_mold).toBe(false);
         expect(uuidVersion(responseBody.id)).toBe(4);
         expect(Date.parse(responseBody.created_at)).not.toBeNaN();
         expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
@@ -590,7 +775,7 @@ describe("POST /api/v1/questions", () => {
         },
         body: JSON.stringify({
           statement: "What is your job?",
-          type: "multiple-choice",
+          type: "radio",
           options: ["Programmer", "Aura Farmer"],
         }),
       });

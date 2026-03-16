@@ -4,9 +4,9 @@ import orchestrator from "tests/orchestrator";
 let sections;
 let questionsByType = {
   all: [],
-  "multiple-choice": [],
+  radio: [],
   discursive: [],
-  both: [],
+  yesOrNoDiscursive: [],
   noSection: [],
 };
 let questionsIsMold = [];
@@ -129,7 +129,7 @@ describe("GET /api/v1/questions", () => {
       const loggedUser = await orchestrator.createLoggedUser();
       await orchestrator.addFeatures(loggedUser, question.addFeatures);
 
-      const questionTypes = ["multiple-choice", "discursive", "both"];
+      const questionTypes = ["radio", "discursive", "yesOrNoDiscursive"];
       for (const type of questionTypes) {
         const params = new URLSearchParams();
         params.append("question_type", type);
@@ -290,7 +290,7 @@ async function createQuestionsToEachSection(sectionIds, questionsAmount = 3) {
 
     const bothQuestions = await orchestrator.createQuestions(questionsAmount, {
       sectionId: id,
-      type: "both",
+      type: "yesOrNoDiscursive",
     });
 
     const isMoldMultipleChoiceQuestions = await orchestrator.createQuestions(
@@ -312,7 +312,7 @@ async function createQuestionsToEachSection(sectionIds, questionsAmount = 3) {
       questionsAmount,
       {
         sectionId: id,
-        type: "both",
+        type: "yesOrNoDiscursive",
         isMold: true,
       },
     );
@@ -339,7 +339,7 @@ async function createQuestionsToEachSection(sectionIds, questionsAmount = 3) {
       ...isMoldDiscursiveQuestions,
       ...isMoldBothQuestions,
     );
-    questionsByType["multiple-choice"].push(
+    questionsByType["radio"].push(
       ...multipleChoiceQuestions,
       ...isMoldMultipleChoiceQuestions,
     );
@@ -347,13 +347,16 @@ async function createQuestionsToEachSection(sectionIds, questionsAmount = 3) {
       ...discursiveQuestions,
       ...isMoldDiscursiveQuestions,
     );
-    questionsByType.both.push(...bothQuestions, ...isMoldBothQuestions);
+    questionsByType.yesOrNoDiscursive.push(
+      ...bothQuestions,
+      ...isMoldBothQuestions,
+    );
   }
   const noSectionQuestions = await orchestrator.createQuestions();
 
   questionsBySection.push(noSectionQuestions);
   questionsByType.all.push(...noSectionQuestions);
-  questionsByType["multiple-choice"].push(...noSectionQuestions);
+  questionsByType["radio"].push(...noSectionQuestions);
 }
 
 function convertDateToISOString(objects) {
