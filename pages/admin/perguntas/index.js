@@ -7,7 +7,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Header } from "@/components/Header";
 import { QuestionDialog } from "@/components/QuestionDialog";
 import { QuestionsTable } from "@/components/QuestionsTable";
 import { Plus, HelpCircle } from "lucide-react";
@@ -97,12 +96,6 @@ function ManageQuestions() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <Header
-        title="Clube Depil"
-        subtitle="Gerenciar perguntas"
-        Icon={HelpCircle}
-      />
-
       <div className="container mx-auto px-4 py-8">
         <Card>
           <CardHeader>
@@ -151,5 +144,8 @@ function ManageQuestions() {
     </div>
   );
 }
+
+ManageQuestions.subtitle = "Gerenciar perguntas";
+ManageQuestions.icon = HelpCircle;
 
 export default ManageQuestions;

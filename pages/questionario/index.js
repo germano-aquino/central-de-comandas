@@ -1,6 +1,7 @@
 import { AnamnesisForm } from "@/components/questionaire/AnamnesisForm";
+import { Form } from "lucide-react";
 
-export default function QuestionForm({ order, clientName, paymentMethod }) {
+function QuestionForm({ order, clientName, paymentMethod }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
       <AnamnesisForm
@@ -11,3 +12,8 @@ export default function QuestionForm({ order, clientName, paymentMethod }) {
     </div>
   );
 }
+
+QuestionForm.subtitle = "Preencha o formulário";
+QuestionForm.icon = Form;
+
+export default QuestionForm;

@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { Plus, FolderTree } from "lucide-react";
-import { Header } from "@/components/Header";
 import { CategoryDialog } from "@/components/CategoryDialog";
 import { CategoriesTable } from "@/components/CategoriesTable";
 
@@ -53,12 +52,6 @@ function ManageCategories() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <Header
-        title="Clube Depil"
-        subtitle="Gerenciar categorias"
-        Icon={FolderTree}
-      />
-
       <div className="container mx-auto px-4 py-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
@@ -88,5 +81,8 @@ function ManageCategories() {
     </div>
   );
 }
+
+ManageCategories.subtitle = "Gerenciar Categorias";
+ManageCategories.icon = FolderTree;
 
 export default ManageCategories;

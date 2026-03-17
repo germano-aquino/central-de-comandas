@@ -1,5 +1,3 @@
-import * as React from "react";
-import Link from "next/link";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -9,8 +7,6 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
-import { MenuIcon } from "lucide-react";
-import { Button } from "./ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,7 +14,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import { Button } from "./ui/button";
+import { ChevronDown, MenuIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const NAVIGATION_DATA = [
   {
@@ -63,22 +63,69 @@ const NAVIGATION_DATA = [
   },
 ];
 
-export function Header({ Icon, title = "Clube Depil", subtitle }) {
+export function Header({ Icon, title = "Clube Depil", subtitle, hideHeader }) {
   //Clube Depil , Escolha seus serviços, Sparkles
-  return (
-    <header className="bg-white shadow-md sticky top-0 z-10">
-      <div className="container mx-auto px-4 py-4 flex item-center justify-between">
-        <div className="flex items-center gap-3">
-          <Icon className="w-4 h-4 md:w-8 md:h-8 text-pink-600" />
-          <div>
-            <h1 className="text-pink-600 text-sm md:text-base">{title}</h1>
-            <p className="text-gray-600 text-xs md:text-sm">{subtitle}</p>
+  if (hideHeader) return <></>;
+  else
+    return (
+      <header className="bg-white shadow-md sticky top-0 z-10">
+        <div className="container mx-auto px-4 py-4 flex item-center justify-between">
+          <div className="flex items-center gap-3">
+            <Icon className="w-4 h-4 md:w-8 md:h-8 text-pink-600" />
+            <div>
+              <h1 className="text-pink-600 text-sm md:text-base">{title}</h1>
+              <p className="text-gray-600 text-xs md:text-sm">{subtitle}</p>
+            </div>
           </div>
+          <StoreDropdown />
+          <NavigationMenuBar />
+          <NavigationMenuDropdown />
         </div>
-        <NavigationMenuBar />
-        <NavigationMenuDropdown />
-      </div>
-    </header>
+      </header>
+    );
+}
+
+function StoreDropdown() {
+  useEffect(() => {
+    loadStores();
+  }, []);
+
+  async function loadStores() {
+    const response = await fetch("/api/v1/stores");
+    const backendStores = await response.json();
+
+    if (response.status === 200) {
+      console.log(backendStores);
+      const storesStates = backendStores.map((store) => store.name);
+      setStores(storesStates);
+    } else {
+      console.error(backendStores);
+    }
+  }
+  const [store, setStore] = useState("Selecione um Estabelecimento");
+  const [stores, setStores] = useState([]);
+
+  return (
+    <div className="flex items-center gap-6">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" className="text-gray-600 w-62">
+            <span className="sr-only">Menu de Estabelecimento</span>
+            {store}
+            <ChevronDown />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-62" align="end">
+          <DropdownMenuGroup>
+            {stores.map((item, index) => (
+              <DropdownMenuItem key={index} onClick={() => setStore(item)}>
+                <span>{item}</span>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }
 
