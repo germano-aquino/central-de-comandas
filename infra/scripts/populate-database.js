@@ -3,6 +3,7 @@ import category from "@/models/category";
 import service from "@/models/service";
 import question from "@/models/question";
 import formSection from "@/models/formSection";
+import store from "@/models/store";
 
 const SERVICE_CATEGORIES = [
   "Depilação",
@@ -1109,6 +1110,13 @@ const QUESTIONS_OBSERVACAO = [
   },
 ];
 
+const STORES = [
+  "Clube Depil 14 de Abril",
+  "Clube Depil Duque",
+  "Clube Depil Umarizal",
+  "Clube Depil Batista",
+];
+
 async function populateDatabase() {
   const user = await orchestrator.createUser({
     username: "germano",
@@ -1129,6 +1137,7 @@ async function populateDatabase() {
   await orchestrator.addFeatures(user, service.addFeatures);
   await orchestrator.addFeatures(user, question.addFeatures);
   await orchestrator.addFeatures(user, formSection.addFeatures);
+  await orchestrator.addFeatures(user, store.addFeatures);
 
   const serviceCategories = await createServiceCategories();
 
@@ -1137,6 +1146,8 @@ async function populateDatabase() {
   const formSections = await createQuestionSections();
 
   await createQuestions(formSections);
+
+  await createStores();
 }
 
 async function createServiceCategories() {
@@ -1330,6 +1341,10 @@ async function createQuestions(formSections) {
       question.is_mold,
     );
   }
+}
+
+async function createStores() {
+  await orchestrator.createStores(undefined, STORES);
 }
 
 export default populateDatabase;
