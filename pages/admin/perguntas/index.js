@@ -16,8 +16,10 @@ import { toast } from "sonner";
 import { useState, useEffect } from "react";
 
 export const questionTypeLabels = {
-  "multiple-choice": "Múltipla Escolha",
-  both: "Múltipla escolha com justificativa",
+  radio: "Única Escolha",
+  checkBox: "Múltipla Escolha",
+  yesOrNo: "Sim ou Não",
+  yesOrNoDiscursive: "Sim ou Não com Justificativa",
   discursive: "Discursiva",
 };
 
