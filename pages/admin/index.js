@@ -14,8 +14,8 @@ import {
   ListChecks,
   HelpCircle,
   NotebookText,
+  Store,
 } from "lucide-react";
-import { Header } from "@/components/Header";
 
 function AdminDashboard() {
   const router = useRouter();
@@ -60,16 +60,18 @@ function AdminDashboard() {
       color: "text-amber-600",
       bgColor: "bg-pink-50",
     },
+    {
+      title: "Lojas",
+      description: "Gerenciar unidades de atendimentos",
+      icon: Store,
+      path: "/admin/lojas",
+      color: "text-zinc-600",
+      bgColor: "bg-pink-50",
+    },
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <Header
-        title="Clube Depil"
-        subtitle="Gerenciamento de Sistema"
-        Icon={Settings}
-      />
-
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h2>Bem-vindo ao Painel Administrativo</h2>
@@ -112,5 +114,8 @@ function AdminDashboard() {
     </div>
   );
 }
+
+AdminDashboard.subtitle = "Gerenciamento de Sistema";
+AdminDashboard.icon = Settings;
 
 export default AdminDashboard;

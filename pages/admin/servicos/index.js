@@ -7,7 +7,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Header } from "@/components/Header";
 import { ServiceDialog } from "@/components/ServiceDialog";
 import { ServiceTable } from "@/components/ServiceTable";
 
@@ -82,8 +81,6 @@ function ManageServices() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <Header subtitle="Gerenciar serviços" Icon={Package} />
-
       <div className="container mx-auto px-4 py-8">
         <Card>
           <CardHeader>
@@ -136,5 +133,8 @@ function ManageServices() {
     </div>
   );
 }
+
+ManageServices.subtitle = "Gerenciar serviços";
+ManageServices.icon = Package;
 
 export default ManageServices;

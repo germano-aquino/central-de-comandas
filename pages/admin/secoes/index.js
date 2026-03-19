@@ -1,6 +1,5 @@
 import { FormSectionDialog } from "@/components/FormSectionDialog";
 import { FormSectionsTable } from "@/components/FormSectionsTable";
-import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -60,8 +59,6 @@ function ManageQuestionSections() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <Header Icon={ListChecks} subtitle="Organizar perguntas em seções" />
-
       <div className="container mx-auto px-4 py-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
@@ -90,5 +87,8 @@ function ManageQuestionSections() {
     </div>
   );
 }
+
+ManageQuestionSections.subtitle = "Organizar perguntas em seções";
+ManageQuestionSections.icon = ListChecks;
 
 export default ManageQuestionSections;

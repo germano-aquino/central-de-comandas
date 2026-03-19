@@ -1,6 +1,5 @@
 "use client";
 
-import { Header } from "@/components/Header";
 import { OrderSummary } from "@/components/OrderSummary";
 import { ServicesByCategory } from "@/components/ServicesByCategory";
 import { Input } from "@/components/ui/input";
@@ -12,8 +11,6 @@ import authorization from "@/models/authorization";
 import session from "@/models/session";
 import user from "@/models/user";
 import { ForbiddenError } from "@/infra/errors";
-
-import { Sparkles } from "lucide-react";
 
 function Appointment({ categories, services }) {
   const [clientName, setClientName] = useState("");
@@ -51,11 +48,6 @@ function Appointment({ categories, services }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
-      <Header
-        Icon={Sparkles}
-        title="Clube Depil"
-        subtitle="Escolha seus serviços!"
-      />
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Service Container */}
@@ -163,5 +155,7 @@ export async function getServerSideProps(context) {
     };
   }
 }
+
+Appointment.subtitle = "Escolha seus serviços!";
 
 export default Appointment;

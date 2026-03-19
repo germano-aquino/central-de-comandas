@@ -109,4 +109,6 @@ function Login() {
   );
 }
 
+Login.hideHeader = true;
+
 export default Login;
