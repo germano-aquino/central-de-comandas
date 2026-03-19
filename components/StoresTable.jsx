@@ -11,7 +11,12 @@ import { GripVertical, Pencil, Trash2 } from "lucide-react";
 
 import { toast } from "sonner";
 
-export function StoresTable({ stores, setStores, handleOpenDialog }) {
+export function StoresTable({
+  stores,
+  setStores,
+  handleOpenDialog,
+  notifyHeader,
+}) {
   async function deleteStore(storeName) {
     try {
       await fetch(`/api/v1/stores/${storeName}`, {
@@ -32,6 +37,7 @@ export function StoresTable({ stores, setStores, handleOpenDialog }) {
       await deleteStore(storeName);
       const updated = stores.filter((store) => store.name !== storeName);
       setStores(updated);
+      notifyHeader();
       toast.success("Seção excluída com sucesso!");
     }
   }

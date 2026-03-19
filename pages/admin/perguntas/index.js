@@ -145,7 +145,9 @@ function ManageQuestions() {
   );
 }
 
-ManageQuestions.subtitle = "Gerenciar perguntas";
-ManageQuestions.icon = HelpCircle;
+ManageQuestions.headerProps = {
+  subtitle: "Gerenciar perguntas",
+  icon: HelpCircle,
+};
 
 export default ManageQuestions;

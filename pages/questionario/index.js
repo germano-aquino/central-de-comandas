@@ -13,7 +13,9 @@ function QuestionForm({ order, clientName, paymentMethod }) {
   );
 }
 
-QuestionForm.subtitle = "Preencha o formulário";
-QuestionForm.icon = Form;
+QuestionForm.headerProps = {
+  subtitle: "Preencha o formulário",
+  icon: Form,
+};
 
 export default QuestionForm;

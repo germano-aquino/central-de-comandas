@@ -156,6 +156,8 @@ export async function getServerSideProps(context) {
   }
 }
 
-Appointment.subtitle = "Escolha seus serviços!";
+Appointment.headerProps = {
+  subtitle: "Escolha seus serviços!",
+};
 
 export default Appointment;

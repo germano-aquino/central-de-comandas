@@ -88,7 +88,9 @@ function ManageQuestionSections() {
   );
 }
 
-ManageQuestionSections.subtitle = "Organizar perguntas em seções";
-ManageQuestionSections.icon = ListChecks;
+ManageQuestionSections.headerProps = {
+  subtitle: "Organizar perguntas em seções",
+  icon: ListChecks,
+};
 
 export default ManageQuestionSections;

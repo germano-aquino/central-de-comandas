@@ -1,22 +1,21 @@
 import "styles/globals.css";
 import { Header } from "@/components/Header";
-import { Sparkles } from "lucide-react";
+import { useState } from "react";
 
 function MyApp({ Component, pageProps }) {
-  const title = Component.title || "Clube Depil";
-  const subtitle = Component.subtitle || "";
-  const icon = Component.icon || Sparkles;
-  const hideHeader = Component.hideHeader || false;
+  const [updateHeader, setUpdateHeader] = useState(false);
+  function notifyHeader() {
+    setUpdateHeader((state) => !state);
+  }
 
-  console.log(Component);
+  const headerProps = { ...Component.headerProps, updateHeader };
+  if (headerProps.subtitle === "Gerenciar lojas") {
+    pageProps = { ...pageProps, notifyHeader };
+  }
+
   return (
     <>
-      <Header
-        title={title}
-        subtitle={subtitle}
-        Icon={icon}
-        hideHeader={hideHeader}
-      />
+      <Header {...headerProps} />
       <Component {...pageProps} />
     </>
   );

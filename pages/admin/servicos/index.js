@@ -134,7 +134,9 @@ function ManageServices() {
   );
 }
 
-ManageServices.subtitle = "Gerenciar serviços";
-ManageServices.icon = Package;
+ManageServices.headerProps = {
+  subtitle: "Gerenciar serviços",
+  icon: Package,
+};
 
 export default ManageServices;

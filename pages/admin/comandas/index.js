@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,10 +20,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, ListChecks, GripVertical } from "lucide-react";
+import { Plus, Pencil, Trash2, GripVertical, Newspaper } from "lucide-react";
 import { toast } from "sonner";
 
-function ManageQuestionSections() {
+function ManageCommandMolds() {
   const [sections, setSections] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingSection, setEditingSection] = useState(null);
@@ -169,8 +168,6 @@ function ManageQuestionSections() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <Header Icon={ListChecks} subtitle="Organizar perguntas em seções" />
-
       <div className="container mx-auto px-4 py-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
@@ -314,4 +311,9 @@ function ManageQuestionSections() {
   );
 }
 
-export default ManageQuestionSections;
+ManageCommandMolds.headerProps = {
+  subtitle: "Gerenciar o padrão de comandas",
+  icon: Newspaper,
+};
+
+export default ManageCommandMolds;

@@ -82,7 +82,9 @@ function ManageCategories() {
   );
 }
 
-ManageCategories.subtitle = "Gerenciar Categorias";
-ManageCategories.icon = FolderTree;
+ManageCategories.headerProps = {
+  subtitle: "Gerenciar Categorias",
+  icon: FolderTree,
+};
 
 export default ManageCategories;

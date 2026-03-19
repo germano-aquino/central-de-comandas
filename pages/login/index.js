@@ -109,6 +109,8 @@ function Login() {
   );
 }
 
-Login.hideHeader = true;
+Login.headerProps = {
+  hideHeader: true,
+};
 
 export default Login;

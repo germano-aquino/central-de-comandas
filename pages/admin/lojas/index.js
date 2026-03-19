@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Store } from "lucide-react";
 import { useEffect, useState } from "react";
 
-function ManageStores() {
+function ManageStores({ notifyHeader }) {
   const [stores, setStores] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingStore, setEditingStore] = useState({ name: "", order: 0 });
@@ -42,6 +42,7 @@ function ManageStores() {
       const updated = [...stores, newStore];
       setStores(updated);
     }
+    notifyHeader();
   }
 
   function handleOpenDialog(store) {
@@ -65,6 +66,7 @@ function ManageStores() {
               stores={stores}
               setStores={setStores}
               handleOpenDialog={handleOpenDialog}
+              notifyHeader={notifyHeader}
             />
           </CardContent>
         </Card>
@@ -80,7 +82,9 @@ function ManageStores() {
   );
 }
 
-ManageStores.subtitle = "Gerenciar lojas";
-ManageStores.icon = Store;
+ManageStores.headerProps = {
+  subtitle: "Gerenciar lojas",
+  icon: Store,
+};
 
 export default ManageStores;

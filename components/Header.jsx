@@ -15,10 +15,11 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { Button } from "./ui/button";
-import { ChevronDown, MenuIcon } from "lucide-react";
+import { ChevronDown, MenuIcon, Sparkle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { getCookie, hasCookie, setCookie } from "cookies-next/client";
 
 const NAVIGATION_DATA = [
   {
@@ -63,47 +64,76 @@ const NAVIGATION_DATA = [
   },
 ];
 
-export function Header({ Icon, title = "Clube Depil", subtitle, hideHeader }) {
-  //Clube Depil , Escolha seus serviços, Sparkles
+export function Header({
+  Icon = Sparkle,
+  title = "Clube Depil",
+  subtitle = "",
+  hideHeader = false,
+  updateHeader,
+}) {
   if (hideHeader) return <></>;
-  else
-    return (
-      <header className="bg-white shadow-md sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4 flex item-center justify-between">
-          <div className="flex items-center gap-3">
-            <Icon className="w-4 h-4 md:w-8 md:h-8 text-pink-600" />
-            <div>
-              <h1 className="text-pink-600 text-sm md:text-base">{title}</h1>
-              <p className="text-gray-600 text-xs md:text-sm">{subtitle}</p>
-            </div>
+  return (
+    <header className="bg-white shadow-md sticky top-0 z-10">
+      <div className="container mx-auto px-4 py-4 flex item-center justify-between">
+        <div className="flex items-center gap-3">
+          <Icon className="w-4 h-4 md:w-8 md:h-8 text-pink-600" />
+          <div>
+            <h1 className="text-pink-600 text-sm md:text-base">{title}</h1>
+            <p className="text-gray-600 text-xs md:text-sm">{subtitle}</p>
           </div>
-          <StoreDropdown />
-          <NavigationMenuBar />
-          <NavigationMenuDropdown />
         </div>
-      </header>
-    );
+        <StoreDropdown shouldUpdateDropdown={updateHeader} />
+        <NavigationMenuBar />
+        <NavigationMenuDropdown />
+      </div>
+    </header>
+  );
 }
 
-function StoreDropdown() {
+function StoreDropdown({ shouldUpdateDropdown }) {
   useEffect(() => {
     loadStores();
-  }, []);
+  }, [shouldUpdateDropdown]);
 
   async function loadStores() {
     const response = await fetch("/api/v1/stores");
     const backendStores = await response.json();
 
     if (response.status === 200) {
-      console.log(backendStores);
-      const storesStates = backendStores.map((store) => store.name);
-      setStores(storesStates);
+      const storesState = backendStores.map((store) => {
+        return {
+          id: store.id,
+          name: store.name,
+        };
+      });
+      setStores(storesState);
+      if (hasCookie("store_id")) {
+        const storeId = getCookie("store_id");
+        const selectedStore = storesState.find((store) => store.id === storeId);
+        if (selectedStore) {
+          setStore(selectedStore.name);
+        } else {
+          setStore("Selecione um Estabelecimento");
+        }
+      }
     } else {
       console.error(backendStores);
     }
   }
-  const [store, setStore] = useState("Selecione um Estabelecimento");
+
+  function handleSelectStore(store) {
+    setCookie("store_id", store.id, {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 365, // 1 Year
+      secure: false,
+      httpOnly: false,
+    });
+
+    setStore(store.name);
+  }
+
   const [stores, setStores] = useState([]);
+  const [store, setStore] = useState("Selecione um Estabelecimento");
 
   return (
     <div className="flex items-center gap-6">
@@ -118,8 +148,11 @@ function StoreDropdown() {
         <DropdownMenuContent className="w-62" align="end">
           <DropdownMenuGroup>
             {stores.map((item, index) => (
-              <DropdownMenuItem key={index} onClick={() => setStore(item)}>
-                <span>{item}</span>
+              <DropdownMenuItem
+                key={index}
+                onClick={() => handleSelectStore(item)}
+              >
+                <span>{item.name}</span>
               </DropdownMenuItem>
             ))}
           </DropdownMenuGroup>

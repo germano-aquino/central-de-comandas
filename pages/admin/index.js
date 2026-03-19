@@ -115,7 +115,9 @@ function AdminDashboard() {
   );
 }
 
-AdminDashboard.subtitle = "Gerenciamento de Sistema";
-AdminDashboard.icon = Settings;
+AdminDashboard.headerProps = {
+  subtitle: "Gerenciamento de Sistema",
+  icon: Settings,
+};
 
 export default AdminDashboard;

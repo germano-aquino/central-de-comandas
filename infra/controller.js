@@ -1,5 +1,3 @@
-import * as cookie from "cookie";
-
 import session from "models/session";
 import {
   InternalServerError,
@@ -11,6 +9,7 @@ import {
 } from "./errors";
 import user from "models/user";
 import authorization from "models/authorization";
+import cookie from "./cookie";
 
 function onErrorHandler(error, request, response) {
   if (
@@ -36,28 +35,25 @@ function onNoMatchHandler(request, response) {
   return response.status(publicErrorObject.statusCode).json(publicErrorObject);
 }
 
-function setSessionCookie(sessionToken, response) {
-  const setCookie = cookie.serialize("session_id", sessionToken, {
-    // Garante que o cookie seja acessível a todas as rotas a partir do path
+function setStoreCookie(storeId, response) {
+  const setCookie = cookie.set("store_id", storeId, {
     path: "/",
-    // Tempo máximo para ser expirado em segundos
-    maxAge: session.EXPIRATION_IN_MILLISECONDS / 1000,
-    // Só aceita cookie se estiver utilizando https
-    secure: process.env.NODE_ENV === "production",
-    // Restringe a camada de acesso do cookie impedindo leitura pelo console no client side
-    httpOnly: true,
+    maxAge: 60 * 60 * 24 * 365, // 1 Year,
+    httpOnly: false,
+    secure: false,
   });
 
   response.setHeader("Set-Cookie", setCookie);
 }
 
+function setSessionCookie(sessionToken, response) {
+  const setCookie = cookie.set("session_id", sessionToken);
+
+  response.setHeader("Set-Cookie", setCookie);
+}
+
 function clearSessionCookie(response) {
-  const setCookie = cookie.serialize("session_id", "invalid", {
-    path: "/",
-    maxAge: -1,
-    secure: process.env.NODE_ENV === "production",
-    httpOnly: true,
-  });
+  const setCookie = cookie.clear("session_id");
 
   response.setHeader("Set-Cookie", setCookie);
 }
@@ -124,6 +120,7 @@ const controller = {
     onNoMatch: onNoMatchHandler,
   },
   setSessionCookie,
+  setStoreCookie,
   clearSessionCookie,
   clearCacheControl,
   injectAnonymousOrUser,
