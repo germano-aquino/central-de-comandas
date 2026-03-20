@@ -9,7 +9,7 @@ function MyApp({ Component, pageProps }) {
   }
 
   const headerProps = { ...Component.headerProps, updateHeader };
-  if (headerProps.subtitle === "Gerenciar lojas") {
+  if (headerProps.name === "ManageStores") {
     pageProps = { ...pageProps, notifyHeader };
   }
 
