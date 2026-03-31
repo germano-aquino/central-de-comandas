@@ -6,7 +6,11 @@ import {
 } from "../ui/accordion";
 import { QuestionSelectionTable } from "./QuestionSelectionTable";
 
-export function QuestionSelection({ questionsBySection }) {
+export function QuestionSelection({
+  questionsBySection,
+  questionIds,
+  setQuestionIds,
+}) {
   return (
     <Accordion type="multiple" className="w-full">
       {questionsBySection.map(({ section, questions }) => (
@@ -18,7 +22,11 @@ export function QuestionSelection({ questionsBySection }) {
           </AccordionTrigger>
           <AccordionContent>
             <div className="space-y-4">
-              <QuestionSelectionTable questions={questions} />
+              <QuestionSelectionTable
+                questions={questions}
+                questionIds={questionIds}
+                setQuestionIds={setQuestionIds}
+              />
             </div>
           </AccordionContent>
         </AccordionItem>

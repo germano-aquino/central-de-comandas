@@ -8,8 +8,8 @@ import { ServiceSelectionTable } from "./ServiceSelectionTable";
 
 export function ServiceSelection({
   servicesByCategory,
-  selectedServices,
-  setSelectedServices,
+  serviceIds,
+  setServiceIds,
 }) {
   return (
     <Accordion type="single" collapsible className="w-full">
@@ -23,10 +23,9 @@ export function ServiceSelection({
           <AccordionContent>
             <div className="space-y-4">
               <ServiceSelectionTable
-                category={category}
                 services={services}
-                selectedServices={selectedServices}
-                setSelectedServices={setSelectedServices}
+                serviceIds={serviceIds}
+                setServiceIds={setServiceIds}
               />
             </div>
           </AccordionContent>

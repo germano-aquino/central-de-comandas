@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Button } from "../ui/button";
 import { Checkbox } from "../ui/checkbox";
 import {
@@ -10,28 +9,28 @@ import {
   TableRow,
 } from "../ui/table";
 
-export function ServiceSelectionTable({
-  category,
-  services,
-  selectedServices,
-  setSelectedServices,
-}) {
+import { useState } from "react";
+
+export function ServiceSelectionTable({ services, serviceIds, setServiceIds }) {
+  const checkBoxObject = services.reduce((accumulator, service) => {
+    accumulator[service.id] = serviceIds.includes(service.id);
+    return accumulator;
+  }, {});
+
+  const [checkboxSelection, setCheckboxSelection] = useState(checkBoxObject);
   const [toggleAll, setToggleAll] = useState(true);
 
-  function selectService(serviceId, checked) {
-    setSelectedServices({
-      ...selectedServices,
-      [category]: {
-        ...selectedServices[category],
-        [serviceId]: checked,
-      },
+  function handleSelectService(serviceId, checked) {
+    setCheckboxSelection({
+      ...checkboxSelection,
+      [serviceId]: checked,
     });
-    console.log(selectedServices);
-    // if (checked) question.options_marked.push(option);
-    // else
-    //   question.options_marked = question.options_marked.filter(
-    //     (optionMarked) => optionMarked !== option,
-    //   );
+    if (checked) setServiceIds((state) => [...state, serviceId]);
+    else
+      serviceIds = setServiceIds((state) =>
+        state.filter((id) => id !== serviceId),
+      );
+    console.log("serviceIds: ", serviceIds);
   }
 
   function handleCheckAllBoxes() {
@@ -40,12 +39,12 @@ export function ServiceSelectionTable({
       return accumulator;
     }, {});
 
-    setSelectedServices({
-      ...selectedServices,
-      [category]: newSelectedServices,
-    });
+    setCheckboxSelection(newSelectedServices);
+    const toggleServiceIds = services.map((service) => service.id);
+    if (toggleAll) serviceIds.push(...toggleServiceIds);
+    else serviceIds = serviceIds.filter((id) => !toggleServiceIds.includes(id));
     setToggleAll((state) => !state);
-    console.log(selectedServices);
+    console.log("serviceIds: ", serviceIds);
   }
 
   function priceToCurrencyString(price) {
@@ -80,9 +79,9 @@ export function ServiceSelectionTable({
               <Checkbox
                 className="cursor-pointer"
                 id={service.id}
-                checked={selectedServices[category][service.id]}
+                checked={checkboxSelection[service.id]}
                 onCheckedChange={(checked) =>
-                  selectService(service.id, checked)
+                  handleSelectService(service.id, checked)
                 }
               />
             </TableCell>

@@ -12,31 +12,46 @@ import { useState } from "react";
 import { questionTypeLabels } from "@/pages/admin/perguntas";
 import { Button } from "../ui/button";
 
-export function QuestionSelectionTable({ questions }) {
-  const checkboxObject = questions.reduce((accumulator, question) => {
-    accumulator[question.id] = false;
+export function QuestionSelectionTable({
+  questions,
+  questionIds,
+  setQuestionIds,
+}) {
+  const [toggleAll, setToggleAll] = useState(true);
+
+  const checkBoxObject = questions.reduce((accumulator, service) => {
+    accumulator[service.id] = questionIds.includes(service.id);
     return accumulator;
   }, {});
 
-  const [checkboxOptions, setCheckboxOptions] = useState(checkboxObject);
-  const [toggleAll, setToggleAll] = useState(true);
+  const [checkboxSelection, setCheckboxSelection] = useState(checkBoxObject);
 
-  function selectQuestion(question, option, checked) {
-    setCheckboxOptions({ ...checkboxOptions, [option]: checked });
-    // if (checked) question.options_marked.push(option);
-    // else
-    //   question.options_marked = question.options_marked.filter(
-    //     (optionMarked) => optionMarked !== option,
-    //   );
+  function handleSelectQuestion(questionId, checked) {
+    setCheckboxSelection({
+      ...checkboxSelection,
+      [questionId]: checked,
+    });
+    if (checked) setQuestionIds((state) => [...state, questionId]);
+    else
+      questionIds = setQuestionIds((state) =>
+        state.filter((id) => id !== questionId),
+      );
+    console.log("questionIds: ", questionIds);
   }
 
-  function handleCheckAllBoxes(questions) {
-    const newCheckboxOptions = questions.reduce((accumulator, question) => {
-      accumulator[question.id] = toggleAll;
+  function handleCheckAllBoxes() {
+    const newSelected = questions.reduce((accumulator, service) => {
+      accumulator[service.id] = toggleAll;
       return accumulator;
     }, {});
-    setCheckboxOptions(newCheckboxOptions);
+
+    setCheckboxSelection(newSelected);
+    const toggleQuestionIds = questions.map((question) => question.id);
+    if (toggleAll) questionIds.push(...toggleQuestionIds);
+    else
+      questionIds = questionIds.filter((id) => !toggleQuestionIds.includes(id));
     setToggleAll((state) => !state);
+    console.log("questionIds: ", questionIds);
   }
 
   return (
@@ -64,9 +79,9 @@ export function QuestionSelectionTable({ questions }) {
               <Checkbox
                 className="cursor-pointer"
                 id={question.id}
-                checked={checkboxOptions[question.id]}
+                checked={checkboxSelection[question.id]}
                 onCheckedChange={(checked) =>
-                  selectQuestion(question, question.id, checked)
+                  handleSelectQuestion(question.id, checked)
                 }
               />
             </TableCell>
